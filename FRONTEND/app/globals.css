@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ─── Custom Design Tokens ──────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand Colors */
+  --color-fern:       #4a6741;   /* Deep earthy green  */
+  --color-warm-ivory: #FAF6EE;   /* Warm off-white background */
+  --color-apricot:    #D98A5A;   /* Warm orange accent */
+  --color-natural:    #8C7B6B;   /* Muted brown / muted text */
+
+  /* Background / Foreground */
+  --color-background: var(--color-warm-ivory);
+  --color-foreground: var(--color-fern);
+
+  /* Animations */
+  --animate-slide-in: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in:  fade-in  0.4s ease both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Keyframes ─────────────────────────────────────────────────── */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Base ──────────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FAF6EE;
+  color: #4a6741;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Hide scrollbar for overflow-x pill rows */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
