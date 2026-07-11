@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  mongo-order:
+    image: mongo:7
+    container_name: mongo-order
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-order-data:/data/db
+
+  redis-cart:
+    image: redis:7
+    container_name: redis-cart
+    ports:
+      - "6379:6379"
+
+volumes:
+  mongo-order-data:

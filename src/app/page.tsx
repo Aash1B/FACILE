@@ -30,7 +30,7 @@ const BEST_SELLERS = [
     name: "Smart Watch Series 5",
     price: 89.99,
     originalPrice: 129.99,
-    image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
     rating: 4.5,
     reviews: 128
   },
@@ -39,7 +39,7 @@ const BEST_SELLERS = [
     name: "Wireless Headphones",
     price: 59.99,
     originalPrice: 89.99,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
     rating: 4.7,
     reviews: 98
   },
@@ -48,7 +48,7 @@ const BEST_SELLERS = [
     name: "Travel Backpack",
     price: 39.99,
     originalPrice: 59.99,
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400",
     rating: 4.6,
     reviews: 156
   },
@@ -57,7 +57,7 @@ const BEST_SELLERS = [
     name: "Running Shoes",
     price: 49.99,
     originalPrice: 79.99,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400",
     rating: 4.4,
     reviews: 78
   },
@@ -66,7 +66,7 @@ const BEST_SELLERS = [
     name: "Luxury Perfume",
     price: 29.99,
     originalPrice: 49.99,
-    image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400",
     rating: 4.8,
     reviews: 64
   }
@@ -152,72 +152,62 @@ export default function Home() {
 
       {/* 1. Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="bg-[#FAF6EE] border border-natural/15 rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 relative overflow-hidden shadow-xs">
+        <div className="bg-[#FAF6EE] border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden shadow-xs min-h-[380px] sm:min-h-[480px] flex items-center">
+          
+          {/* Background Image positioned on the right */}
+          <img
+            src="/hero_product_composition.jpg"
+            alt="Hero Background"
+            className="absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0"
+          />
+          
+          {/* Overlay to blend the image seamlessly on the left */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6EE] via-[#FAF6EE] via-35% sm:via-42% to-transparent sm:to-[52%] z-10 pointer-events-none" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Hero Content (Left) */}
-            <div className="lg:col-span-6 space-y-5 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#fff6e3] border border-apricot/20 rounded-full text-xs font-bold text-apricot">
-                <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-pulse" />
-                <span>NEW ARRIVALS</span>
-              </div>
-
-              <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-fern leading-[1.15] tracking-tight">
-                Discover The Best Products for You
-              </h1>
-
-              <p className="text-xs sm:text-sm text-natural leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
-                Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <a
-                  href="#best-sellers"
-                  className="w-full sm:w-auto h-11 px-6 bg-fern text-warm-ivory hover:bg-fern/90 active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
-                >
-                  Shop Now
-                  <ArrowRight size={14} />
-                </a>
-                <a
-                  href="#special-offer"
-                  className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/25 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
-                >
-                  Explore Deals
-                </a>
-              </div>
-
-              {/* Social Proof */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto lg:mx-0">
-                <div className="flex -space-x-2">
-                  <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
-                  <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
-                  <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
-                  <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
-                </div>
-                <p className="text-[11px] font-semibold text-natural tracking-wide">
-                  Trusted by 10,000+ Happy Customers
-                </p>
-              </div>
+          {/* Hero Content Area */}
+          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E8EFE0] rounded-full text-xs font-bold text-[#5F744E] mx-auto sm:mx-0">
+              <span className="w-1.5 h-1.5 bg-[#5F744E] rounded-full" />
+              <span>NEW ARRIVALS</span>
             </div>
 
-            {/* Hero Collage / Podium (Right) */}
-            <div className="lg:col-span-6 relative flex justify-center items-center">
-              {/* Soft Shadow Spotlight Backdrop */}
-              <div className="absolute w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] bg-warm-ivory/30 rounded-full filter blur-xl -z-10" />
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-fern leading-[1.15] tracking-tight">
+              Discover The Best Products for You
+            </h1>
 
-              {/* Main Generated Podium Image */}
-              <img
-                src="/hero_product.png"
-                alt="Discover Best Products Hero Image"
-                className="w-full max-w-[340px] sm:max-w-[420px] max-h-[280px] sm:max-h-[340px] h-auto object-contain hover:scale-[1.02] transition-transform duration-500 select-none drop-shadow-2xl mix-blend-multiply"
-                onError={(e) => {
-                  // Fallback image in case asset isn't ready
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=600";
-                }}
-              />
+            <p className="text-xs sm:text-sm text-natural leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
+              <a
+                href="#best-sellers"
+                className="w-full sm:w-auto h-11 px-6 bg-[#708238] hover:bg-[#5f6f3a] text-white active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+              >
+                Shop Now
+                <ArrowRight size={14} />
+              </a>
+              <a
+                href="#special-offer"
+                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-[#708238] text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
+              >
+                Explore Deals
+              </a>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
+              <div className="flex -space-x-2">
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
+              </div>
+              <p className="text-[11px] font-bold text-natural tracking-wide">
+                Trusted by 10,000+ Happy Customers
+              </p>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -334,18 +324,18 @@ export default function Home() {
                 </button>
 
                 {/* Product Image */}
-                <div className="aspect-square bg-warm-ivory/30 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-500 ease-out group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                 </div>
 
                 {/* Content */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div className="space-y-1.5">
-                    <h3 className="text-xs font-bold text-fern leading-snug group-hover:text-apricot truncate transition-colors duration-200">
+                    <h3 className="text-xs font-bold text-fern leading-snug truncate transition-colors duration-200">
                       {product.name}
                     </h3>
 
@@ -366,7 +356,7 @@ export default function Home() {
 
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-fern hover:bg-fern/95 group-hover:bg-apricot group-hover:text-fern active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                      className="w-full h-8.5 bg-[#708238] hover:bg-[#5f6f3a] active:scale-98 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                     >
                       <ShoppingCart size={12} className="stroke-[2.5px]" />
                       Add to Cart
