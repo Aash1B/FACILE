@@ -17,7 +17,7 @@ public class CartService {
     public Cart addItemToCart(String userId, CartItem newItem) {
         Cart cart = getCartByUserId(userId);
 
-        boolean itemExists = false;
+        boolean itemExists = false; 
         for (CartItem item : cart.getItems()) {
             if (item.getProductId().equals(newItem.getProductId())) {
                 item.setQuantity(item.getQuantity() + newItem.getQuantity());
