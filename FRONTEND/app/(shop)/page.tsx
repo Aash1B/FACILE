@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "@/context/CartContext";
 import {
   Heart,
   ShoppingCart,
@@ -437,7 +437,7 @@ export default function Home() {
               <div className="space-y-4">
                 <Quote size={28} className="text-green-200 fill-green-500/10 stroke-[1.5px]" />
                 <p className="text-xs text-natural leading-relaxed italic font-medium">
-                  "{testimonial.feedback}"
+                  &quot;{testimonial.feedback}&quot;
                 </p>
               </div>
 

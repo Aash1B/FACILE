@@ -36,6 +36,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const savedFavorites = localStorage.getItem("facile_favorites");
     if (savedCart) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCart(JSON.parse(savedCart));
       } catch (e) {
         console.error(e);

@@ -1,19 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCart } from "../context/CartContext";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { 
   Menu, 
   Heart, 
   ShoppingCart, 
   User, 
   Search, 
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 
 export default function Navbar() {
   const { cart, favorites, setIsCartOpen } = useCart();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const totalCartItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalFavorites = favorites.length;
@@ -36,13 +41,13 @@ export default function Navbar() {
 
           {/* Logo "facile" (Center) */}
           <div className="absolute left-1/2 -translate-x-1/2 flex justify-center">
-            <a 
-              href="#" 
+            <Link 
+              href="/" 
               className="font-serif text-3xl font-bold tracking-[0.08em] text-fern hover:text-apricot transition-colors duration-300 relative group select-none"
             >
               facile
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-apricot transition-all duration-300 group-hover:w-full"></span>
-            </a>
+            </Link>
           </div>
 
           {/* Right Links & Icons */}
@@ -91,14 +96,51 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* User Profile Icon */}
-            <a 
-              href="#profile" 
-              className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 group"
-              aria-label="Profile"
-            >
-              <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
-            </a>
+            {/* User Profile Icon / Dropdown */}
+            <div className="relative">
+              {user ? (
+                <>
+                  <button 
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                    aria-label="Profile Menu"
+                  >
+                    <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110 text-apricot" />
+                    <span className="hidden lg:inline text-xs font-bold truncate max-w-[80px]">
+                      {user.name}
+                    </span>
+                  </button>
+                  
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-natural/20 rounded-xl shadow-lg p-3.5 z-50 animate-fade-in text-fern">
+                      <div className="border-b border-natural/10 pb-2 mb-2 text-xs">
+                        <p className="font-bold text-natural uppercase tracking-wider text-[9px]">Logged in as</p>
+                        <p className="font-bold truncate">{user.name}</p>
+                        <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsProfileOpen(false);
+                        }}
+                        className="w-full py-1.5 px-2 hover:bg-warm-ivory text-apricot rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left"
+                      >
+                        <LogOut size={13} />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link 
+                  href="/login" 
+                  className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 group block"
+                  aria-label="Profile"
+                >
+                  <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

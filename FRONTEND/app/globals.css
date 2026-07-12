@@ -7,10 +7,10 @@
   --font-mono: var(--font-geist-mono);
 
   /* Brand Colors */
-  --color-fern:       #4a6741;   /* Deep earthy green  */
-  --color-warm-ivory: #FAF6EE;   /* Warm off-white background */
-  --color-apricot:    #D98A5A;   /* Warm orange accent */
-  --color-natural:    #8C7B6B;   /* Muted brown / muted text */
+  --color-fern:       #424530;   /* Fern: Primary text, headers, dark buttons */
+  --color-warm-ivory: #FFEFCD;   /* Warm Ivory: Primary background, light surfaces */
+  --color-apricot:    #E09132;   /* Apricot: Accents, highlights, call-to-actions */
+  --color-natural:    #A58E74;   /* Natural: Secondary text, borders, neutral elements */
 
   /* Background / Foreground */
   --color-background: var(--color-warm-ivory);
@@ -38,8 +38,8 @@ html, body {
 }
 
 body {
-  background-color: #FAF6EE;
-  color: #4a6741;
+  background-color: var(--color-warm-ivory);
+  color: var(--color-fern);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
