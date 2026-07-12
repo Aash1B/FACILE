@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "next dev FRONTEND",
+    "build": "next build FRONTEND",
+    "start": "next start FRONTEND",
+    "lint": "eslint FRONTEND"
   },
   "dependencies": {
     "lucide-react": "^1.24.0",
