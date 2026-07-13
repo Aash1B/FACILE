@@ -1,0 +1,716 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { 
+  User, 
+  Mail, 
+  ShoppingBag, 
+  MapPin, 
+  Lock, 
+  Camera, 
+  Check, 
+  ChevronRight, 
+  ChevronDown, 
+  Calendar, 
+  Plus, 
+  Trash2, 
+  Smartphone,
+  Globe
+} from "lucide-react";
+
+// Mock Order History Data
+const MOCK_ORDERS = [
+  {
+    id: "FC-84920",
+    date: "July 08, 2026",
+    total: "$290.00",
+    status: "Delivered",
+    items: [
+      { name: "Handcrafted Ceramic Pitcher", price: "$120.00", qty: 1, category: "Ceramics" },
+      { name: "Organic Linen Bedspread", price: "$170.00", qty: 1, category: "Home Decor" }
+    ]
+  },
+  {
+    id: "FC-73819",
+    date: "June 24, 2026",
+    total: "$85.00",
+    status: "In Transit",
+    items: [
+      { name: "Minimalist Soy Candle Set", price: "$45.00", qty: 1, category: "Aromatherapy" },
+      { name: "Woven Palm Leaf Coasters", price: "$40.00", qty: 1, category: "Kitchen" }
+    ]
+  },
+  {
+    id: "FC-62910",
+    date: "May 12, 2026",
+    total: "$150.00",
+    status: "Processing",
+    items: [
+      { name: "Earthy Ceramic Coffee Mugs (Set of 2)", price: "$60.00", qty: 1, category: "Ceramics" },
+      { name: "Pure Cotton Tote Bag", price: "$90.00", qty: 1, category: "Bags" }
+    ]
+  }
+];
+
+// Mock Address Data
+const MOCK_ADDRESSES = [
+  {
+    id: 1,
+    label: "Home (Default)",
+    name: "Aashish Bharti",
+    street: "124 Warm Ivory Lane, Sector 4",
+    city: "New Delhi, Delhi - 110001",
+    phone: "+91 98765 43210"
+  },
+  {
+    id: 2,
+    label: "Design Studio",
+    name: "Aashish Bharti",
+    street: "Studio 8B, Fern Creative Hub",
+    city: "Gurugram, Haryana - 122002",
+    phone: "+91 98765 43211"
+  }
+];
+
+export default function ProfilePage() {
+  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
+  
+  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "security">("profile");
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  
+  // Profile Form State
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
+  const [profileBio, setProfileBio] = useState("Architect & design enthusiast. Passionate about slow living, ceramics, and sustainable craftsmanship.");
+  const [showSaveToast, setShowSaveToast] = useState(false);
+
+  // Address Form State
+  const [addresses, setAddresses] = useState(MOCK_ADDRESSES);
+  const [showAddAddress, setShowAddAddress] = useState(false);
+  const [newAddr, setNewAddr] = useState({ label: "", name: "", street: "", city: "", phone: "" });
+
+  // Security Form State
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  // Auth Guard (Bypassed redirect to enable static preview on account & profile pages)
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.name);
+      setProfileEmail(user.email);
+    } else {
+      setProfileName("Guest User");
+      setProfileEmail("guest@example.com");
+    }
+  }, [user]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-warm-ivory">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-semibold text-fern">Loading secure dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleProfileUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowSaveToast(true);
+    setTimeout(() => setShowSaveToast(false), 4000);
+  };
+
+  const handleAddAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAddr.label && newAddr.name && newAddr.street && newAddr.city) {
+      setAddresses([...addresses, { id: Date.now(), ...newAddr }]);
+      setNewAddr({ label: "", name: "", street: "", city: "", phone: "" });
+      setShowAddAddress(false);
+    }
+  };
+
+  const handleDeleteAddress = (id: number) => {
+    setAddresses(addresses.filter(addr => addr.id !== id));
+  };
+
+  const handlePasswordUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword && newPassword === confirmPassword) {
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSuccess(false), 4000);
+    }
+  };
+
+  const toggleOrder = (orderId: string) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
+  return (
+    <div className="min-h-screen bg-warm-ivory/40 py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Guest Warning Banner */}
+        {!user && (
+          <div className="mb-6 p-4 bg-apricot/10 border border-apricot/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-semibold text-fern">
+            <p>You are currently viewing this page as a guest. Register or sign in to view your real order history, saved addresses, and profile settings.</p>
+            <button 
+              onClick={() => router.push("/login")}
+              className="px-4 py-2 bg-fern hover:bg-apricot text-warm-ivory rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
+            >
+              Sign In / Sign Up
+            </button>
+          </div>
+        )}
+        
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="font-serif text-3xl font-bold tracking-wide text-fern">
+            My Account
+          </h1>
+          <p className="text-xs text-natural font-medium mt-1">
+            Manage your profile, view orders, and update shipping details.
+          </p>
+        </div>
+
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          
+          {/* Navigation Sidebar (Vertical on Desktop, Scrollable Row on Mobile) */}
+          <div className="lg:col-span-1 space-y-6">
+            
+            {/* User Short Info Card */}
+            <div className="bg-white border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-apricot" />
+              <div className="relative inline-block mt-2">
+                <div className="w-16 h-16 bg-warm-ivory text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner">
+                  {profileName ? profileName.slice(0, 2) : "US"}
+                </div>
+                <button className="absolute bottom-0 right-0 p-1.5 bg-fern text-warm-ivory rounded-full shadow hover:bg-apricot transition-colors duration-200" aria-label="Change photo">
+                  <Camera size={12} />
+                </button>
+              </div>
+              <h3 className="text-sm font-bold text-fern mt-3 truncate">{profileName}</h3>
+              <p className="text-[10px] font-bold text-natural uppercase tracking-wider">{user ? "Member Since 2026" : "Guest Account"}</p>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="bg-white border border-natural/20 rounded-2xl p-2 shadow-sm flex lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar gap-1">
+              <button
+                onClick={() => setActiveTab("profile")}
+                className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
+                  activeTab === "profile" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                <User size={15} />
+                Profile Settings
+              </button>
+              <button
+                onClick={() => setActiveTab("orders")}
+                className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
+                  activeTab === "orders" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                <ShoppingBag size={15} />
+                Order History
+              </button>
+              <button
+                onClick={() => setActiveTab("addresses")}
+                className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
+                  activeTab === "addresses" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                <MapPin size={15} />
+                Shipping Addresses
+              </button>
+              <button
+                onClick={() => setActiveTab("security")}
+                className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
+                  activeTab === "security" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                <Lock size={15} />
+                Security
+              </button>
+
+              <div className="h-px bg-natural/10 my-2 hidden lg:block" />
+
+              <button
+                onClick={logout}
+                className="flex lg:hidden items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl text-apricot hover:bg-apricot/5 transition-all duration-200 cursor-pointer flex-shrink-0"
+              >
+                Sign Out
+              </button>
+            </div>
+            
+            <button
+              onClick={logout}
+              className="hidden lg:flex items-center justify-center gap-2 w-full py-3 bg-white hover:bg-apricot/5 border border-natural/25 hover:border-apricot text-apricot text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
+            >
+              Sign Out
+            </button>
+
+          </div>
+
+          {/* Main Dashboard Section (Tabs Content) */}
+          <div className="lg:col-span-3">
+            <div className="bg-white border border-natural/20 rounded-3xl p-6 sm:p-8 shadow-sm min-h-[480px]">
+              
+              {/* Tab 1: Profile Settings */}
+              {activeTab === "profile" && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Profile Information</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Update your personal account details and public bio.</p>
+                  </div>
+                  
+                  <form onSubmit={handleProfileUpdate} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-natural">Full Name</label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-natural" size={14} />
+                          <input 
+                            type="text" 
+                            value={profileName}
+                            onChange={(e) => setProfileName(e.target.value)}
+                            required
+                            className="w-full h-10 pl-9 pr-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-natural">Email Address</label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-natural" size={14} />
+                          <input 
+                            type="email" 
+                            value={profileEmail}
+                            onChange={(e) => setProfileEmail(e.target.value)}
+                            required
+                            className="w-full h-10 pl-9 pr-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-natural">Phone Number</label>
+                        <div className="relative">
+                          <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 text-natural" size={14} />
+                          <input 
+                            type="text" 
+                            value={profilePhone}
+                            onChange={(e) => setProfilePhone(e.target.value)}
+                            className="w-full h-10 pl-9 pr-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-natural">Preferred Region</label>
+                        <div className="relative">
+                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-natural" size={14} />
+                          <select 
+                            className="w-full h-10 pl-9 pr-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all appearance-none cursor-pointer"
+                            defaultValue="India"
+                          >
+                            <option value="India">India (INR)</option>
+                            <option value="US">United States (USD)</option>
+                            <option value="UK">United Kingdom (GBP)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Personal Bio</label>
+                      <textarea 
+                        rows={3} 
+                        value={profileBio}
+                        onChange={(e) => setProfileBio(e.target.value)}
+                        className="w-full p-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="submit"
+                        className="h-10 px-8 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-all active:scale-97 shadow hover:shadow-md"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                  
+                  {/* Toast Alert */}
+                  {showSaveToast && (
+                    <div className="flex items-center gap-3 bg-fern text-warm-ivory p-4 rounded-xl shadow-md animate-fade-in border border-apricot/20">
+                      <div className="w-5 h-5 bg-apricot rounded-full flex items-center justify-center text-warm-ivory">
+                        <Check size={11} className="stroke-[3px]" />
+                      </div>
+                      <p className="text-xs font-semibold">Changes saved successfully! Profile details updated locally.</p>
+                    </div>
+                  )}
+
+                </div>
+              )}
+
+              {/* Tab 2: Order History */}
+              {activeTab === "orders" && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Your Orders</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Track shipping details and history of previous orders.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {MOCK_ORDERS.map((order) => {
+                      const isExpanded = expandedOrder === order.id;
+                      return (
+                        <div 
+                          key={order.id}
+                          className="border border-natural/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:border-natural/40 bg-warm-ivory/5"
+                        >
+                          {/* Order Header Summary */}
+                          <div 
+                            onClick={() => toggleOrder(order.id)}
+                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4.5 gap-3 sm:gap-6 cursor-pointer bg-white"
+                          >
+                            <div className="grid grid-cols-2 sm:flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Order ID</p>
+                                <p className="text-xs font-bold text-fern mt-0.5">{order.id}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Placed On</p>
+                                <p className="text-xs font-semibold text-fern mt-0.5">{order.date}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Total Amount</p>
+                                <p className="text-xs font-bold text-apricot mt-0.5">{order.total}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Status</p>
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold mt-1 tracking-wide uppercase ${
+                                  order.status === "Delivered" 
+                                    ? "bg-green-100 text-green-800" 
+                                    : order.status === "In Transit" 
+                                      ? "bg-blue-100 text-blue-800" 
+                                      : "bg-amber-100 text-amber-800"
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    order.status === "Delivered" 
+                                      ? "bg-green-600" 
+                                      : order.status === "In Transit" 
+                                        ? "bg-blue-600" 
+                                        : "bg-amber-600"
+                                  }`} />
+                                  {order.status}
+                                </span>
+                              </div>
+                            </div>
+
+                            <button className="text-natural hover:text-fern transition-colors self-end sm:self-center" aria-label="Toggle details">
+                              {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                            </button>
+                          </div>
+
+                          {/* Order Expanded Details */}
+                          {isExpanded && (
+                            <div className="border-t border-natural/15 p-4.5 bg-warm-ivory/10 space-y-4 animate-fade-in">
+                              <h4 className="text-[10px] font-bold uppercase tracking-wider text-natural">Items in Order</h4>
+                              <div className="divide-y divide-natural/10">
+                                {order.items.map((item, idx) => (
+                                  <div key={idx} className="flex justify-between py-3 first:pt-0 last:pb-0 text-xs">
+                                    <div className="space-y-1">
+                                      <p className="font-bold text-fern">{item.name}</p>
+                                      <p className="text-[10px] font-semibold text-natural">{item.category} • Qty: {item.qty}</p>
+                                    </div>
+                                    <p className="font-bold text-fern">{item.price}</p>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="border-t border-natural/10 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
+                                <div className="space-y-1 font-semibold text-natural">
+                                  <p>Payment Method: <span className="text-fern font-bold">Credit Card (**** 4820)</span></p>
+                                  <p>Shipment Carrier: <span className="text-fern font-bold">BlueDart Express</span></p>
+                                </div>
+                                <div className="flex gap-2.5 w-full sm:w-auto">
+                                  <button className="flex-1 sm:flex-none h-8 px-4 border border-natural/25 hover:border-fern text-fern font-bold text-[10px] rounded-lg transition-colors cursor-pointer bg-white">
+                                    Invoice PDF
+                                  </button>
+                                  <button className="flex-1 sm:flex-none h-8 px-4 bg-fern hover:bg-apricot text-warm-ivory font-bold text-[10px] rounded-lg transition-colors cursor-pointer">
+                                    Track Package
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Shipping Addresses */}
+              {activeTab === "addresses" && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="font-serif text-xl font-bold text-fern">Shipping Addresses</h2>
+                      <p className="text-[11px] text-natural font-medium mt-0.5">Manage delivery destinations for rapid checkout.</p>
+                    </div>
+                    
+                    {!showAddAddress && (
+                      <button 
+                        onClick={() => setShowAddAddress(true)}
+                        className="h-8.5 px-4 bg-fern hover:bg-apricot text-warm-ivory text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer transition-all flex items-center gap-1.5"
+                      >
+                        <Plus size={14} />
+                        Add Address
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Add Address Form */}
+                  {showAddAddress && (
+                    <form onSubmit={handleAddAddress} className="border border-natural/20 rounded-2xl p-5 bg-warm-ivory/10 space-y-3.5 animate-fade-in">
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-fern">New Delivery Destination</h3>
+                        <button 
+                          type="button" 
+                          onClick={() => setShowAddAddress(false)}
+                          className="text-[10px] font-bold text-natural hover:text-apricot transition-colors uppercase tracking-wider"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Label (e.g. Home/Work)</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Home, Office, Studio"
+                            value={newAddr.label}
+                            onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
+                            className="w-full h-8.5 px-3 bg-white border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-lg focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Contact Name</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Recipient's Name"
+                            value={newAddr.name}
+                            onChange={(e) => setNewAddr({ ...newAddr, name: e.target.value })}
+                            className="w-full h-8.5 px-3 bg-white border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-lg focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Street Address</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Building, street, block info"
+                          value={newAddr.street}
+                          onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
+                          className="w-full h-8.5 px-3 bg-white border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-lg focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-natural">City, State - PIN</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="City, State - Zip Code"
+                            value={newAddr.city}
+                            onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
+                            className="w-full h-8.5 px-3 bg-white border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-lg focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Phone Number</label>
+                          <input 
+                            type="text" 
+                            placeholder="+91 99999 99999"
+                            value={newAddr.phone}
+                            onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
+                            className="w-full h-8.5 px-3 bg-white border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-lg focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full h-9 bg-fern hover:bg-apricot text-warm-ivory text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                      >
+                        Save Shipping Destination
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Address List Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {addresses.map((addr) => (
+                      <div 
+                        key={addr.id}
+                        className="border border-natural/20 rounded-2xl p-4.5 relative bg-warm-ivory/5 shadow-sm space-y-3 flex flex-col justify-between"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="px-2.5 py-0.5 bg-fern/10 text-fern font-bold text-[9px] uppercase tracking-wider rounded-full">
+                              {addr.label}
+                            </span>
+                            <button 
+                              onClick={() => handleDeleteAddress(addr.id)}
+                              className="text-natural hover:text-apricot transition-colors p-1" 
+                              aria-label="Delete Address"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <div className="text-xs font-semibold text-fern space-y-0.5">
+                            <p className="font-bold">{addr.name}</p>
+                            <p className="text-natural/90 leading-relaxed font-medium">{addr.street}</p>
+                            <p className="text-natural/90 leading-relaxed font-medium">{addr.city}</p>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-natural/10 pt-2.5 flex items-center gap-1.5 text-[10px] font-bold text-natural uppercase">
+                          <Calendar size={11} className="text-natural/60" />
+                          <span>Contact: {addr.phone || "Not Provided"}</span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {addresses.length === 0 && (
+                      <div className="sm:col-span-2 py-12 text-center text-xs font-semibold text-natural border border-dashed border-natural/30 rounded-2xl">
+                        No addresses saved yet. Click 'Add Address' to set up a destination.
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              )}
+
+              {/* Tab 4: Security */}
+              {activeTab === "security" && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Account Security</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Update credentials and configure login protection options.</p>
+                  </div>
+
+                  <form onSubmit={handlePasswordUpdate} className="space-y-4 max-w-md">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Current Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full h-10 px-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-natural">New Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Min 8 characters"
+                        className="w-full h-10 px-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Confirm New Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Match new password"
+                        className="w-full h-10 px-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="h-10 px-6 bg-fern hover:bg-apricot text-warm-ivory text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-colors shadow"
+                    >
+                      Update Password
+                    </button>
+                  </form>
+
+                  {passwordSuccess && (
+                    <div className="flex items-center gap-3 bg-fern text-warm-ivory p-4 rounded-xl shadow-md max-w-md border border-apricot/20 animate-fade-in">
+                      <div className="w-5 h-5 bg-apricot rounded-full flex items-center justify-center text-warm-ivory">
+                        <Check size={11} className="stroke-[3px]" />
+                      </div>
+                      <p className="text-xs font-semibold font-sans">Password updated locally! New credential has been saved.</p>
+                    </div>
+                  )}
+
+                  <div className="h-px bg-natural/10 my-6" />
+
+                  {/* Two-Factor Authentication Info */}
+                  <div className="border border-natural/20 rounded-2xl p-5 bg-warm-ivory/5 flex flex-col sm:flex-row items-start justify-between gap-4">
+                    <div className="space-y-1 max-w-lg">
+                      <h4 className="text-xs font-bold text-fern flex items-center gap-1.5">
+                        Two-Factor Authentication (2FA)
+                        <span className="px-2 py-0.5 bg-apricot/15 text-apricot font-bold text-[8px] uppercase tracking-wider rounded-md">Highly Recommended</span>
+                      </h4>
+                      <p className="text-[11px] text-natural/95 leading-relaxed font-semibold">
+                        Add an extra layer of protection. When signing in, you will be required to input a secure passcode from a code generator app (like Google Authenticator).
+                      </p>
+                    </div>
+                    <button type="button" className="h-8.5 px-4 border border-natural/25 hover:border-fern text-fern text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer bg-white self-start sm:self-center flex-shrink-0">
+                      Enable 2FA
+                    </button>
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}

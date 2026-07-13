@@ -1,0 +1,21 @@
+import Navbar from "@/components/Navbar";
+import CartDrawer from "@/components/CartDrawer";
+import Footer from "@/components/Footer";
+
+export default function ShopLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Navbar />
+      <CartDrawer />
+      {/* Push content below the two-tier fixed navbar (~140px on mobile, ~104px on desktop) */}
+      <main className="flex-1 pt-[140px] md:pt-[104px] animate-fade-in">
+        {children}
+      </main>
+      <Footer />
+    </>
+  );
+}

@@ -29,12 +29,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const cart: CartItem[] = [];
   const favorites: string[] = [];
   const isCartOpen = false;
-  const setIsCartOpen = () => {};
-  const addToCart = () => {};
-  const removeFromCart = () => {};
-  const updateQuantity = () => {};
-  const clearCart = () => {};
-  const toggleFavorite = () => {};
+  const setIsCartOpen = () => { };
+  const addToCart = () => { };
+  const removeFromCart = () => { };
+  const updateQuantity = () => { };
+  const clearCart = () => { };
+  const toggleFavorite = () => { };
 
   return (
     <CartContext.Provider

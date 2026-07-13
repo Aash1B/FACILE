@@ -1,16 +1,70 @@
+
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Instagram, 
-  Facebook, 
-  Twitter, 
-  Mail, 
-  ArrowRight, 
+import {
+  Mail,
+  ArrowRight,
   Heart,
   Globe,
   Sparkles
 } from "lucide-react";
+
+function Instagram({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+function Facebook({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
+
+function Twitter({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    </svg>
+  );
+}
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -27,7 +81,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-fern text-warm-ivory border-t border-natural/30 select-none">
-      
+
       {/* Newsletter / Headline Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-natural/20">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
@@ -67,7 +121,7 @@ export default function Footer() {
       {/* Main Link Directory */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10">
-          
+
           {/* Brand Info (Col span 4) */}
           <div className="md:col-span-4 space-y-6">
             <a href="#" className="font-serif text-3xl font-bold tracking-[0.08em] text-warm-ivory hover:text-apricot transition-colors duration-300">
@@ -131,7 +185,7 @@ export default function Footer() {
       {/* Bottom Footer Section */}
       <div className="bg-[#363827] text-warm-ivory/60 text-[10px] font-bold border-t border-natural/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          
+
           <div className="flex items-center gap-1.5">
             <span>© {new Date().getFullYear()} facile. Made with</span>
             <Heart size={10} className="text-apricot fill-apricot" />
