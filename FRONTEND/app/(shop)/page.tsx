@@ -152,7 +152,7 @@ export default function Home() {
 
       {/* 1. Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="bg-[#FAF6EE] border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden shadow-xs min-h-[380px] sm:min-h-[480px] flex items-center">
+        <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden shadow-xs min-h-[380px] sm:min-h-[480px] flex items-center">
           
           {/* Background Image positioned on the right */}
           <img
@@ -162,12 +162,12 @@ export default function Home() {
           />
           
           {/* Overlay to blend the image seamlessly on the left */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6EE] via-[#FAF6EE] via-35% sm:via-42% to-transparent sm:to-[52%] z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-warm-ivory via-warm-ivory via-35% sm:via-42% to-transparent sm:to-[52%] z-10 pointer-events-none" />
 
           {/* Hero Content Area */}
           <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E8EFE0] rounded-full text-xs font-bold text-[#5F744E] mx-auto sm:mx-0">
-              <span className="w-1.5 h-1.5 bg-[#5F744E] rounded-full" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
+              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
               <span>NEW ARRIVALS</span>
             </div>
 
@@ -182,14 +182,14 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
               <a
                 href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#708238] hover:bg-[#5f6f3a] text-white active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-11 px-6 bg-fern hover:bg-fern/90 text-white active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
               >
                 Shop Now
                 <ArrowRight size={14} />
               </a>
               <a
                 href="#special-offer"
-                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-[#708238] text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
               >
                 Explore Deals
               </a>
@@ -356,7 +356,7 @@ export default function Home() {
 
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-[#708238] hover:bg-[#5f6f3a] active:scale-98 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                      className="w-full h-8.5 bg-fern hover:bg-fern/90 active:scale-98 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                     >
                       <ShoppingCart size={12} className="stroke-[2.5px]" />
                       Add to Cart
@@ -372,7 +372,7 @@ export default function Home() {
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-[#fff9ed] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
+        <div className="bg-apricot/10 border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
 
           {/* Subtle Leaf Shadow Graphic overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-natural/5 via-transparent to-transparent pointer-events-none" />
