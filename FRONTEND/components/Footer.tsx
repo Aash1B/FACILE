@@ -1,9 +1,10 @@
+
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Mail, 
-  ArrowRight, 
+import {
+  Mail,
+  ArrowRight,
   Heart,
   Globe,
   Sparkles
@@ -80,7 +81,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-fern text-warm-ivory border-t border-natural/30 select-none">
-      
+
       {/* Newsletter / Headline Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-natural/20">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
@@ -94,20 +95,22 @@ export default function Footer() {
             </p>
           </div>
 
-          <form onSubmit={handleSubscribe} className="w-full lg:max-w-md relative flex items-center">
-            <div className="w-full relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-natural" size={16} />
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full h-11.5 pl-11 pr-32 bg-white/10 border border-natural/35 focus:border-apricot focus:ring-1 focus:ring-apricot text-xs text-warm-ivory rounded-full shadow-inner transition-all duration-200 placeholder:text-natural focus:outline-none font-semibold"
-              />
+          <form onSubmit={handleSubscribe} className="w-full lg:max-w-md">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:relative w-full">
+              <div className="relative flex-1">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-natural" size={16} />
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full h-11.5 pl-11 pr-4 sm:pr-32 bg-white/10 border border-natural/35 focus:border-apricot focus:ring-1 focus:ring-apricot text-xs text-warm-ivory rounded-full shadow-inner transition-all duration-200 placeholder:text-natural focus:outline-none font-semibold"
+                />
+              </div>
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8.5 px-5 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-full flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-97 hover:shadow-md"
+                className="w-full sm:w-auto h-11.5 sm:h-8.5 px-5 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-full flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-97 hover:shadow-md sm:absolute sm:right-1.5 sm:top-1/2 sm:-translate-y-1/2"
               >
                 {subscribed ? "Subscribed!" : "Subscribe"}
                 {!subscribed && <ArrowRight size={12} />}
@@ -120,7 +123,7 @@ export default function Footer() {
       {/* Main Link Directory */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10">
-          
+
           {/* Brand Info (Col span 4) */}
           <div className="md:col-span-4 space-y-6">
             <a href="#" className="font-serif text-3xl font-bold tracking-[0.08em] text-warm-ivory hover:text-apricot transition-colors duration-300">
@@ -184,7 +187,7 @@ export default function Footer() {
       {/* Bottom Footer Section */}
       <div className="bg-[#363827] text-warm-ivory/60 text-[10px] font-bold border-t border-natural/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          
+
           <div className="flex items-center gap-1.5">
             <span>© {new Date().getFullYear()} facile. Made with</span>
             <Heart size={10} className="text-apricot fill-apricot" />

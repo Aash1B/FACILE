@@ -140,7 +140,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-warm-ivory text-fern font-sans min-h-screen relative pb-16">
+    <div className="bg-[#F4E6C7] text-fern font-sans min-h-screen relative pb-16">
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -309,12 +309,12 @@ export default function Home() {
             return (
               <div
                 key={product.id}
-                className="group bg-white border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-warm-ivory border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Wishlist Button */}
                 <button
                   onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/95 text-fern hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
                   aria-label="Add to wishlist"
                 >
                   <Heart
@@ -356,7 +356,7 @@ export default function Home() {
 
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-fern hover:bg-fern/90 active:scale-98 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                      className="w-full h-8.5 bg-apricot hover:bg-apricot/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                     >
                       <ShoppingCart size={12} className="stroke-[2.5px]" />
                       Add to Cart

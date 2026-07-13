@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -11,7 +11,8 @@ import {
   User, 
   Search, 
   ChevronDown,
-  LogOut
+  LogOut,
+  X
 } from "lucide-react";
 
 export default function Navbar() {
@@ -20,6 +21,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -45,19 +47,24 @@ export default function Navbar() {
   const totalFavorites = favorites.length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-warm-ivory/90 backdrop-blur-md border-b border-natural/25">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-[#F4E6C7]/90 backdrop-blur-md border-b border-natural/25">
       {/* Tier 1: Main Header Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           
           {/* Hamburger Menu (Left) */}
           <div className="flex items-center">
-            <div
-              className="p-2 -ml-2 rounded-full text-fern select-none"
-              aria-label="Menu"
+            <button
+              onClick={() => {
+                console.log("Hamburger button clicked! Setting isMobileMenuOpen to true.");
+                setIsMobileMenuOpen(true);
+              }}
+              className="p-2 -ml-2 rounded-full text-fern select-none hover:bg-natural/10 focus:outline-none cursor-pointer"
+              aria-label="Open Menu"
             >
               <Menu size={22} className="stroke-[2px]" />
-            </div>
+            </button>
           </div>
 
           {/* Logo "facile" (Center) */}
@@ -72,7 +79,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Links & Icons */}
-          <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10">
+          <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto">
             <a 
               href="#testimonials" 
               className="hidden md:inline-block text-fern hover:text-apricot transition-colors duration-200"
@@ -178,7 +185,7 @@ export default function Navbar() {
       </div>
 
       {/* Tier 2: Pills & Search */}
-      <div className="bg-warm-ivory/50">
+      <div className="bg-[#F4E6C7]/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           
           {/* Desktop Layout: Single Row */}
@@ -191,12 +198,12 @@ export default function Navbar() {
                 <button 
                   ref={buttonRef}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1 px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                  className="flex items-center gap-1 px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                 >
                   All Categories
                   <ChevronDown 
                     size={14} 
-                    className={`text-natural transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-fern" : ""}`} 
+                    className={`text-warm-ivory transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} 
                   />
                 </button>
               </div>
@@ -204,15 +211,15 @@ export default function Navbar() {
               {/* New Arrivals */}
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 New Arrivals
               </a>
 
-              {/* Trending Pill (Apricot Highlight) */}
+              {/* Trending Pill */}
               <a 
                 href="#special-offer" 
-                className="px-4 py-1.5 bg-white border border-apricot/30 text-apricot hover:bg-apricot/10 text-xs font-bold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1"
               >
                 <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
                 Trending
@@ -227,10 +234,10 @@ export default function Navbar() {
                   placeholder="Search brands, ceramics, slow fashion..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-8.5 pl-4 pr-10 bg-white border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
+                  className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
                 />
                 <button 
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-natural hover:text-fern transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fern hover:text-apricot transition-colors"
                   aria-label="Submit Search"
                 >
                   <Search size={15} />
@@ -242,25 +249,25 @@ export default function Navbar() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Men
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Women
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Children
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Brands
               </a>
@@ -277,10 +284,10 @@ export default function Navbar() {
                 placeholder="Search brands, ceramics, slow fashion..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8.5 pl-4 pr-10 bg-white border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
+                className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
               />
               <button 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-natural hover:text-fern transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-fern hover:text-apricot transition-colors"
                 aria-label="Submit Search"
               >
                 <Search size={14} />
@@ -294,26 +301,26 @@ export default function Navbar() {
                 <button 
                   ref={mobileButtonRef}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1 px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                  className="flex items-center gap-1 px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                 >
                   All Categories
                   <ChevronDown 
                     size={12} 
-                    className={`text-natural transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-fern" : ""}`} 
+                    className={`text-warm-ivory transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} 
                   />
                 </button>
               </div>
 
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 New Arrivals
               </a>
 
               <a 
                 href="#special-offer" 
-                className="px-3.5 py-1 bg-white border border-apricot/30 text-apricot hover:bg-apricot/10 text-[11px] font-bold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
               >
                 <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
                 Trending
@@ -321,25 +328,25 @@ export default function Navbar() {
 
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 Men
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 Women
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 Children
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 Brands
               </a>
@@ -398,5 +405,174 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+
+      {/* Mobile Menu Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            onClick={() => {
+              console.log("Backdrop clicked! Setting isMobileMenuOpen to false.");
+              setIsMobileMenuOpen(false);
+            }}
+            className="fixed inset-0 bg-fern/40"
+          />
+
+          {/* Drawer Panel */}
+          <div className="relative w-full max-w-xs bg-[#F4E6C7] text-fern flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
+              <span className="font-serif text-3xl font-bold tracking-[0.08em] text-fern select-none">
+                facile
+              </span>
+              <button
+                onClick={() => {
+                  console.log("Close button clicked! Setting isMobileMenuOpen to false.");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="p-2 -mr-2 rounded-full text-fern hover:bg-natural/10 transition-colors focus:outline-none cursor-pointer"
+                aria-label="Close Menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <nav className="flex-1 space-y-1 overflow-y-auto pr-2 no-scrollbar text-xs font-bold text-fern">
+              <Link 
+                href="/" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸ÂÂ </span> Home
+              </Link>
+              <a 
+                href="#best-sellers" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€ºÂ</span> Shop
+              </a>
+              <a 
+                href="#categories" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€œâ€š</span> Categories
+              </a>
+              <a 
+                href="#best-sellers" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã¢Å“Â¨</span> New Arrivals
+              </a>
+              <a 
+                href="#special-offer" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€Â¥</span> Trending
+              </a>
+              <a 
+                href="#favorites" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã¢ÂÂ¤Ã¯Â¸Â</span> Wishlist
+              </a>
+              <button 
+                onClick={() => { 
+                  setIsMobileMenuOpen(false); 
+                  setIsCartOpen(true); 
+                }}
+                className="w-full flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all text-left font-bold cursor-pointer"
+              >
+                <span>Ã°Å¸â€ºâ€™</span> Cart
+              </button>
+
+              <hr className="border-t border-natural/20 my-3" />
+
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€˜Â¤</span> My Profile
+              </Link>
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€œÂ¦</span> My Orders
+              </Link>
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€œÂ</span> Addresses
+              </Link>
+
+              <hr className="border-t border-natural/20 my-3" />
+
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã¢â€žÂ¹Ã¯Â¸Â</span> About Us
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã°Å¸â€œÅ¾</span> Contact
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>Ã¢Ââ€œ</span> Help
+              </a>
+            </nav>
+
+            {/* User Auth Info at bottom */}
+            <div className="border-t border-natural/20 pt-4 mt-auto">
+              {user ? (
+                <div className="flex items-center justify-between text-xs">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <p className="font-bold truncate text-fern">{user.name}</p>
+                    <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-1.5 px-3 bg-apricot/10 hover:bg-apricot/20 text-apricot rounded-xl text-xs font-bold transition-all cursor-pointer flex-shrink-0"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2 px-3 bg-fern hover:bg-fern/90 text-warm-ivory rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
+
+
