@@ -99,17 +99,18 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  // Auth Guard
+  // Auth Guard (Bypassed redirect to enable static preview on account & profile pages)
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
-    } else if (user) {
+    if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
+    } else {
+      setProfileName("Guest User");
+      setProfileEmail("guest@example.com");
     }
-  }, [user, isLoading, router]);
+  }, [user]);
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-warm-ivory">
         <div className="flex flex-col items-center gap-3">
@@ -157,6 +158,19 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-warm-ivory/40 py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in">
       <div className="max-w-6xl mx-auto">
+        
+        {/* Guest Warning Banner */}
+        {!user && (
+          <div className="mb-6 p-4 bg-apricot/10 border border-apricot/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-semibold text-fern">
+            <p>You are currently viewing this page as a guest. Register or sign in to view your real order history, saved addresses, and profile settings.</p>
+            <button 
+              onClick={() => router.push("/login")}
+              className="px-4 py-2 bg-fern hover:bg-apricot text-warm-ivory rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
+            >
+              Sign In / Sign Up
+            </button>
+          </div>
+        )}
         
         {/* Page Title */}
         <div className="mb-8">
