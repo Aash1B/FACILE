@@ -21,6 +21,7 @@ export default function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,7 +29,8 @@ export default function Navbar() {
       const target = event.target as Node;
       if (
         dropdownRef.current && !dropdownRef.current.contains(target) &&
-        buttonRef.current && !buttonRef.current.contains(target)
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        mobileButtonRef.current && !mobileButtonRef.current.contains(target)
       ) {
         setIsDropdownOpen(false);
       }
@@ -137,6 +139,14 @@ export default function Navbar() {
                         <p className="font-bold truncate">{user.name}</p>
                         <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
                       </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="w-full py-1.5 px-2 hover:bg-warm-ivory text-fern rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left mb-1 flex"
+                      >
+                        <User size={13} />
+                        My Account
+                      </Link>
                       <button
                         onClick={() => {
                           logout();
@@ -153,10 +163,13 @@ export default function Navbar() {
               ) : (
                 <Link 
                   href="/login" 
-                  className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 group block"
+                  className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                   aria-label="Profile"
                 >
                   <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                  <span className="hidden lg:inline text-xs font-bold text-fern">
+                    Guest
+                  </span>
                 </Link>
               )}
             </div>
@@ -168,8 +181,8 @@ export default function Navbar() {
       <div className="bg-warm-ivory/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           
-          {/* Scrollable Pills & Search Row */}
-          <div className="flex items-center justify-between gap-4 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth py-2">
+          {/* Desktop Layout: Single Row */}
+          <div className="hidden md:flex items-center justify-between gap-4 py-2">
             
             {/* Left Pills */}
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -248,6 +261,85 @@ export default function Navbar() {
               <a 
                 href="#best-sellers" 
                 className="px-4 py-1.5 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+              >
+                Brands
+              </a>
+            </div>
+
+          </div>
+
+          {/* Mobile Layout: Stacked (Search Bar first, then horizontally scrollable Category Pills) */}
+          <div className="flex flex-col md:hidden py-1.5">
+            {/* Search Input (Full Width - Not Pushed/Not Scrollable) */}
+            <div className="relative w-full mb-1.5 px-1">
+              <input
+                type="text"
+                placeholder="Search brands, ceramics, slow fashion..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8.5 pl-4 pr-10 bg-white border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
+              />
+              <button 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-natural hover:text-fern transition-colors"
+                aria-label="Submit Search"
+              >
+                <Search size={14} />
+              </button>
+            </div>
+
+            {/* Scrollable Category Pills (Not pushed by Search) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth py-1 px-1">
+              {/* All Categories Trigger */}
+              <div className="relative flex-shrink-0">
+                <button 
+                  ref={mobileButtonRef}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-1 px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                >
+                  All Categories
+                  <ChevronDown 
+                    size={12} 
+                    className={`text-natural transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-fern" : ""}`} 
+                  />
+                </button>
+              </div>
+
+              <a 
+                href="#best-sellers" 
+                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+              >
+                New Arrivals
+              </a>
+
+              <a 
+                href="#special-offer" 
+                className="px-3.5 py-1 bg-white border border-apricot/30 text-apricot hover:bg-apricot/10 text-[11px] font-bold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
+              >
+                <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
+                Trending
+              </a>
+
+              <a 
+                href="#best-sellers" 
+                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+              >
+                Men
+              </a>
+              <a 
+                href="#best-sellers" 
+                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+              >
+                Women
+              </a>
+              <a 
+                href="#best-sellers" 
+                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+              >
+                Children
+              </a>
+              <a 
+                href="#best-sellers" 
+                className="px-3.5 py-1 bg-white border border-natural/25 hover:border-fern hover:bg-warm-ivory/30 text-fern text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 Brands
               </a>

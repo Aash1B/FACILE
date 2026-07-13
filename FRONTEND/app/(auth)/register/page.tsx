@@ -52,7 +52,7 @@ export default function RegisterPage() {
     }
 
     let score = 0;
-    
+
     // Check length
     if (pass.length >= 8) score += 1;
     if (pass.length >= 10) score += 1;
@@ -179,7 +179,7 @@ export default function RegisterPage() {
         <InputField
           label="Full Name"
           type="text"
-          placeholder="Aashish Bhart"
+          placeholder="Your Name"
           icon={User}
           value={name}
           onChange={(e) => {
