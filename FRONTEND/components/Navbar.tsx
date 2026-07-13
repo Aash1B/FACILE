@@ -11,7 +11,8 @@ import {
   User, 
   Search, 
   ChevronDown,
-  LogOut
+  LogOut,
+  X
 } from "lucide-react";
 
 export default function Navbar() {
@@ -20,6 +21,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -45,19 +47,24 @@ export default function Navbar() {
   const totalFavorites = favorites.length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-warm-ivory/90 backdrop-blur-md border-b border-natural/25">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-warm-ivory/90 backdrop-blur-md border-b border-natural/25">
       {/* Tier 1: Main Header Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           
           {/* Hamburger Menu (Left) */}
           <div className="flex items-center">
-            <div
-              className="p-2 -ml-2 rounded-full text-fern select-none"
-              aria-label="Menu"
+            <button
+              onClick={() => {
+                console.log("Hamburger button clicked! Setting isMobileMenuOpen to true.");
+                setIsMobileMenuOpen(true);
+              }}
+              className="p-2 -ml-2 rounded-full text-fern select-none hover:bg-natural/10 focus:outline-none cursor-pointer"
+              aria-label="Open Menu"
             >
               <Menu size={22} className="stroke-[2px]" />
-            </div>
+            </button>
           </div>
 
           {/* Logo "facile" (Center) */}
@@ -72,7 +79,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Links & Icons */}
-          <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10">
+          <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto">
             <a 
               href="#testimonials" 
               className="hidden md:inline-block text-fern hover:text-apricot transition-colors duration-200"
@@ -398,5 +405,172 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+
+      {/* Mobile Menu Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            onClick={() => {
+              console.log("Backdrop clicked! Setting isMobileMenuOpen to false.");
+              setIsMobileMenuOpen(false);
+            }}
+            className="fixed inset-0 bg-fern/40"
+          />
+
+          {/* Drawer Panel */}
+          <div className="relative w-full max-w-xs bg-warm-ivory text-fern flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
+              <span className="font-serif text-3xl font-bold tracking-[0.08em] text-fern select-none">
+                facile
+              </span>
+              <button
+                onClick={() => {
+                  console.log("Close button clicked! Setting isMobileMenuOpen to false.");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="p-2 -mr-2 rounded-full text-fern hover:bg-natural/10 transition-colors focus:outline-none cursor-pointer"
+                aria-label="Close Menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <nav className="flex-1 space-y-1 overflow-y-auto pr-2 no-scrollbar text-xs font-bold text-fern">
+              <Link 
+                href="/" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>🏠</span> Home
+              </Link>
+              <a 
+                href="#best-sellers" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>🛍</span> Shop
+              </a>
+              <a 
+                href="#categories" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>📂</span> Categories
+              </a>
+              <a 
+                href="#best-sellers" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>✨</span> New Arrivals
+              </a>
+              <a 
+                href="#special-offer" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>🔥</span> Trending
+              </a>
+              <a 
+                href="#favorites" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>❤️</span> Wishlist
+              </a>
+              <button 
+                onClick={() => { 
+                  setIsMobileMenuOpen(false); 
+                  setIsCartOpen(true); 
+                }}
+                className="w-full flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all text-left font-bold cursor-pointer"
+              >
+                <span>🛒</span> Cart
+              </button>
+
+              <hr className="border-t border-natural/20 my-3" />
+
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>👤</span> My Profile
+              </Link>
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>📦</span> My Orders
+              </Link>
+              <Link 
+                href="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>📍</span> Addresses
+              </Link>
+
+              <hr className="border-t border-natural/20 my-3" />
+
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>ℹ️</span> About Us
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>📞</span> Contact
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+              >
+                <span>❓</span> Help
+              </a>
+            </nav>
+
+            {/* User Auth Info at bottom */}
+            <div className="border-t border-natural/20 pt-4 mt-auto">
+              {user ? (
+                <div className="flex items-center justify-between text-xs">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <p className="font-bold truncate text-fern">{user.name}</p>
+                    <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-1.5 px-3 bg-apricot/10 hover:bg-apricot/20 text-apricot rounded-xl text-xs font-bold transition-all cursor-pointer flex-shrink-0"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2 px-3 bg-fern hover:bg-fern/90 text-warm-ivory rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

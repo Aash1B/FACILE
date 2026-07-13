@@ -95,20 +95,22 @@ export default function Footer() {
             </p>
           </div>
 
-          <form onSubmit={handleSubscribe} className="w-full lg:max-w-md relative flex items-center">
-            <div className="w-full relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-natural" size={16} />
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full h-11.5 pl-11 pr-32 bg-white/10 border border-natural/35 focus:border-apricot focus:ring-1 focus:ring-apricot text-xs text-warm-ivory rounded-full shadow-inner transition-all duration-200 placeholder:text-natural focus:outline-none font-semibold"
-              />
+          <form onSubmit={handleSubscribe} className="w-full lg:max-w-md">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:relative w-full">
+              <div className="relative flex-1">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-natural" size={16} />
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full h-11.5 pl-11 pr-4 sm:pr-32 bg-white/10 border border-natural/35 focus:border-apricot focus:ring-1 focus:ring-apricot text-xs text-warm-ivory rounded-full shadow-inner transition-all duration-200 placeholder:text-natural focus:outline-none font-semibold"
+                />
+              </div>
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8.5 px-5 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-full flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-97 hover:shadow-md"
+                className="w-full sm:w-auto h-11.5 sm:h-8.5 px-5 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-full flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-97 hover:shadow-md sm:absolute sm:right-1.5 sm:top-1/2 sm:-translate-y-1/2"
               >
                 {subscribed ? "Subscribed!" : "Subscribe"}
                 {!subscribed && <ArrowRight size={12} />}

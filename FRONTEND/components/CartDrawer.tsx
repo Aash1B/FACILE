@@ -36,7 +36,7 @@ export default function CartDrawer() {
         className="absolute inset-0 bg-fern/45 backdrop-blur-xs transition-opacity duration-300"
       />
 
-      <div className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
+      <div className="absolute inset-y-0 right-0 pl-0 sm:pl-10 max-w-full flex">
         {/* Drawer Panel */}
         <div className="w-screen max-w-md bg-warm-ivory text-fern flex flex-col shadow-2xl border-l border-natural/20 animate-slide-in relative">
           
