@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:databases": "docker compose up -d",
-    "dev:frontend": "next dev FRONTEND",
+    "dev:frontend": "next dev FRONTEND --webpack",
     "dev:backend-order": "cd order-cart-service && cross-env JAVA_HOME=\"C:\\Program Files\\Java\\jdk-21.0.11\" mvnw.cmd spring-boot:run",
     "dev:backend-payment": "cd payment-notification-service && cross-env JAVA_HOME=\"C:\\Program Files\\Java\\jdk-21.0.11\" mvnw.cmd spring-boot:run",
     "dev:backend-auth": "cd auth-user-service && cross-env JAVA_HOME=\"C:\\Program Files\\Java\\jdk-21.0.11\" mvnw.cmd spring-boot:run",
