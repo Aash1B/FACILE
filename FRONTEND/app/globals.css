@@ -7,10 +7,16 @@
   --font-mono: var(--font-geist-mono);
 
   /* Brand Colors */
-  --color-fern:       #424530;   /* Fern: Primary text, headers, dark buttons */
-  --color-warm-ivory: #FFEFCD;   /* Warm Ivory: Primary background, light surfaces */
-  --color-apricot:    #E09132;   /* Apricot: Accents, highlights, call-to-actions */
-  --color-natural:    #A58E74;   /* Natural: Secondary text, borders, neutral elements */
+  --color-fern: #424530;
+  /* Fern: Primary text, headers, dark buttons */
+  --color-warm-ivory: #FFEFCD;
+  /* Warm Ivory: Primary background, light surfaces */
+  --color-apricot: #E09132;
+  /* Apricot: Accents, highlights, call-to-actions */
+  --color-natural: #F4E6C7;
+  /* Natural: Secondary text, borders, neutral elements */
+  --color-sand: #F4E6C7;
+
 
   /* Background / Foreground */
   --color-background: var(--color-warm-ivory);
@@ -18,22 +24,35 @@
 
   /* Animations */
   --animate-slide-in: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-fade-in:  fade-in  0.4s ease both;
+  --animate-fade-in: fade-in 0.4s ease both;
 }
 
 /* ─── Keyframes ─────────────────────────────────────────────────── */
 @keyframes slide-in {
-  from { opacity: 0; transform: translateX(24px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ─── Base ──────────────────────────────────────────────────────── */
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -44,5 +63,22 @@ body {
 }
 
 /* Hide scrollbar for overflow-x pill rows */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fallback utilities for custom azul color */
+.bg-azul {
+  background-color: #2B374A !important;
+}
+.text-azul {
+  color: #2B374A !important;
+}
+.border-azul {
+  border-color: #2B374A !important;
+}
