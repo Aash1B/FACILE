@@ -14,11 +14,11 @@ public class PaymentService {
         this.razorpayClient = razorpayClient;
     }
 
-    public Order createOrder(int amount) throws Exception {
+    public Order createOrder(double amount) throws Exception {
 
         JSONObject orderRequest = new JSONObject();
 
-        orderRequest.put("amount", amount * 100); // Convert ₹ to paise
+        orderRequest.put("amount", Math.round(amount * 100)); // Convert ₹ to paise and round to nearest integer
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "receipt_" + System.currentTimeMillis());
 

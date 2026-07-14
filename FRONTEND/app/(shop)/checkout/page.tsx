@@ -47,6 +47,27 @@ const formatPrice = (amount: number) => {
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
+const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "http://localhost:8084";
+const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TDPsCfDkwT5N6j";
+
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.hasOwnProperty("Razorpay")) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
@@ -74,6 +95,7 @@ export default function CheckoutPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
   const [checkoutItems, setCheckoutItems] = useState(cart);
@@ -141,14 +163,91 @@ export default function CheckoutPage() {
     setShowPaymentModal(true);
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
+    if (selectedPaymentMethod === "cod") {
+      setIsProcessing(true);
+      setPaymentError(null);
+      // Simulate payment transaction delay
+      setTimeout(() => {
+        setIsProcessing(false);
+        setPaymentSuccess(true);
+        clearCart();
+      }, 2000);
+      return;
+    }
+
     setIsProcessing(true);
-    // Simulate payment transaction delay
-    setTimeout(() => {
+    setPaymentError(null);
+
+    try {
+      // 1. Call Backend to create order
+      const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create Razorpay order (Status: ${response.status})`);
+      }
+
+      const orderData = await response.json();
+      if (!orderData || !orderData.id) {
+        throw new Error("Invalid order data received from the payment server.");
+      }
+
+      // 2. Dynamically load Razorpay SDK script
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        throw new Error("Failed to load Razorpay SDK. Please check your internet connection.");
+      }
+
+      // 3. Open Razorpay checkout popup
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: orderData.amount, // in paise
+        currency: orderData.currency || "INR",
+        name: "FACILE",
+        description: `Payment for order of ${checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items`,
+        image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
+        order_id: orderData.id,
+        handler: function (paymentResponse: any) {
+          // Payment successful!
+          setIsProcessing(false);
+          setPaymentSuccess(true);
+          clearCart();
+        },
+        prefill: {
+          name: activeAddress?.name || "",
+          contact: activeAddress?.phone || "",
+          email: user?.email || "",
+        },
+        theme: {
+          color: "#424530", // Brand green (fern)
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const razorpayInstance = new (window as any).Razorpay(options);
+      
+      // If payment fails on checkout
+      razorpayInstance.on("payment.failed", function (res: any) {
+        setPaymentError(res.error.description || "Payment failed. Please try again.");
+        setIsProcessing(false);
+      });
+
+      razorpayInstance.open();
+
+    } catch (error: any) {
+      console.error("Razorpay integration error:", error);
+      setPaymentError(error.message || "An unexpected error occurred while processing payment.");
       setIsProcessing(false);
-      setPaymentSuccess(true);
-      clearCart();
-    }, 2000);
+    }
   };
 
   // Get active address details
@@ -342,8 +441,8 @@ export default function CheckoutPage() {
                       key={addr.id}
                       onClick={() => setSelectedAddressId(addr.id)}
                       className={`border p-4.5 rounded-2xl cursor-pointer relative transition-all duration-300 flex flex-col justify-between ${isSelected
-                        ? "border-apricot bg-warm-ivory shadow-md"
-                        : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory shadow-xs"
+                        ? "border-apricot bg-warm-ivory shadow-md text-black"
+                        : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory shadow-xs text-fern/90"
                         }`}
                     >
                       <div className="space-y-2">
@@ -358,14 +457,14 @@ export default function CheckoutPage() {
                             </div>
                           )}
                         </div>
-                        <div className="text-xs font-semibold text-fern space-y-0.5">
+                        <div className={`text-xs font-semibold space-y-0.5 ${isSelected ? "text-black" : "text-fern/90"}`}>
                           <p className="font-bold">{addr.name}</p>
-                          <p className="text-natural/90 font-medium leading-relaxed">{addr.street}</p>
-                          <p className="text-natural/90 font-medium leading-relaxed">{addr.city} - {addr.zip}</p>
+                          <p className="font-medium leading-relaxed">{addr.street}</p>
+                          <p className="font-medium leading-relaxed">{addr.city} - {addr.zip}</p>
                         </div>
                       </div>
 
-                      <div className="border-t border-natural/10 mt-3 pt-2 text-[10px] font-bold text-natural uppercase">
+                      <div className={`border-t mt-3 pt-2 text-[10px] font-bold uppercase ${isSelected ? "border-black/10 text-black" : "border-fern/10 text-fern/80"}`}>
                         Phone: {addr.phone}
                       </div>
                     </div>
@@ -398,8 +497,8 @@ export default function CheckoutPage() {
                           key={d.value}
                           onClick={() => setSelectedDate(d.value)}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all ${isSelected
-                            ? "border-apricot bg-warm-ivory font-bold shadow-xs text-fern"
-                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-natural"
+                            ? "border-apricot bg-warm-ivory font-bold shadow-xs text-black"
+                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-fern/80"
                             }`}
                         >
                           <p className="text-[10px] font-bold uppercase tracking-wider opacity-85 leading-none">{d.label}</p>
@@ -429,8 +528,8 @@ export default function CheckoutPage() {
                           key={slot}
                           onClick={() => setSelectedTimeSlot(slot)}
                           className={`p-3 border rounded-xl text-center text-xs cursor-pointer transition-all font-semibold ${isSelected
-                            ? "border-apricot bg-warm-ivory font-bold shadow-xs text-fern"
-                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-natural"
+                            ? "border-apricot bg-warm-ivory font-bold shadow-xs text-black"
+                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-fern/80"
                             }`}
                         >
                           {slot}
@@ -572,11 +671,16 @@ export default function CheckoutPage() {
               </button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex justify-center items-center gap-6 opacity-65 grayscale hover:grayscale-0 transition-all duration-300 py-2">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 object-contain" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" className="h-3 object-contain" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-4 object-contain" />
+            {/* Powered By Razorpay */}
+            <div className="flex justify-center items-center gap-2 opacity-95 py-2 text-[10px] font-bold text-natural uppercase tracking-wider select-none">
+              <span>Powered by</span>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center shadow-xs">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" 
+                  alt="Razorpay" 
+                  className="h-4 object-contain"
+                />
+              </div>
             </div>
 
           </div>
@@ -596,13 +700,16 @@ export default function CheckoutPage() {
           />
 
           {/* Modal Card */}
-          <div className="relative bg-natural border border-natural/25 rounded-[32px] max-w-md w-full p-6 shadow-2xl z-10 animate-fade-in text-fern">
+          <div className="relative border border-natural/20 rounded-[32px] max-w-md w-full p-6 shadow-2xl z-10 animate-fade-in text-natural" style={{ backgroundColor: '#2B374A' }}>
 
             {/* Close Button */}
             {!isProcessing && (
               <button
-                onClick={() => setShowPaymentModal(false)}
-                className="absolute top-4 right-4 text-natural hover:text-fern transition-colors p-1 cursor-pointer"
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setPaymentError(null);
+                }}
+                className="absolute top-4 right-4 text-natural hover:text-warm-ivory transition-colors p-1 cursor-pointer"
                 aria-label="Close Payment Modal"
               >
                 ✕
@@ -636,8 +743,8 @@ export default function CheckoutPage() {
                   <label
                     onClick={() => setSelectedPaymentMethod("upi")}
                     className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "upi"
-                      ? "border-fern bg-fern/5 font-bold"
-                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60"
+                      ? "border-apricot bg-warm-ivory font-bold shadow-xs text-black"
+                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60 text-fern/90"
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -649,7 +756,7 @@ export default function CheckoutPage() {
                       />
                       <div className="text-left">
                         <p className="text-xs font-bold">UPI / Instant Pay</p>
-                        <p className="text-[9px] text-natural font-medium">Google Pay, PhonePe, Paytm, BHIM</p>
+                        <p className={`text-[9px] font-medium ${selectedPaymentMethod === "upi" ? "text-black/75" : "text-fern/70"}`}>Google Pay, PhonePe, Paytm, BHIM</p>
                       </div>
                     </div>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-3.5 object-contain" />
@@ -659,8 +766,8 @@ export default function CheckoutPage() {
                   <label
                     onClick={() => setSelectedPaymentMethod("card")}
                     className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "card"
-                      ? "border-fern bg-fern/5 font-bold"
-                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60"
+                      ? "border-apricot bg-warm-ivory font-bold shadow-xs text-black"
+                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60 text-fern/90"
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -672,7 +779,7 @@ export default function CheckoutPage() {
                       />
                       <div className="text-left">
                         <p className="text-xs font-bold">Credit or Debit Card</p>
-                        <p className="text-[9px] text-natural font-medium">Visa, Mastercard, RuPay, Maestro</p>
+                        <p className={`text-[9px] font-medium ${selectedPaymentMethod === "card" ? "text-black/75" : "text-fern/70"}`}>Visa, Mastercard, RuPay, Maestro</p>
                       </div>
                     </div>
                     <div className="flex gap-1.5">
@@ -685,8 +792,8 @@ export default function CheckoutPage() {
                   <label
                     onClick={() => setSelectedPaymentMethod("cod")}
                     className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "cod"
-                      ? "border-fern bg-fern/5 font-bold"
-                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60"
+                      ? "border-apricot bg-warm-ivory font-bold shadow-xs text-black"
+                      : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60 text-fern/90"
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -698,7 +805,7 @@ export default function CheckoutPage() {
                       />
                       <div className="text-left">
                         <p className="text-xs font-bold">Cash on Delivery (COD)</p>
-                        <p className="text-[9px] text-natural font-medium">Pay on delivery with Cash, Card or UPI</p>
+                        <p className={`text-[9px] font-medium ${selectedPaymentMethod === "cod" ? "text-black/75" : "text-fern/70"}`}>Pay on delivery with Cash, Card or UPI</p>
                       </div>
                     </div>
                   </label>
@@ -706,50 +813,23 @@ export default function CheckoutPage() {
 
                 {/* Sub-inputs based on selection */}
                 {selectedPaymentMethod === "upi" && (
-                  <div className="p-3.5 bg-fern/5 border border-natural/20 rounded-xl space-y-2 animate-fade-in text-xs">
-                    <label className="text-[10px] font-bold text-natural uppercase tracking-wider block">Enter UPI ID</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="yourname@okhdfcbank"
-                        className="flex-1 h-9 px-3 bg-warm-ivory border border-natural/25 focus:border-fern rounded-xl font-medium focus:outline-none"
-                      />
-                      <button className="h-9 px-3.5 bg-fern text-natural text-[10px] font-bold tracking-wider rounded-xl uppercase cursor-pointer">
-                        Verify
-                      </button>
-                    </div>
+                  <div className="p-3.5 bg-warm-ivory border border-apricot/30 rounded-xl space-y-2 animate-fade-in text-xs text-center text-black font-bold shadow-xs">
+                    <p>Secure payment via Razorpay.</p>
+                    <p className="text-[10px] text-black/75 font-semibold">You can pay using Google Pay, PhonePe, Paytm, or BHIM in the next step.</p>
                   </div>
                 )}
 
                 {selectedPaymentMethod === "card" && (
-                  <div className="p-3.5 bg-fern/5 border border-natural/20 rounded-xl space-y-3.5 animate-fade-in text-xs">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-natural uppercase tracking-wider block">Card Number</label>
-                      <input
-                        type="text"
-                        placeholder="4532 8490 2810 4930"
-                        className="w-full h-8.5 px-3 bg-warm-ivory border border-natural/25 focus:border-fern rounded-xl font-medium focus:outline-none"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-natural uppercase tracking-wider block">Expiry Date</label>
-                        <input
-                          type="text"
-                          placeholder="MM/YY"
-                          className="w-full h-8.5 px-3 bg-warm-ivory border border-natural/25 focus:border-fern rounded-xl font-medium focus:outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-natural uppercase tracking-wider block">CVV</label>
-                        <input
-                          type="password"
-                          placeholder="•••"
-                          maxLength={3}
-                          className="w-full h-8.5 px-3 bg-warm-ivory border border-natural/25 focus:border-fern rounded-xl font-medium focus:outline-none"
-                        />
-                      </div>
-                    </div>
+                  <div className="p-3.5 bg-warm-ivory border border-apricot/30 rounded-xl space-y-2 animate-fade-in text-xs text-center text-black font-bold shadow-xs">
+                    <p>Secure payment via Razorpay.</p>
+                    <p className="text-[10px] text-black/75 font-semibold">Supports Visa, Mastercard, RuPay, and Maestro in the next step.</p>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {paymentError && (
+                  <div className="p-3 bg-red-100 border border-red-200 rounded-xl text-red-700 text-xs font-semibold animate-fade-in animate-shake">
+                    ⚠️ {paymentError}
                   </div>
                 )}
 
