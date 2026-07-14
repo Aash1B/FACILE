@@ -8,12 +8,12 @@
 
   /* Brand Colors */
   --color-fern:       #424530;   /* Fern: Primary text, headers, dark buttons */
-  --color-warm-ivory: #F4E6C7;   /* Warm Ivory: Primary background, light surfaces */
-  --color-apricot:    #E09132;   /* Apricot: Accents, highlights, call-to-actions */
-  --color-natural:    #F4E6C7;   /* Natural: Secondary text, borders, neutral elements */
-  --color-sand:       #F4E6C7;
-  --color-azul:       #2B374A;   /* Azul: Deep navy, alternate primary */
-  --color-custom-bg:  #F4E6C7;   /* Custom Background: Global page background */
+  --color-warm-ivory: #FAF3E3;   /* Warm Ivory: Primary background, light surfaces */
+  --color-apricot:    #E8437F;   /* Apricot: Accents, highlights, call-to-actions */
+  --color-natural:    #FAF3E3;   /* Natural: Secondary text, borders, neutral elements */
+  --color-sand:       #FAF3E3;
+  --color-azul:       #DDE0F0;   /* Azul: Very light blue-grey alternative */
+  --color-custom-bg:  #FAF3E3;   /* Custom Background: Global page background */
 
   /* Background / Foreground */
   --color-background: var(--color-custom-bg);
@@ -71,11 +71,99 @@ body {
 
 /* Fallback utilities for custom azul color */
 .bg-azul {
-  background-color: #2B374A !important;
+  background-color: #DDE0F0 !important;
 }
 .text-azul {
-  color: #2B374A !important;
+  color: #DDE0F0 !important;
 }
 .border-azul {
-  border-color: #2B374A !important;
+  border-color: #DDE0F0 !important;
 }
+
+/* Card container overrides for #DDE0F0 cards to ensure dark text readability */
+[style*="background-color: #DDE0F0"],
+[style*="background-color: rgb(221, 224, 240)"],
+[style*="background-color: #dde0f0"] {
+  color: #4A5568 !important;
+}
+
+[style*="background-color: #DDE0F0"] h2,
+[style*="background-color: #DDE0F0"] h3,
+[style*="background-color: #DDE0F0"] label,
+[style*="background-color: #DDE0F0"] p,
+[style*="background-color: #DDE0F0"] span,
+[style*="background-color: #DDE0F0"] input::placeholder,
+[style*="background-color: rgb(221, 224, 240)"] h2,
+[style*="background-color: rgb(221, 224, 240)"] h3,
+[style*="background-color: rgb(221, 224, 240)"] label,
+[style*="background-color: rgb(221, 224, 240)"] p,
+[style*="background-color: rgb(221, 224, 240)"] span,
+[style*="background-color: rgb(221, 224, 240)"] input::placeholder,
+[style*="background-color: #dde0f0"] h2,
+[style*="background-color: #dde0f0"] h3,
+[style*="background-color: #dde0f0"] label,
+[style*="background-color: #dde0f0"] p,
+[style*="background-color: #dde0f0"] span,
+[style*="background-color: #dde0f0"] input::placeholder {
+  color: #4A5568 !important;
+}
+
+/* Explicit text-fern overrides inside #DDE0F0 card containers */
+[style*="background-color: #DDE0F0"] .text-fern,
+[style*="background-color: #DDE0F0"] .text-fern\/90,
+[style*="background-color: #DDE0F0"] .text-fern\/80,
+[style*="background-color: rgb(221, 224, 240)"] .text-fern,
+[style*="background-color: rgb(221, 224, 240)"] .text-fern\/90,
+[style*="background-color: rgb(221, 224, 240)"] .text-fern\/80,
+[style*="background-color: #dde0f0"] .text-fern,
+[style*="background-color: #dde0f0"] .text-fern\/90,
+[style*="background-color: #dde0f0"] .text-fern\/80 {
+  color: #4A5568 !important;
+}
+
+/* Retain high contrast light text for dark green/apricot buttons and accent highlights */
+[style*="background-color: #DDE0F0"] button.bg-fern,
+[style*="background-color: #DDE0F0"] .bg-fern,
+[style*="background-color: #DDE0F0"] button.bg-apricot,
+[style*="background-color: #DDE0F0"] .bg-apricot,
+[style*="background-color: rgb(221, 224, 240)"] button.bg-fern,
+[style*="background-color: rgb(221, 224, 240)"] .bg-fern,
+[style*="background-color: rgb(221, 224, 240)"] button.bg-apricot,
+[style*="background-color: rgb(221, 224, 240)"] .bg-apricot,
+[style*="background-color: #dde0f0"] button.bg-fern,
+[style*="background-color: #dde0f0"] .bg-fern,
+[style*="background-color: #dde0f0"] button.bg-apricot,
+[style*="background-color: #dde0f0"] .bg-apricot {
+  color: #FFFFFF !important;
+}
+
+/* Add custom styling for the order summary items divide line */
+[style*="background-color: #DDE0F0"] .divide-natural\/15,
+[style*="background-color: rgb(221, 224, 240)"] .divide-natural\/15,
+[style*="background-color: #dde0f0"] .divide-natural\/15 {
+  border-color: rgba(66, 69, 48, 0.15) !important;
+}
+
+/* Custom background color for action buttons with hover state */
+.bg-proceed-btn {
+  background-color: #4A5568 !important;
+  color: #FFFFFF !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.bg-proceed-btn:hover {
+  background-color: #3B4455 !important; /* Slightly darker shade on hover for feedback */
+}
+
+/* Custom text utility class to set slate-grey color with high contrast priority */
+.text-slate-grey,
+h1.text-slate-grey,
+h2.text-slate-grey,
+h3.text-slate-grey,
+span.text-slate-grey,
+[style*="background-color"] .text-slate-grey,
+[style*="background-color"] h2.text-slate-grey,
+[style*="background-color"] span.text-slate-grey {
+  color: #4A5568 !important;
+}
+
