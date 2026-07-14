@@ -59,6 +59,87 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Authentication palette — new cool blue-green scheme */
+/* NOTE: Tailwind @theme inline bakes token values at build time, so runtime
+   CSS-variable overrides don't affect generated utility classes.
+   We use explicit CSS rules here to force the correct colors. */
+.auth-palette {
+  background-color: #faf3e3 !important;
+  --color-apricot: #738290 !important;
+}
+
+/* Right-side form panel background */
+.auth-palette > div:last-child {
+  background-color: #faf3e3;
+}
+
+/* Input & password field boxes — override bg-warm-ivory/70 and focus:bg-warm-ivory */
+.auth-palette input {
+  background-color: #F0F1FC !important;
+  color: #4a5568 !important;
+}
+.auth-palette input:focus {
+  background-color: #F0F1FC !important;
+}
+.auth-palette input::placeholder {
+  color: rgba(115, 130, 144, 0.45) !important;
+}
+
+/* Label text on auth pages */
+.auth-palette label {
+  color: #e8a1c4 !important;
+}
+
+/* "Back to store" link and similar secondary text */
+.auth-palette .text-natural {
+  color: #4a5568 !important;
+}
+.auth-palette .text-fern {
+  color: #4a5568 !important;
+}
+
+/* Icon colors inside inputs */
+.auth-palette .text-natural\/70,
+.auth-palette [class*="text-natural"] {
+  color: rgba(115, 130, 144, 0.7) !important;
+}
+
+/* Divider border */
+.auth-palette .border-t {
+  border-color: rgba(115, 130, 144, 0.18) !important;
+}
+
+/* Divider "or continue with" span bg */
+.auth-palette span[class*="bg-warm"] {
+  background-color: #faf3e3 !important;
+}
+
+/* Explicit utility classes for the auth palette extra colors */
+.auth-palette .bg-auth-sage    { background-color: #e4f0d0; }
+.auth-palette .bg-auth-green   { background-color: #738290; }
+.auth-palette .text-auth-green { color: #738290; }
+.auth-palette .border-auth-green { border-color: #738290; }
+
+/* Force-override any baked apricot/orange utilities to #738290 on auth pages */
+.auth-palette .text-apricot,
+.auth-palette [class*="text-apricot"] {
+  color: #738290 !important;
+}
+.auth-palette .bg-apricot,
+.auth-palette [class*="bg-apricot"] {
+  background-color: #738290 !important;
+}
+.auth-palette .border-apricot,
+.auth-palette [class*="border-apricot"] {
+  border-color: #738290 !important;
+}
+.auth-palette input.border-apricot:focus,
+.auth-palette input[class*="border-apricot"]:focus {
+  border-color: #738290 !important;
+  box-shadow: 0 0 0 2px rgba(115, 130, 144, 0.2) !important;
+}
+
+
 /* Hide scrollbar for overflow-x pill rows */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

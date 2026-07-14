@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 export default function AuthLayout({
@@ -8,43 +9,56 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
+
   return (
-    <div className="min-h-screen flex bg-warm-ivory font-sans text-fern">
+    <div
+      className="auth-palette min-h-screen flex font-sans"
+      style={{ backgroundColor: '#faf3e3', color: '#4a5568' }}
+    >
       {/* Split Pane: Left Side (Banner, Desktop only) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-fern items-end p-16 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative items-end p-16 overflow-hidden" style={{ backgroundColor: '#ced2ee' }}>
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-10000 ease-out hover:scale-105"
-          style={{ backgroundImage: "url('/auth_banner.png')" }}
+          style={{ backgroundImage: 'none', backgroundColor: '#ced2ee' }}
         />
         
-        {/* Gradient Overlay matching brand 'fern' color */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#424530]/95 via-[#424530]/60 to-[#424530]/10 pointer-events-none" />
+        {/* Decorative soft shapes for visual interest */}
+        <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#a1b5d8' }} />
+        <div className="absolute bottom-16 left-8 w-48 h-48 rounded-full opacity-15 blur-2xl" style={{ backgroundColor: '#738290' }} />
+        <div className="absolute top-1/3 left-1/4 w-32 h-32 rounded-full opacity-10 blur-xl" style={{ backgroundColor: '#e4f0d0' }} />
+
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-[#ced2ee]/80 via-[#ced2ee]/30 to-[#ced2ee]/5 pointer-events-none"
+        />
 
         {/* Floating Accent Sparkles */}
-        <div className="absolute top-12 left-12 flex items-center gap-2.5 text-warm-ivory z-10 select-none">
-          <span className="font-serif text-3xl font-bold tracking-[0.08em] hover:text-apricot transition-colors duration-300">
+        <div className="absolute top-12 left-12 flex items-center gap-2.5 z-10 select-none" style={{ color: '#424530' }}>
+          <span className="font-serif text-3xl font-bold tracking-[0.08em] hover:text-[#E09132] transition-colors duration-300" style={{ color: '#424530' }}>
             facile
           </span>
-          <div className="h-4 w-px bg-warm-ivory/30" />
-          <div className="flex items-center gap-1 text-[10px] tracking-[0.15em] uppercase font-bold text-warm-ivory/80">
-            <Sparkles size={11} className="text-apricot" />
+          <div className="h-4 w-px" style={{ backgroundColor: 'rgba(165,142,116,0.4)' }} />
+          <div className="flex items-center gap-1 text-[10px] tracking-[0.15em] uppercase font-bold" style={{ color: '#A58E74' }}>
+            <Sparkles size={11} style={{ color: '#E09132' }} />
             <span>Slow Living</span>
           </div>
         </div>
 
         {/* Branding Info */}
-        <div className="relative z-10 space-y-4 max-w-md text-warm-ivory">
-          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-apricot">
+        <div className="relative z-10 space-y-4 max-w-md" style={{ color: '#4a5568' }}>
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: '#4a5568' }}>
             Curated Lifestyles
           </p>
           <h2 className="font-serif text-4xl font-semibold leading-[1.2] tracking-tight">
             Designed to feel like home. Crafted to last.
           </h2>
-          <p className="text-xs font-medium leading-relaxed text-warm-ivory/80">
+          <p className="text-xs font-medium leading-relaxed" style={{ color: 'rgba(74,85,104,0.7)' }}>
             Explore our collections of minimal apparel, conscious ceramics, and thoughtfully designed workspace essentials.
           </p>
-          <div className="pt-2 flex items-center gap-2 text-[10px] font-bold tracking-wider text-warm-ivory/50">
+          <div className="pt-2 flex items-center gap-2 text-[10px] font-bold tracking-wider" style={{ color: 'rgba(74,85,104,0.45)' }}>
             <span>© {new Date().getFullYear()} FACILE INC.</span>
             <span>•</span>
             <span>ALL RIGHTS RESERVED</span>
@@ -53,12 +67,17 @@ export default function AuthLayout({
       </div>
 
       {/* Split Pane: Right Side (Form Container) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 md:p-16 relative">
+      <div
+        className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 md:p-16 relative"
+        style={{ backgroundColor: '#faf3e3' }}
+      >
         {/* Top bar with back-to-store link */}
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-natural hover:text-fern transition-colors duration-200 group"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors duration-200 group"
+            style={{ color: '#4a5568' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#4a5568')}
           >
             <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
             Back to store
@@ -67,7 +86,10 @@ export default function AuthLayout({
           <div className="lg:hidden">
             <Link
               href="/"
-              className="font-serif text-2xl font-bold tracking-[0.08em] text-fern hover:text-apricot transition-colors duration-300"
+              className="font-serif text-2xl font-bold tracking-[0.08em] transition-colors duration-300"
+              style={{ color: '#424530' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#E09132')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#424530')}
             >
               facile
             </Link>
@@ -80,7 +102,7 @@ export default function AuthLayout({
         </div>
 
         {/* Footer info (Mobile only) */}
-        <div className="text-center text-[10px] text-natural/80 font-bold uppercase tracking-wider lg:hidden">
+        <div className="text-center text-[10px] font-bold uppercase tracking-wider lg:hidden" style={{ color: 'rgba(74,85,104,0.25)' }}>
           © {new Date().getFullYear()} FACILE INC. • ALL RIGHTS RESERVED
         </div>
       </div>
