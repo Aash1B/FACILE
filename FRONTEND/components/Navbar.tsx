@@ -273,19 +273,13 @@ export default function Navbar() {
                 href="#best-sellers" 
                 className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
-                Men
+                Best Sellers
               </a>
               <a 
-                href="#best-sellers" 
+                href="#special-offer" 
                 className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
-                Women
-              </a>
-              <a 
-                href="#best-sellers" 
-                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
-              >
-                Children
+                Deals
               </a>
               <a 
                 href="#best-sellers" 
