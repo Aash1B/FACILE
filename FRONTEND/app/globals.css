@@ -73,17 +73,43 @@ body {
   background-color: #faf3e3;
 }
 
-/* Input & password field boxes — override bg-warm-ivory/70 and focus:bg-warm-ivory */
-.auth-palette input {
+/* Input, textarea, & select boxes — override backgrounds and focus behaviors */
+.auth-palette input,
+.auth-palette textarea,
+.auth-palette select {
   background-color: #F0F1FC !important;
   color: #4a5568 !important;
 }
-.auth-palette input:focus {
+.auth-palette input:focus,
+.auth-palette textarea:focus,
+.auth-palette select:focus {
   background-color: #F0F1FC !important;
 }
-.auth-palette input::placeholder {
+.auth-palette input::placeholder,
+.auth-palette textarea::placeholder {
   color: rgba(115, 130, 144, 0.45) !important;
 }
+
+/* Accent element translation rules for wrapping other brand pages */
+.auth-palette .bg-apricot {
+  background-color: #c9d7f0 !important;
+  color: #4a5568 !important;
+}
+.auth-palette .hover\:bg-apricot:hover,
+.auth-palette [class*="hover:bg-apricot"]:hover {
+  background-color: #a1b5d8 !important;
+}
+.auth-palette .bg-fern {
+  background-color: #738290 !important;
+  color: #faf3e3 !important;
+}
+.auth-palette .text-apricot {
+  color: #738290 !important;
+}
+.auth-palette .text-fern {
+  color: #4a5568 !important;
+}
+
 
 /* Label text on auth pages */
 .auth-palette label {

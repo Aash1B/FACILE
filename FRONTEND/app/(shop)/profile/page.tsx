@@ -112,10 +112,10 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-warm-ivory">
+      <div className="auth-palette min-h-[60vh] flex items-center justify-center" style={{ backgroundColor: '#faf3e3' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-fern">Loading secure dashboard...</p>
+          <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" style={{ borderColor: '#738290', borderTopColor: 'transparent' }} />
+          <p className="text-sm font-semibold text-fern" style={{ color: '#4a5568' }}>Loading secure dashboard...</p>
         </div>
       </div>
     );
@@ -156,7 +156,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-warm-ivory/40 py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in">
+    <div className="auth-palette min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#faf3e3' }}>
       <div className="max-w-6xl mx-auto">
         
         {/* Guest Warning Banner */}
