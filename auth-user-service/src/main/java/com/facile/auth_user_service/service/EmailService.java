@@ -1,0 +1,131 @@
+package com.facile.auth_user_service.service;
+
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+
+    public void sendOtpEmail(String toEmail, String name, String otpCode) {
+        // ALWAYS log the OTP to terminal/console for developer access
+        System.out.println("\n==================================================");
+        System.out.println("[DEVELOPER OTP] OTP for " + toEmail + " (" + name + ") is: " + otpCode);
+        System.out.println("==================================================\n");
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Verify Your Facile Account");
+
+            String htmlContent = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Verify Your Facile Account</title>
+                    <style>
+                        body {
+                            background-color: #F4E6C7;
+                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            -webkit-font-smoothing: antialiased;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 40px auto;
+                            background-color: #ffffff;
+                            border-radius: 16px;
+                            overflow: hidden;
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                            border: 1px solid rgba(165, 142, 116, 0.15);
+                        }
+                        .header {
+                            background-color: #424530;
+                            padding: 30px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            color: #F4E6C7;
+                            margin: 0;
+                            font-size: 28px;
+                            font-weight: 300;
+                            letter-spacing: 2px;
+                        }
+                        .content {
+                            padding: 40px;
+                            text-align: center;
+                            color: #424530;
+                        }
+                        .content h2 {
+                            font-size: 22px;
+                            margin-top: 0;
+                            font-weight: 600;
+                        }
+                        .content p {
+                            font-size: 15px;
+                            line-height: 1.6;
+                            color: #555555;
+                            margin-bottom: 30px;
+                        }
+                        .otp-box {
+                            background-color: #F4E6C7;
+                            border: 2px dashed #E09132;
+                            border-radius: 12px;
+                            display: inline-block;
+                            padding: 15px 40px;
+                            font-size: 32px;
+                            font-weight: bold;
+                            letter-spacing: 8px;
+                            color: #E09132;
+                            margin: 20px 0;
+                        }
+                        .footer {
+                            background-color: #FAF6EE;
+                            padding: 20px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #A58E74;
+                            border-top: 1px solid rgba(165, 142, 116, 0.1);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>FACILE</h1>
+                        </div>
+                        <div class="content">
+                            <h2>Email Verification Required</h2>
+                            <p>Hello %s,</p>
+                            <p>Thank you for creating an account with Facile. To complete your registration and secure your profile, please enter the One-Time Password (OTP) code below on the verification screen.</p>
+                            <div class="otp-box">%s</div>
+                            <p>This code is valid for <strong>5 minutes</strong>. If you did not request this verification, please ignore this email.</p>
+                        </div>
+                        <div class="footer">
+                            &copy; 2026 Facile Inc. All rights reserved.
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(name, otpCode);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            log.info("OTP Email successfully sent to {}", toEmail);
+
+        } catch (Exception e) {
+            log.warn("Failed to send OTP email to {}. Fallback to terminal logs. Error: {}", toEmail, e.getMessage());
+        }
+    }
+}

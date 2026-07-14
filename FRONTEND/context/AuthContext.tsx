@@ -11,8 +11,10 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string) => Promise<boolean>;
-  register: (name: string, email: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<{ requiresVerification: boolean; email: string }>;
+  verifyOtp: (email: string, otpCode: string) => Promise<boolean>;
+  resendOtp: (email: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -27,51 +29,124 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const savedUser = localStorage.getItem("facile_user");
     if (savedUser) {
       try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error("Failed to parse saved user:", e);
         localStorage.removeItem("facile_user");
+        localStorage.removeItem("facile_token");
+        localStorage.removeItem("facile_refresh_token");
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    
-    // Create mock user session based on email
-    const mockUser: User = {
-      name: email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1),
-      email: email.toLowerCase()
-    };
-    
-    localStorage.setItem("facile_user", JSON.stringify(mockUser));
-    setUser(mockUser);
-    setIsLoading(false);
-    return true;
+    try {
+      const response = await fetch("http://localhost:8082/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Login failed. Please check your credentials.");
+      }
+      const data = await response.json();
+      localStorage.setItem("facile_token", data.accessToken);
+      localStorage.setItem("facile_refresh_token", data.refreshToken);
+      const userProfile: User = { name: data.name, email: data.email };
+      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+      setUser(userProfile);
+      return true;
+    } catch (error: any) {
+      console.error("Login error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (name: string, email: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string): Promise<{ requiresVerification: boolean; email: string }> => {
     setIsLoading(true);
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("http://localhost:8082/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Registration failed.");
+      }
+      const data = await response.json();
+      if (data.requiresVerification) {
+        return { requiresVerification: true, email: data.email };
+      }
+      
+      localStorage.setItem("facile_token", data.accessToken);
+      localStorage.setItem("facile_refresh_token", data.refreshToken);
+      const userProfile: User = { name: data.name, email: data.email };
+      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+      setUser(userProfile);
+      return { requiresVerification: false, email: data.email };
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const mockUser: User = {
-      name,
-      email: email.toLowerCase()
-    };
+  const verifyOtp = async (email: string, otpCode: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:8082/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otpCode }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "OTP Verification failed.");
+      }
+      const data = await response.json();
+      localStorage.setItem("facile_token", data.accessToken);
+      localStorage.setItem("facile_refresh_token", data.refreshToken);
+      const userProfile: User = { name: data.name, email: data.email };
+      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+      setUser(userProfile);
+      return true;
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    localStorage.setItem("facile_user", JSON.stringify(mockUser));
-    setUser(mockUser);
-    setIsLoading(false);
-    return true;
+  const resendOtp = async (email: string): Promise<boolean> => {
+    try {
+      const response = await fetch("http://localhost:8082/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to resend OTP.");
+      }
+      return true;
+    } catch (error: any) {
+      console.error("Resend OTP error:", error);
+      throw error;
+    }
   };
 
   const logout = () => {
     localStorage.removeItem("facile_user");
+    localStorage.removeItem("facile_token");
+    localStorage.removeItem("facile_refresh_token");
     setUser(null);
   };
 
@@ -83,6 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         register,
+        verifyOtp,
+        resendOtp,
         logout,
       }}
     >

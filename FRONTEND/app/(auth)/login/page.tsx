@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   // Form states
   const [email, setEmail] = useState("");
@@ -61,7 +61,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const success = await login(email);
+      const success = await login(email, password);
       if (success) {
         setShowSuccessToast(true);
         // Show success animation for a second, then redirect to home
@@ -69,9 +69,9 @@ export default function LoginPage() {
           router.push("/");
         }, 1500);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setErrors({ email: "Invalid credentials. Please try again." });
+      setErrors({ email: err.message || "Invalid credentials. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -183,9 +183,22 @@ export default function LoginPage() {
         className="w-full h-11 bg-white hover:bg-white/80 border border-natural/25 text-fern font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
         onClick={async () => {
           setIsSubmitting(true);
-          await login("guest@example.com");
-          setShowSuccessToast(true);
-          setTimeout(() => router.push("/"), 1500);
+          try {
+            await login("guest@example.com", "guestpassword123");
+            setShowSuccessToast(true);
+            setTimeout(() => router.push("/"), 1500);
+          } catch (e) {
+            try {
+              // Try registering the guest if they don't exist
+              await register("Guest User", "guest@example.com", "guestpassword123");
+              setShowSuccessToast(true);
+              setTimeout(() => router.push("/"), 1500);
+            } catch (regErr: any) {
+              console.error(regErr);
+              setIsSubmitting(false);
+              setErrors({ email: "Failed to authenticate Guest. " + (regErr.message || "") });
+            }
+          }
         }}
       >
         <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
