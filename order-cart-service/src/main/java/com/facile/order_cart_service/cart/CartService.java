@@ -41,6 +41,13 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
+    public Cart clearCart(String userId) {
+        Cart cart = getCartByUserId(userId);
+        cart.getItems().clear();
+        recalculateTotal(cart);
+        return cartRepository.save(cart);
+    }
+
     private Cart createNewCart(String userId) {
         Cart newCart = new Cart();
         newCart.setUserId(userId);
