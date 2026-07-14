@@ -33,9 +33,10 @@ export const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
           <input
             ref={ref}
             id={inputId}
+            style={{ backgroundColor: '#F0F1FC' }}
             className={`
-              w-full h-11 bg-white/70 border rounded-xl text-sm font-semibold text-fern
-              transition-all duration-300 placeholder:text-natural/50 focus:outline-none focus:bg-white
+              w-full h-11 border rounded-xl text-sm font-semibold text-fern
+              transition-all duration-300 placeholder:text-natural/50 focus:outline-none
               ${Icon ? "pl-11 pr-4" : "px-4"}
               ${
                 error

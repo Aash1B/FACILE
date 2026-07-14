@@ -55,9 +55,10 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
             ref={ref}
             id={inputId}
             type={showPassword ? "text" : "password"}
+            style={{ backgroundColor: '#F0F1FC' }}
             className={`
-              w-full h-11 bg-white/70 border rounded-xl text-sm font-semibold text-fern pl-11 pr-11
-              transition-all duration-300 placeholder:text-natural/50 focus:outline-none focus:bg-white
+              w-full h-11 border rounded-xl text-sm font-semibold text-fern pl-11 pr-11
+              transition-all duration-300 placeholder:text-natural/50 focus:outline-none
               ${
                 error
                   ? "border-apricot focus:border-apricot focus:ring-2 focus:ring-apricot/20"

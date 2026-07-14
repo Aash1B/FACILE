@@ -15,7 +15,7 @@ export default function LoginPage() {
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   // Validation / Error states
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,10 +50,7 @@ export default function LoginPage() {
     const passwordErr = password ? "" : "Password is required";
 
     if (emailErr || passwordErr) {
-      setErrors({
-        email: emailErr,
-        password: passwordErr,
-      });
+      setErrors({ email: emailErr, password: passwordErr });
       return;
     }
 
@@ -64,10 +61,7 @@ export default function LoginPage() {
       const success = await login(email, password);
       if (success) {
         setShowSuccessToast(true);
-        // Show success animation for a second, then redirect to home
-        setTimeout(() => {
-          router.push("/");
-        }, 1500);
+        setTimeout(() => { router.push("/"); }, 1500);
       }
     } catch (err: any) {
       console.error(err);
@@ -81,9 +75,15 @@ export default function LoginPage() {
     <div className="w-full space-y-6 animate-fade-in relative">
       {/* Toast Notification */}
       {showSuccessToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-natural/20 animate-slide-in text-xs font-semibold">
-          <div className="w-5 h-5 rounded-full bg-apricot flex items-center justify-center">
-            <Check size={12} className="text-warm-ivory stroke-[3px]" />
+        <div
+          className="fixed bottom-6 right-6 z-50 py-3.5 px-5 rounded-2xl flex items-center gap-2.5 border animate-slide-in text-xs font-semibold"
+          style={{ backgroundColor: "#4a5568", color: "#faf3e3", borderColor: "#738290" }}
+        >
+          <div
+            className="w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "#738290" }}
+          >
+            <Check size={12} style={{ color: "#4a5568" }} className="stroke-[3px]" />
           </div>
           <span>Signed in successfully! Redirecting... 🛍️</span>
         </div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             required
           />
-          
+
           <div className="flex items-center justify-between pt-1">
             <label className="flex items-center gap-2 text-xs font-bold text-natural hover:text-fern select-none cursor-pointer">
               <input
@@ -142,7 +142,8 @@ export default function LoginPage() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-bold text-apricot hover:text-apricot/85 transition-colors"
+              className="text-xs font-bold transition-colors"
+              style={{ color: '#e8a1c4' }}
             >
               Forgot Password?
             </Link>
@@ -153,10 +154,16 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting || showSuccessToast}
-          className="w-full h-11 bg-fern hover:bg-fern/90 active:scale-98 text-warm-ivory font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-11 active:scale-98 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#c9d7f0', color: '#4a5568' }}
+          onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#a1b5d8'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9d7f0'; }}
         >
           {isSubmitting ? (
-            <div className="w-5 h-5 border-2 border-warm-ivory border-t-transparent rounded-full animate-spin" />
+            <div
+              className="w-5 h-5 border-2 rounded-full animate-spin"
+              style={{ borderColor: '#4a5568', borderTopColor: 'transparent' }}
+            />
           ) : (
             <>
               <LogIn size={15} />
@@ -169,18 +176,24 @@ export default function LoginPage() {
       {/* Divider */}
       <div className="relative flex items-center justify-center py-2">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-natural/20"></div>
+          <div className="w-full border-t" style={{ borderColor: "rgba(74,85,104,0.2)" }}></div>
         </div>
-        <span className="relative px-3 text-[10px] font-bold tracking-widest text-natural uppercase bg-warm-ivory">
+        <span
+          className="relative px-3 text-[10px] font-bold tracking-widest uppercase"
+          style={{ color: "#4a5568", backgroundColor: "#faf3e3" }}
+        >
           Or continue with
         </span>
       </div>
 
-      {/* Social Button */}
+      {/* Social / Guest Button */}
       <button
         type="button"
         disabled={isSubmitting || showSuccessToast}
-        className="w-full h-11 bg-white hover:bg-white/80 border border-natural/25 text-fern font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+        className="w-full h-11 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer border disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ backgroundColor: '#c9d7f0', color: '#4a5568', borderColor: 'rgba(74,85,104,0.25)' }}
+        onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#a1b5d8'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9d7f0'; }}
         onClick={async () => {
           setIsSubmitting(true);
           try {
@@ -189,7 +202,6 @@ export default function LoginPage() {
             setTimeout(() => router.push("/"), 1500);
           } catch (e) {
             try {
-              // Try registering the guest if they don't exist
               await register("Guest User", "guest@example.com", "guestpassword123");
               setShowSuccessToast(true);
               setTimeout(() => router.push("/"), 1500);
