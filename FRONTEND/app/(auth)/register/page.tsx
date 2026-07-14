@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, verifyOtp, resendOtp } = useAuth();
 
   // Form states
   const [name, setName] = useState("");
@@ -18,6 +18,14 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+
+  // OTP Verification states
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Password strength states
   const [passwordStrength, setPasswordStrength] = useState({
@@ -137,20 +145,150 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const success = await register(name, email);
+      const result = await register(name, email, password);
+      if (result.requiresVerification) {
+        setRegisteredEmail(result.email);
+        setIsVerifyingOtp(true);
+      } else {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrors({ email: err.message || "Email is already registered." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length !== 6) {
+      setOtpError("Please enter a valid 6-digit OTP code");
+      return;
+    }
+    setOtpError("");
+    setIsSubmitting(true);
+    try {
+      const success = await verifyOtp(registeredEmail, otpCode);
       if (success) {
         setShowSuccessToast(true);
         setTimeout(() => {
           router.push("/");
         }, 1500);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setErrors({ email: "Email is already registered." });
+      setOtpError(err.message || "OTP verification failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleResendOtp = async () => {
+    setIsResending(true);
+    setResendSuccess(false);
+    setOtpError("");
+    try {
+      await resendOtp(registeredEmail);
+      setResendSuccess(true);
+      setTimeout(() => setResendSuccess(false), 3000);
+    } catch (err: any) {
+      console.error(err);
+      setOtpError(err.message || "Failed to resend code. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  if (isVerifyingOtp) {
+    return (
+      <div className="w-full space-y-5 animate-fade-in relative">
+        {/* Toast Notification */}
+        {showSuccessToast && (
+          <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-natural/20 animate-slide-in text-xs font-semibold">
+            <div className="w-5 h-5 rounded-full bg-apricot flex items-center justify-center">
+              <Check size={12} className="text-warm-ivory stroke-[3px]" />
+            </div>
+            <span>Verification successful! Welcome to Facile... 🛍️</span>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-fern">
+            Verify Your Email
+          </h1>
+          <p className="text-xs text-natural font-medium">
+            Enter the 6-digit code sent to <strong className="text-fern">{registeredEmail}</strong>.
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <InputField
+            label="Verification Code"
+            type="text"
+            placeholder="123456"
+            maxLength={6}
+            value={otpCode}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, ""); // Allow digits only
+              setOtpCode(val);
+              if (otpError) setOtpError("");
+            }}
+            error={otpError}
+            disabled={isSubmitting}
+            required
+          />
+
+          {resendSuccess && (
+            <p className="text-xs text-fern font-semibold animate-fade-in">
+              ✓ A new code has been sent successfully. Check your terminal/mail!
+            </p>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting || showSuccessToast || otpCode.length !== 6}
+            className="w-full h-11 bg-fern hover:bg-fern/90 active:scale-98 text-warm-ivory font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-warm-ivory border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <Check size={15} />
+                Verify Code
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Footer Actions */}
+        <div className="text-center pt-4 border-t border-natural/15 flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={isResending || isSubmitting}
+            onClick={handleResendOtp}
+            className="text-xs font-bold text-apricot hover:text-apricot/85 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isResending ? "Resending Code..." : "Didn't receive the code? Resend Code"}
+          </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => setIsVerifyingOtp(false)}
+            className="text-xs text-natural hover:text-fern transition-colors font-medium cursor-pointer"
+          >
+            ← Back to Register
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-5 animate-fade-in relative">

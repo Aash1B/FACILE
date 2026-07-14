@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -11,9 +11,28 @@ import {
   User, 
   Search, 
   ChevronDown,
+  ChevronRight,
   LogOut,
-  X
+  X,
+  Home,
+  Store,
+  LayoutGrid,
+  Sparkles,
+  TrendingUp,
+  Package,
+  MapPin,
+  Info,
+  Mail,
+  HelpCircle
 } from "lucide-react";
+
+const SUBCATEGORIES: Record<string, string[]> = {
+  "Jewelry & Accessories": ["Necklaces", "Earrings", "Rings", "Bracelets", "Watches"],
+  "Home Decor":            ["Candles", "Wall Art", "Cushions", "Rugs", "Planters"],
+  "Ceramics & Pottery":    ["Mugs", "Bowls", "Vases", "Plates", "Figurines"],
+  "Beauty & Skincare":     ["Face Care", "Body Care", "Hair Care", "Serums", "Natural Oils"],
+  "Bags & Wallets":        ["Tote Bags", "Clutches", "Backpacks", "Wallets", "Sling Bags"],
+};
 
 export default function Navbar() {
   const { cart, favorites, setIsCartOpen } = useCart();
@@ -22,6 +41,8 @@ export default function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNavHeartFilled, setIsNavHeartFilled] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -94,21 +115,22 @@ export default function Navbar() {
             </a>
 
             {/* Favorite Icon */}
-            <a 
-              href="#favorites" 
-              className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 relative group"
+            <button
+              onClick={() => setIsNavHeartFilled(prev => !prev)}
+              className="p-2 rounded-full text-fern hover:bg-natural/10 transition-all duration-200 relative group focus:outline-none cursor-pointer"
               aria-label="Favorites"
             >
               <Heart 
                 size={22} 
-                className={`stroke-[2px] transition-transform group-hover:scale-110 ${totalFavorites > 0 ? 'fill-apricot text-apricot stroke-apricot' : ''}`} 
+                className={`stroke-[2px] transition-transform group-hover:scale-110`}
+                style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
               />
               {totalFavorites > 0 && (
                 <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-apricot text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory animate-bounce">
                   {totalFavorites}
                 </span>
               )}
-            </a>
+            </button>
 
             {/* Shopping Cart Icon */}
             <button
@@ -234,7 +256,7 @@ export default function Navbar() {
                   placeholder="Search brands, ceramics, slow fashion..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
+                  className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-fern/50 focus:outline-none"
                 />
                 <button 
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fern hover:text-apricot transition-colors"
@@ -251,19 +273,13 @@ export default function Navbar() {
                 href="#best-sellers" 
                 className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
-                Men
+                Best Sellers
               </a>
               <a 
-                href="#best-sellers" 
+                href="#special-offer" 
                 className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
-                Women
-              </a>
-              <a 
-                href="#best-sellers" 
-                className="px-4 py-1.5 bg-[#424530] border border-[#424530] hover:bg-[#424530]/90 text-warm-ivory text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
-              >
-                Children
+                Deals
               </a>
               <a 
                 href="#best-sellers" 
@@ -284,7 +300,7 @@ export default function Navbar() {
                 placeholder="Search brands, ceramics, slow fashion..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-natural/60 focus:outline-none"
+                className="w-full h-8.5 pl-4 pr-10 bg-white border border-fern/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs text-fern rounded-full shadow-inner transition-all duration-200 placeholder:text-fern/50 focus:outline-none"
               />
               <button 
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-fern hover:text-apricot transition-colors"
@@ -354,52 +370,55 @@ export default function Navbar() {
 
           </div>
 
-          {/* Dropdown Overlay (sibling to scroll container, parent is relative max-w-7xl) */}
-          <div 
+          {/* Dropdown Overlay — main list + wide sub-panel */}
+          <div
             ref={dropdownRef}
-            className={`absolute left-4 sm:left-6 lg:left-8 top-full mt-1 w-48 bg-white border border-natural/20 rounded-xl shadow-lg transition-all duration-200 z-50 ${
-              isDropdownOpen 
-                ? "opacity-100 visible translate-y-0" 
+            className={`absolute left-4 sm:left-6 lg:left-8 top-full mt-1 flex transition-all duration-200 z-50 ${
+              isDropdownOpen
+                ? "opacity-100 visible translate-y-0"
                 : "opacity-0 invisible -translate-y-2 pointer-events-none"
             }`}
+            onMouseLeave={() => setActiveCategory(null)}
           >
-            <div className="py-1 text-xs text-fern font-medium">
-              <a 
-                href="#categories" 
-                onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 hover:bg-warm-ivory hover:text-apricot transition-colors"
-              >
-                Jewelry & Accessories
-              </a>
-              <a 
-                href="#categories" 
-                onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 hover:bg-warm-ivory hover:text-apricot transition-colors"
-              >
-                Home Decor
-              </a>
-              <a 
-                href="#categories" 
-                onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 hover:bg-warm-ivory hover:text-apricot transition-colors"
-              >
-                Ceramics & Pottery
-              </a>
-              <a 
-                href="#categories" 
-                onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 hover:bg-warm-ivory hover:text-apricot transition-colors"
-              >
-                Beauty & Skincare
-              </a>
-              <a 
-                href="#categories" 
-                onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 hover:bg-warm-ivory hover:text-apricot transition-colors"
-              >
-                Bags & Wallets
-              </a>
+            {/* Left — Main Categories (narrow, original style) */}
+            <div className="w-52 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-fern font-medium flex-shrink-0">
+              {Object.keys(SUBCATEGORIES).map((cat) => (
+                <button
+                  key={cat}
+                  onMouseEnter={() => setActiveCategory(cat)}
+                  onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors text-left ${
+                    activeCategory === cat
+                      ? "bg-warm-ivory text-apricot"
+                      : "hover:bg-warm-ivory hover:text-apricot"
+                  }`}
+                >
+                  <span>{cat}</span>
+                  <ChevronRight size={13} className="opacity-50 flex-shrink-0" />
+                </button>
+              ))}
             </div>
+
+            {/* Right — Sub-categories (wider panel) */}
+            {activeCategory && SUBCATEGORIES[activeCategory] && (
+              <div className="w-72 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-fern font-medium ml-1">
+                <p className="px-4 py-2 text-[10px] font-bold text-apricot uppercase tracking-wider border-b border-natural/10">
+                  {activeCategory}
+                </p>
+                <div className="grid grid-cols-2 gap-x-2 px-3 py-2">
+                  {SUBCATEGORIES[activeCategory].map((sub) => (
+                    <a
+                      key={sub}
+                      href="#categories"
+                      onClick={() => { setIsDropdownOpen(false); setActiveCategory(null); }}
+                      className="block px-2 py-2 hover:bg-warm-ivory hover:text-apricot rounded-lg transition-colors"
+                    >
+                      {sub}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -444,42 +463,42 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸ÂÂ </span> Home
+                <Home size={15} className="text-fern/70 flex-shrink-0" /> Home
               </Link>
               <a 
                 href="#best-sellers" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€ºÂ</span> Shop
+                <Store size={15} className="text-fern/70 flex-shrink-0" /> Shop
               </a>
               <a 
                 href="#categories" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€œâ€š</span> Categories
+                <LayoutGrid size={15} className="text-fern/70 flex-shrink-0" /> Categories
               </a>
               <a 
                 href="#best-sellers" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã¢Å“Â¨</span> New Arrivals
+                <Sparkles size={15} className="text-fern/70 flex-shrink-0" /> New Arrivals
               </a>
               <a 
                 href="#special-offer" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€Â¥</span> Trending
+                <TrendingUp size={15} className="text-fern/70 flex-shrink-0" /> Trending
               </a>
               <a 
                 href="#favorites" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã¢ÂÂ¤Ã¯Â¸Â</span> Wishlist
+                <Heart size={15} className="text-fern/70 flex-shrink-0" /> Wishlist
               </a>
               <button 
                 onClick={() => { 
@@ -488,7 +507,7 @@ export default function Navbar() {
                 }}
                 className="w-full flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all text-left font-bold cursor-pointer"
               >
-                <span>Ã°Å¸â€ºâ€™</span> Cart
+                <ShoppingCart size={15} className="text-fern/70 flex-shrink-0" /> Cart
               </button>
 
               <hr className="border-t border-natural/20 my-3" />
@@ -498,21 +517,21 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€˜Â¤</span> My Profile
+                <User size={15} className="text-fern/70 flex-shrink-0" /> My Profile
               </Link>
               <Link 
                 href="/profile" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€œÂ¦</span> My Orders
+                <Package size={15} className="text-fern/70 flex-shrink-0" /> My Orders
               </Link>
               <Link 
                 href="/profile" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€œÂ</span> Addresses
+                <MapPin size={15} className="text-fern/70 flex-shrink-0" /> Addresses
               </Link>
 
               <hr className="border-t border-natural/20 my-3" />
@@ -522,21 +541,21 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã¢â€žÂ¹Ã¯Â¸Â</span> About Us
+                <Info size={15} className="text-fern/70 flex-shrink-0" /> About Us
               </a>
               <a 
                 href="#testimonials" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã°Å¸â€œÅ¾</span> Contact
+                <Mail size={15} className="text-fern/70 flex-shrink-0" /> Contact
               </a>
               <a 
                 href="#testimonials" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
-                <span>Ã¢Ââ€œ</span> Help
+                <HelpCircle size={15} className="text-fern/70 flex-shrink-0" /> Help
               </a>
             </nav>
 
