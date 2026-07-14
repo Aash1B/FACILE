@@ -175,7 +175,7 @@ export default function Home() {
               Discover The Best Products for You
             </h1>
 
-            <p className="text-xs sm:text-sm text-natural leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+            <p className="text-xs sm:text-sm text-fern leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
               Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
             </p>
 
@@ -259,7 +259,7 @@ export default function Home() {
       </section>
 
       {/* 3. Shop by Categories */}
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">Shop by Categories</h2>
           <a href="#all-categories" className="text-xs font-bold text-natural hover:text-fern transition-colors flex items-center gap-1">
@@ -293,7 +293,7 @@ export default function Home() {
       </section>
 
       {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">Best Selling Products</h2>
           <a href="#all-products" className="text-xs font-bold text-natural hover:text-fern transition-colors flex items-center gap-1">
@@ -319,7 +319,8 @@ export default function Home() {
                 >
                   <Heart
                     size={14}
-                    className={`transition-colors ${isFav ? 'fill-apricot text-apricot stroke-apricot' : ''}`}
+                    className={`transition-colors`}
+                    style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
                   />
                 </button>
 
@@ -371,7 +372,7 @@ export default function Home() {
       </section>
 
       {/* 5. Special Offer Banner */}
-      <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-apricot/10 border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
 
           {/* Subtle Leaf Shadow Graphic overlay */}
@@ -413,7 +414,7 @@ export default function Home() {
       </section>
 
       {/* 6. Customer Testimonials */}
-      <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
           <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">What Our Customers Say</h2>
 
