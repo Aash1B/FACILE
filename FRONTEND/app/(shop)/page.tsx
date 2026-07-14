@@ -140,7 +140,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-[#F4E6C7] text-fern font-sans min-h-screen relative pb-16">
+    <div className="bg-[#FAF3E3] text-fern font-sans min-h-screen relative pb-16">
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -156,13 +156,18 @@ export default function Home() {
           
           {/* Background Image positioned on the right */}
           <img
-            src="/hero_product_composition.jpg"
+            src="/hero_product_composition.png"
             alt="Hero Background"
             className="absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0"
           />
           
-          {/* Overlay to blend the image seamlessly on the left */}
-          <div className="absolute inset-0 bg-gradient-to-r from-warm-ivory via-warm-ivory via-35% sm:via-42% to-transparent sm:to-[52%] z-10 pointer-events-none" />
+          {/* Mobile Overlay: Blend image with #FAF3E3 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF3E3] via-[#FAF3E3] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
+          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
+          <div 
+            className="absolute inset-0 z-10 pointer-events-none hidden sm:block" 
+            style={{ background: 'linear-gradient(to right, #FAF3E3 0%, #FAF3E3 42%, transparent 52%)' }}
+          />
 
           {/* Hero Content Area */}
           <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
@@ -171,18 +176,18 @@ export default function Home() {
               <span>NEW ARRIVALS</span>
             </div>
 
-            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-fern leading-[1.15] tracking-tight">
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#dde0f0] leading-[1.15] tracking-tight">
               Discover The Best Products for You
             </h1>
 
-            <p className="text-xs sm:text-sm text-fern leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+            <p className="text-xs sm:text-sm text-[#dde0f0] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
               Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
               <a
                 href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-fern hover:bg-fern/90 text-white active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] hover:bg-[#dde0f0]/90 text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
               >
                 Shop Now
                 <ArrowRight size={14} />
@@ -203,7 +208,7 @@ export default function Home() {
                 <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
                 <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
               </div>
-              <p className="text-[11px] font-bold text-natural tracking-wide">
+              <p className="text-[11px] font-bold text-[#dde0f0] tracking-wide">
                 Trusted by 10,000+ Happy Customers
               </p>
             </div>
@@ -220,8 +225,8 @@ export default function Home() {
               <Truck size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-fern">Free Shipping</h3>
-              <p className="text-[10px] text-natural font-medium mt-0.5">On orders over $50</p>
+              <h3 className="text-xs font-bold text-[#4a556a]">Free Shipping</h3>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over $50</p>
             </div>
           </div>
 
@@ -230,8 +235,8 @@ export default function Home() {
               <ShieldCheck size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-fern">Secure Payment</h3>
-              <p className="text-[10px] text-natural font-medium mt-0.5">100% secure payment</p>
+              <h3 className="text-xs font-bold text-[#4a556a]">Secure Payment</h3>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">100% secure payment</p>
             </div>
           </div>
 
@@ -240,8 +245,8 @@ export default function Home() {
               <RefreshCw size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-fern">Easy Returns</h3>
-              <p className="text-[10px] text-natural font-medium mt-0.5">30 days return policy</p>
+              <h3 className="text-xs font-bold text-[#4a556a]">Easy Returns</h3>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">30 days return policy</p>
             </div>
           </div>
 
@@ -250,8 +255,8 @@ export default function Home() {
               <Headset size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-fern">24/7 Support</h3>
-              <p className="text-[10px] text-natural font-medium mt-0.5">Dedicated support</p>
+              <h3 className="text-xs font-bold text-[#4a556a]">24/7 Support</h3>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">Dedicated support</p>
             </div>
           </div>
 
@@ -261,8 +266,11 @@ export default function Home() {
       {/* 3. Shop by Categories */}
       <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">Shop by Categories</h2>
-          <a href="#all-categories" className="text-xs font-bold text-natural hover:text-fern transition-colors flex items-center gap-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
+          <a 
+            href="#all-categories" 
+            className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
+          >
             View All Categories
             <ArrowRight size={12} />
           </a>
@@ -283,7 +291,7 @@ export default function Home() {
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
-                <span className="text-xs font-bold text-fern group-hover:text-apricot transition-colors text-center">
+                <span className="text-xs font-bold text-[#4a556a] group-hover:text-apricot transition-colors text-center">
                   {category.label}
                 </span>
               </a>
@@ -295,8 +303,11 @@ export default function Home() {
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">Best Selling Products</h2>
-          <a href="#all-products" className="text-xs font-bold text-natural hover:text-fern transition-colors flex items-center gap-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Best Selling Products</h2>
+          <a 
+            href="#all-products" 
+            className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
+          >
             View All Products
             <ArrowRight size={12} />
           </a>
@@ -336,14 +347,14 @@ export default function Home() {
                 {/* Content */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div className="space-y-1.5">
-                    <h3 className="text-xs font-bold text-fern leading-snug truncate transition-colors duration-200">
+                    <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
                       {product.name}
                     </h3>
 
                     {/* Stars and reviews */}
                     <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
                       <Star size={11} className="text-amber-400 fill-amber-400" />
-                      <span className="text-fern font-bold">{product.rating}</span>
+                      <span className="text-[#4a556a] font-bold">{product.rating}</span>
                       <span>({product.reviews})</span>
                     </div>
                   </div>
@@ -351,13 +362,13 @@ export default function Home() {
                   {/* Price & Action */}
                   <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-extrabold text-fern">${product.price.toFixed(2)}</span>
+                      <span className="text-sm font-extrabold text-[#4a556a]">${product.price.toFixed(2)}</span>
                       <span className="text-[10px] text-natural line-through font-medium">${product.originalPrice.toFixed(2)}</span>
                     </div>
 
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-apricot hover:bg-apricot/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                      className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                     >
                       <ShoppingCart size={12} className="stroke-[2.5px]" />
                       Add to Cart
@@ -385,13 +396,13 @@ export default function Home() {
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-apricot">
                 Special Offer
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-fern leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] leading-tight">
                 Up to 50% Off
               </h2>
-              <p className="text-xs sm:text-sm text-natural max-w-md leading-relaxed font-medium">
+              <p className="text-xs sm:text-sm text-[#dde0f0] max-w-md leading-relaxed font-medium">
                 Limited time offer on selected items. Hurry up and grab the best deals!
               </p>
-              <button className="h-11 px-6 bg-fern hover:bg-fern/90 active:scale-98 text-warm-ivory font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
+              <button className="h-11 px-6 bg-[#dde0f0] hover:bg-[#dde0f0]/90 active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
                 Shop the Sale
                 <ArrowRight size={14} />
               </button>
@@ -416,14 +427,14 @@ export default function Home() {
       {/* 6. Customer Testimonials */}
       <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl sm:text-2xl font-bold text-fern tracking-tight">What Our Customers Say</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 
           {/* Navigation Arrows */}
           <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-fern hover:border-fern hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
+            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
               <ChevronLeft size={16} />
             </button>
-            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-fern hover:border-fern hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
+            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
               <ChevronRight size={16} />
             </button>
           </div>

@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#F4E6C7] text-fern">
+      <body className="min-h-full flex flex-col bg-[#FAF3E3] text-fern">
         <AuthProvider>
           <CartProvider>
             {children}

@@ -37,7 +37,7 @@ export default function AuthLayout({
 
         {/* Floating Accent Sparkles */}
         <div className="absolute top-12 left-12 flex items-center gap-2.5 z-10 select-none" style={{ color: '#424530' }}>
-          <span className="font-serif text-3xl font-bold tracking-[0.08em] hover:text-[#E09132] transition-colors duration-300" style={{ color: '#424530' }}>
+          <span className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a]">
             facile
           </span>
           <div className="h-4 w-px" style={{ backgroundColor: 'rgba(165,142,116,0.4)' }} />
@@ -86,10 +86,7 @@ export default function AuthLayout({
           <div className="lg:hidden">
             <Link
               href="/"
-              className="font-serif text-2xl font-bold tracking-[0.08em] transition-colors duration-300"
-              style={{ color: '#424530' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#E09132')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#424530')}
+              className="font-serif text-2xl font-bold tracking-[0.08em] text-[#4a556a]"
             >
               facile
             </Link>

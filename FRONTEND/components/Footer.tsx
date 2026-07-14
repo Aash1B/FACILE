@@ -126,7 +126,7 @@ export default function Footer() {
 
           {/* Brand Info (Col span 4) */}
           <div className="md:col-span-4 space-y-6">
-            <a href="#" className="font-serif text-3xl font-bold tracking-[0.08em] text-warm-ivory hover:text-apricot transition-colors duration-300">
+            <a href="#" className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a]">
               facile
             </a>
             <p className="text-xs text-warm-ivory/75 leading-relaxed font-semibold max-w-sm">
