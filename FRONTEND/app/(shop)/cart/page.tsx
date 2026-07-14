@@ -20,7 +20,7 @@ export default function CartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/cart/user123")
+    fetch("/api/cart/user123")
       .then((res) => res.json())
       .then((data) => setCart(data))
       .catch((err) => console.error("Failed to fetch cart:", err));

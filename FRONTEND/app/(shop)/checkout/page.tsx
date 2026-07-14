@@ -47,7 +47,7 @@ const formatPrice = (amount: number) => {
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
-const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "http://localhost:8084";
+const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
 const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TDPsCfDkwT5N6j";
 
 const loadRazorpayScript = (): Promise<boolean> => {
