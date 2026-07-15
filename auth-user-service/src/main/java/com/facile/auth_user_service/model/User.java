@@ -51,6 +51,8 @@ public class User implements UserDetails {
     private LocalDateTime resetOtpExpiry;
 
     private String mfaSecret;
+
+    @Builder.Default
     private Boolean mfaEnabled = false;
 
     public boolean isMfaEnabled() {

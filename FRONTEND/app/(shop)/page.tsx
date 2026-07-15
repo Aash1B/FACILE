@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
   Heart,
@@ -79,7 +80,7 @@ const CATEGORIES = [
   { id: "c3", label: "Home & Kitchen", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c4", label: "Beauty", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250", bgColor: "bg-purple-50/55 border border-purple-100/40" },
   { id: "c5", label: "Sports", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250", bgColor: "bg-teal-50/55 border border-teal-100/40" },
-  { id: "c6", label: "Accessories", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
+  { id: "c6", label: "Toys & Baby", image: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
 ];
 
 // Mock Testimonials
@@ -110,6 +111,33 @@ const TESTIMONIALS = [
 export default function Home() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((p: any) => ({
+              id: "bs" + p.id,
+              name: p.title,
+              price: p.sellingPrice,
+              originalPrice: p.mrp,
+              image: p.image,
+              rating: p.rating,
+              reviews: p.reviews
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load products from backend API, using local fallback.", err);
+      }
+    };
+    loadProducts();
+  }, []);
 
   const triggerToast = (message: string) => {
     setToastMessage(message);
@@ -315,7 +343,7 @@ export default function Home() {
 
         {/* 5-Column Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {BEST_SELLERS.map((product) => {
+          {products.map((product) => {
             const isFav = favorites.includes(product.id);
             return (
               <div
@@ -335,45 +363,50 @@ export default function Home() {
                   />
                 </button>
 
-                {/* Product Image */}
-                <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
-                      {product.name}
-                    </h3>
-
-                    {/* Stars and reviews */}
-                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                      <Star size={11} className="text-amber-400 fill-amber-400" />
-                      <span className="text-[#4a556a] font-bold">{product.rating}</span>
-                      <span>({product.reviews})</span>
-                    </div>
+                <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+                  {/* Product Image */}
+                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+                    />
                   </div>
 
-                  {/* Price & Action */}
-                  <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-extrabold text-[#4a556a]">${product.price.toFixed(2)}</span>
-                      <span className="text-[10px] text-natural line-through font-medium">${product.originalPrice.toFixed(2)}</span>
+                  {/* Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1.5">
+                      <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
+                        {product.name}
+                      </h3>
+
+                      {/* Stars and reviews */}
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                        <Star size={11} className="text-amber-400 fill-amber-400" />
+                        <span className="text-[#4a556a] font-bold">{product.rating}</span>
+                        <span>({product.reviews})</span>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
-                    >
-                      <ShoppingCart size={12} className="stroke-[2.5px]" />
-                      Add to Cart
-                    </button>
+                    {/* Price */}
+                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-extrabold text-[#4a556a]">${product.price.toFixed(2)}</span>
+                        <span className="text-[10px] text-natural line-through font-medium">${product.originalPrice.toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
+                </Link>
+
+                {/* Action Button */}
+                <div className="px-4 pb-4">
+                  <button
+                    onClick={(e) => handleAddToCart(product, e)}
+                    className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                  >
+                    <ShoppingCart size={12} className="stroke-[2.5px]" />
+                    Add to Cart
+                  </button>
                 </div>
 
               </div>

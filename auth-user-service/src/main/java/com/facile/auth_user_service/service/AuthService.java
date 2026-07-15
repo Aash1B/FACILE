@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -279,7 +278,12 @@ public class AuthService {
         
         java.util.Map<String, Object> payload;
         try {
-            payload = restTemplate.getForObject(url, java.util.Map.class);
+            payload = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            ).getBody();
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to verify Google ID token with identity providers: " + e.getMessage());
         }
