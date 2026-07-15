@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import {
   Heart,
@@ -108,10 +109,13 @@ const TESTIMONIALS = [
   }
 ];
 
-export default function Home() {
+function HomeContent() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+  
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams ? searchParams.get("search") || "" : "";
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -123,6 +127,7 @@ export default function Home() {
             const mapped = data.map((p: any) => ({
               id: "bs" + p.id,
               name: p.title,
+              description: p.description || "",
               price: p.sellingPrice,
               originalPrice: p.mrp,
               image: p.image,
@@ -138,6 +143,15 @@ export default function Home() {
     };
     loadProducts();
   }, []);
+
+  const filteredProducts = products.filter((p: any) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(query) ||
+      (p.description && p.description.toLowerCase().includes(query))
+    );
+  });
 
   const triggerToast = (message: string) => {
     setToastMessage(message);
@@ -331,88 +345,115 @@ export default function Home() {
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Best Selling Products</h2>
-          <a 
-            href="#all-products" 
-            className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
-          >
-            View All Products
-            <ArrowRight size={12} />
-          </a>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
+            {searchQuery ? `Search Results for "${searchQuery}"` : "Best Selling Products"}
+          </h2>
+          {searchQuery ? (
+            <Link 
+              href="/" 
+              className="text-xs font-bold px-3 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm cursor-pointer"
+            >
+              Clear Search
+            </Link>
+          ) : (
+            <a 
+              href="#all-products" 
+              className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
+            >
+              View All Products
+              <ArrowRight size={12} />
+            </a>
+          )}
         </div>
 
-        {/* 5-Column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {products.map((product) => {
-            const isFav = favorites.includes(product.id);
-            return (
-              <div
-                key={product.id}
-                className="group bg-warm-ivory border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
-              >
-                {/* Wishlist Button */}
-                <button
-                  onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
-                  aria-label="Add to wishlist"
+        {filteredProducts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-warm-ivory border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-xs">
+            <Sparkles size={32} className="text-apricot mb-3 animate-bounce" />
+            <h3 className="text-xs font-bold text-[#4a556a] mb-1">No matching products found</h3>
+            <p className="text-[11px] text-black/60 mb-5 leading-normal">
+              We couldn't find any products matching "{searchQuery}" on the home page. Try checking your spelling or search term.
+            </p>
+            <Link 
+              href="/" 
+              className="text-[11px] font-bold px-3.5 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm"
+            >
+              Show All Products
+            </Link>
+          </div>
+        ) : (
+          /* 5-Column Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {filteredProducts.map((product: any) => {
+              const isFav = favorites.includes(product.id);
+              return (
+                <div
+                  key={product.id}
+                  className="group bg-warm-ivory border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
                 >
-                  <Heart
-                    size={14}
-                    className={`transition-colors`}
-                    style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
-                  />
-                </button>
-
-                <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
-                  {/* Product Image */}
-                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
-                        {product.name}
-                      </h3>
-
-                      {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                        <Star size={11} className="text-amber-400 fill-amber-400" />
-                        <span className="text-[#4a556a] font-bold">{product.rating}</span>
-                        <span>({product.reviews})</span>
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-
-                {/* Action Button */}
-                <div className="px-4 pb-4">
+                  {/* Wishlist Button */}
                   <button
-                    onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
+                    className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                    aria-label="Add to wishlist"
                   >
-                    <ShoppingCart size={12} className="stroke-[2.5px]" />
-                    Add to Cart
+                    <Heart
+                      size={14}
+                      className={`transition-colors`}
+                      style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
+                    />
                   </button>
-                </div>
 
-              </div>
-            );
-          })}
-        </div>
+                  <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+                    {/* Product Image */}
+                    <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
+                          {product.name}
+                        </h3>
+
+                        {/* Stars and reviews */}
+                        <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                          <Star size={11} className="text-amber-400 fill-amber-400" />
+                          <span className="text-[#4a556a] font-bold">{product.rating}</span>
+                          <span>({product.reviews})</span>
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
+                          <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Action Button */}
+                  <div className="px-4 pb-4">
+                    <button
+                      onClick={(e) => handleAddToCart(product, e)}
+                      className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    >
+                      <ShoppingCart size={12} className="stroke-[2.5px]" />
+                      Add to Cart
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* 5. Special Offer Banner */}
@@ -509,5 +550,13 @@ export default function Home() {
       </section>
 
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF3E3] flex items-center justify-center text-xs text-[#4a556a]/60 font-bold">Loading products...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
