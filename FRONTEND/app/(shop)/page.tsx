@@ -251,7 +251,7 @@ function HomeContent() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
-          <Check size={16} className="text-apricot stroke-[3px]" />
+          <Check size={16} className="text-[#E8A1C4] stroke-[3px]" />
           {toastMessage}
         </div>
       )}
@@ -293,7 +293,7 @@ function HomeContent() {
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
               <a
                 href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
               >
                 Shop Now
                 <ArrowRight size={14} />
@@ -327,7 +327,7 @@ function HomeContent() {
         <div className="bg-white border border-natural/15 rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 shadow-xs">
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-apricot flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Truck size={22} />
             </div>
             <div>
@@ -337,7 +337,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-apricot flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <ShieldCheck size={22} />
             </div>
             <div>
@@ -347,7 +347,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-apricot flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <RefreshCw size={22} />
             </div>
             <div>
@@ -357,7 +357,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-apricot flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Headset size={22} />
             </div>
             <div>
@@ -388,7 +388,7 @@ function HomeContent() {
               <Link
                 key={category.id}
                 href={`/category/${category.id.replace("c", "")}`}
-                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apricot"
+                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4]"
               >
                 <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg ${category.bgColor}`}>
                   <img
@@ -397,7 +397,7 @@ function HomeContent() {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <span className="text-sm font-bold text-[#4a556a] group-hover:text-apricot transition-colors text-center">
+                <span className="text-sm font-bold text-[#4a556a] group-hover:text-[#1A202C] transition-colors text-center">
                   {category.label}
                 </span>
               </Link>
@@ -451,7 +451,7 @@ function HomeContent() {
 
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 bg-warm-ivory border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-xs">
-            <Sparkles size={32} className="text-apricot mb-3 animate-bounce" />
+            <Sparkles size={32} className="text-[#E8A1C4] mb-3 animate-bounce" />
             <h3 className="text-xs font-bold text-[#4a556a] mb-1">No matching products found</h3>
             <p className="text-[11px] text-black/60 mb-5 leading-normal">
               We couldn't find any products matching "{searchQuery}" on the home page. Try checking your spelling or search term.
@@ -471,12 +471,12 @@ function HomeContent() {
               return (
                 <div
                   key={product.id}
-                  className="group bg-warm-ivory border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                  className="group bg-warm-ivory hover:bg-[#DDE0F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
                 >
                   {/* Wishlist Button */}
                   <button
                     onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                    className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                    className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
                     aria-label="Add to wishlist"
                   >
                     <Heart
@@ -541,7 +541,7 @@ function HomeContent() {
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-apricot/10 border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
+        <div className="bg-[#E8A1C4]/10 border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
 
           {/* Subtle Leaf Shadow Graphic overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-natural/5 via-transparent to-transparent pointer-events-none" />
@@ -550,7 +550,7 @@ function HomeContent() {
 
             {/* Banner Left Details */}
             <div className="md:col-span-7 space-y-4 text-center md:text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-apricot">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E8A1C4]">
                 Special Offer
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] leading-tight">
@@ -559,7 +559,7 @@ function HomeContent() {
               <p className="text-xs sm:text-sm text-[#4A5568] max-w-md leading-relaxed font-medium">
                 Limited time offer on selected items. Hurry up and grab the best deals!
               </p>
-              <button className="h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
+              <button className="h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
                 Shop the Sale
                 <ArrowRight size={14} />
               </button>
