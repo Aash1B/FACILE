@@ -45,6 +45,24 @@ const INITIAL_PRODUCTS: Product[] = [
   }
 ];
 
+const MOCK_CATEGORIES = [
+  { id: 1, name: "Electronics" },
+  { id: 2, name: "Fashion" },
+  { id: 3, name: "Home & Kitchen" },
+  { id: 4, name: "Beauty" },
+  { id: 5, name: "Sports" },
+  { id: 6, name: "Toys & Baby" }
+];
+
+const MOCK_SUBCATEGORIES: Record<number, any[]> = {
+  1: [ { id: 1, name: "Wearables" }, { id: 2, name: "Audio" } ],
+  2: [ { id: 6, name: "Apparel" } ],
+  3: [ { id: 7, name: "Kitchenware" } ],
+  4: [ { id: 5, name: "Fragrance" } ],
+  5: [ { id: 4, name: "Footwear" } ],
+  6: [ { id: 3, name: "Baby Toys" } ]
+};
+
 const CATEGORIES = [
   "Conscious Apparel",
   "Ceramics & Pottery",
@@ -128,14 +146,18 @@ export default function SellerDashboardPage() {
       const res = await fetch("/api/categories");
       if (res.ok) {
         const data = await res.json();
-        setCategoriesList(data);
-        if (data.length > 0) {
+        if (data && data.length > 0) {
+          setCategoriesList(data);
           setSelectedCategoryId(String(data[0].id));
+          return;
         }
       }
     } catch (err) {
       console.error("Failed to load categories:", err);
     }
+    // API Fallback
+    setCategoriesList(MOCK_CATEGORIES);
+    setSelectedCategoryId(String(MOCK_CATEGORIES[0].id));
   };
 
   useEffect(() => {
@@ -152,16 +174,20 @@ export default function SellerDashboardPage() {
         const res = await fetch(`/api/categories/${selectedCategoryId}/subcategories`);
         if (res.ok) {
           const data = await res.json();
-          setSubcategoriesList(data);
-          if (data.length > 0) {
+          if (data && data.length > 0) {
+            setSubcategoriesList(data);
             setSelectedSubCategoryId(String(data[0].id));
-          } else {
-            setSelectedSubCategoryId("");
+            return;
           }
         }
       } catch (err) {
         console.error("Failed to load subcategories:", err);
       }
+      // API Fallback
+      const catIdNum = Number(selectedCategoryId);
+      const fallbacks = MOCK_SUBCATEGORIES[catIdNum] || [ { id: 1, name: "General" } ];
+      setSubcategoriesList(fallbacks);
+      setSelectedSubCategoryId(String(fallbacks[0].id));
     };
     fetchSubcategories();
   }, [selectedCategoryId]);
@@ -194,7 +220,7 @@ export default function SellerDashboardPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!title || !description || !mrp || !sellingPrice || !stocks) {
+    if (!title || !description || !mrp || !sellingPrice || !stocks || !selectedCategoryId || !selectedSubCategoryId) {
       setFormError("Please fill out all required fields.");
       return;
     }
@@ -222,10 +248,6 @@ export default function SellerDashboardPage() {
 
     const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
-    // Set fallback IDs from the loaded lists or default to 1
-    const fallbackCatId = categoriesList[0]?.id || 1;
-    const fallbackSubCatId = subcategoriesList[0]?.id || 1;
-
     const payload = {
       title,
       description,
@@ -233,10 +255,10 @@ export default function SellerDashboardPage() {
       sellingPrice: priceNum,
       image: imageSource,
       category: {
-        id: Number(selectedCategoryId) || Number(fallbackCatId)
+        id: Number(selectedCategoryId)
       },
       subCategory: {
-        id: Number(selectedSubCategoryId) || Number(fallbackSubCatId)
+        id: Number(selectedSubCategoryId)
       }
     };
 
@@ -447,7 +469,44 @@ export default function SellerDashboardPage() {
               />
             </div>
 
-            {/* Category & Subcategory options removed from form UI */}
+            {/* Category & Subcategory */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Category <span className="text-apricot">*</span>
+                </label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={(e) => setSelectedCategoryId(e.target.value)}
+                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern font-medium"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  required
+                >
+                  <option value="" disabled>Select Category</option>
+                  {categoriesList.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-[#F4E6C7]">{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Subcategory <span className="text-apricot">*</span>
+                </label>
+                <select
+                  value={selectedSubCategoryId}
+                  onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern font-medium"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  required
+                >
+                  <option value="" disabled>Select Subcategory</option>
+                  {subcategoriesList.map((sc) => (
+                    <option key={sc.id} value={sc.id} className="bg-[#F4E6C7]">{sc.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {/* Pricing Details */}
             <div className="grid grid-cols-2 gap-4">
