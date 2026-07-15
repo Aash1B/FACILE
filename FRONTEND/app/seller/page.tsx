@@ -86,10 +86,10 @@ export default function SellerDashboardPage() {
   const [mrp, setMrp] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
   
-  const [categoriesList, setCategoriesList] = useState<any[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [subcategoriesList, setSubcategoriesList] = useState<any[]>([]);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("");
+  const [categoriesList, setCategoriesList] = useState<any[]>(MOCK_CATEGORIES);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(String(MOCK_CATEGORIES[0].id));
+  const [subcategoriesList, setSubcategoriesList] = useState<any[]>(MOCK_SUBCATEGORIES[MOCK_CATEGORIES[0].id]);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>(String(MOCK_SUBCATEGORIES[MOCK_CATEGORIES[0].id][0].id));
   
   const [stocks, setStocks] = useState("");
   const [image, setImage] = useState("");
@@ -161,11 +161,9 @@ export default function SellerDashboardPage() {
   };
 
   useEffect(() => {
-    if (user && user.role === "SELLER") {
-      fetchProductsFromDb();
-      fetchCategoriesFromDb();
-    }
-  }, [user]);
+    fetchProductsFromDb();
+    fetchCategoriesFromDb();
+  }, []);
 
   useEffect(() => {
     const fetchSubcategories = async () => {
