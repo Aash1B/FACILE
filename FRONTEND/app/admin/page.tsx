@@ -92,10 +92,97 @@ const INITIAL_SELLERS: Seller[] = [
 ];
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<"executive" | "sellers">("executive");
+  const [activeTab, setActiveTab] = useState<"executive" | "sellers" | "vouchers">("executive");
   const [sellers, setSellers] = useState<Seller[]>(INITIAL_SELLERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  // Voucher states
+  interface Voucher {
+    code: string;
+    type: "PERCENT" | "FIXED";
+    value: number;
+    minOrder: number;
+    expiry: string;
+  }
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [vCode, setVCode] = useState("");
+  const [vType, setVType] = useState<"PERCENT" | "FIXED">("PERCENT");
+  const [vValue, setVValue] = useState("");
+  const [vMinOrder, setVMinOrder] = useState("");
+  const [vExpiry, setVExpiry] = useState("2026-12-31");
+  const [vError, setVError] = useState("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("facile_vouchers");
+      if (stored) {
+        setVouchers(JSON.parse(stored));
+      } else {
+        const defaults: Voucher[] = [
+          { code: "WELCOME10", type: "PERCENT", value: 10, minOrder: 30, expiry: "2026-12-31" },
+          { code: "FLAT15", type: "FIXED", value: 15, minOrder: 100, expiry: "2026-12-31" }
+        ];
+        localStorage.setItem("facile_vouchers", JSON.stringify(defaults));
+        setVouchers(defaults);
+      }
+    }
+  }, []);
+
+  const handleAddVoucher = (e: React.FormEvent) => {
+    e.preventDefault();
+    setVError("");
+
+    if (!vCode || !vValue || !vMinOrder || !vExpiry) {
+      setVError("All fields are required.");
+      return;
+    }
+
+    const cleanedCode = vCode.toUpperCase().replace(/\s+/g, "");
+    if (vouchers.some(v => v.code === cleanedCode)) {
+      setVError("A voucher with this code already exists.");
+      return;
+    }
+
+    const valNum = parseFloat(vValue);
+    const minNum = parseFloat(vMinOrder);
+
+    if (isNaN(valNum) || valNum <= 0) {
+      setVError("Please enter a valid discount value.");
+      return;
+    }
+    if (vType === "PERCENT" && valNum > 100) {
+      setVError("Percentage discount cannot exceed 100%.");
+      return;
+    }
+    if (isNaN(minNum) || minNum < 0) {
+      setVError("Minimum order value cannot be negative.");
+      return;
+    }
+
+    const newVoucher: Voucher = {
+      code: cleanedCode,
+      type: vType,
+      value: valNum,
+      minOrder: minNum,
+      expiry: vExpiry
+    };
+
+    const updated = [newVoucher, ...vouchers];
+    setVouchers(updated);
+    localStorage.setItem("facile_vouchers", JSON.stringify(updated));
+
+    setVCode("");
+    setVValue("");
+    setVMinOrder("");
+    setVExpiry("2026-12-31");
+  };
+
+  const handleDeleteVoucher = (code: string) => {
+    const updated = vouchers.filter(v => v.code !== code);
+    setVouchers(updated);
+    localStorage.setItem("facile_vouchers", JSON.stringify(updated));
+  };
 
   // Document modal states
   const [selectedSellerDocs, setSelectedSellerDocs] = useState<Seller | null>(null);
@@ -231,6 +318,17 @@ export default function AdminDashboardPage() {
           >
             <Users size={14} />
             <span>Seller Operations</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("vouchers")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+            style={{
+              backgroundColor: activeTab === "vouchers" ? '#424530' : 'transparent',
+              color: activeTab === "vouchers" ? '#F4E6C7' : '#424530'
+            }}
+          >
+            <Percent size={14} />
+            <span>Vouchers & Promos</span>
           </button>
         </div>
       </div>
@@ -632,6 +730,183 @@ export default function AdminDashboardPage() {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Tab 3: Vouchers & Promotions ────────────────────────────────── */}
+      {activeTab === "vouchers" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start animate-fade-in">
+          {/* Left: Create Voucher Form */}
+          <div className="lg:col-span-1 border rounded-3xl p-6 shadow-sm" style={{ backgroundColor: '#F4E6C7', borderColor: 'rgba(165,142,116,0.25)' }}>
+            <div className="flex items-center gap-2 mb-6 text-fern">
+              <Plus size={18} className="stroke-[2.5px]" />
+              <h2 className="font-serif text-xl font-bold">Create Promo Voucher</h2>
+            </div>
+
+            <form onSubmit={handleAddVoucher} className="space-y-4">
+              {vError && (
+                <p className="text-xs font-bold text-apricot animate-fade-in">
+                  ⚠️ {vError}
+                </p>
+              )}
+
+              {/* Code */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Voucher Code
+                </label>
+                <input
+                  type="text"
+                  value={vCode}
+                  onChange={(e) => setVCode(e.target.value)}
+                  placeholder="e.g. SUMMER20"
+                  className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none uppercase"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  required
+                />
+              </div>
+
+              {/* Discount Type */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Discount Type
+                </label>
+                <select
+                  value={vType}
+                  onChange={(e) => setVType(e.target.value as "PERCENT" | "FIXED")}
+                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                >
+                  <option value="PERCENT" className="bg-[#F4E6C7]">Percentage (%)</option>
+                  <option value="FIXED" className="bg-[#F4E6C7]">Fixed Amount ($)</option>
+                </select>
+              </div>
+
+              {/* Discount Value */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Discount Value
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={vValue}
+                  onChange={(e) => setVValue(e.target.value)}
+                  placeholder={vType === "PERCENT" ? "10" : "15.00"}
+                  className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  required
+                />
+              </div>
+
+              {/* Minimum Purchase Constraint */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Minimum Order Value ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={vMinOrder}
+                  onChange={(e) => setVMinOrder(e.target.value)}
+                  placeholder="30.00"
+                  className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  required
+                />
+              </div>
+
+              {/* Expiry Date */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                  Expiry Date
+                </label>
+                <input
+                  type="date"
+                  value={vExpiry}
+                  onChange={(e) => setVExpiry(e.target.value)}
+                  className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  required
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full h-11 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all duration-200 mt-2 shadow-sm"
+                style={{ backgroundColor: '#424530' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2c2e20'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#424530'}
+              >
+                Create Voucher
+              </button>
+            </form>
+          </div>
+
+          {/* Right: Active Vouchers List */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-fern">
+                <Package size={20} />
+                <h2 className="font-serif text-xl font-bold">Active System Vouchers</h2>
+              </div>
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full text-fern" style={{ backgroundColor: 'rgba(165,142,116,0.15)' }}>
+                {vouchers.length} Vouchers
+              </span>
+            </div>
+
+            {vouchers.length === 0 ? (
+              <div className="border border-dashed rounded-3xl p-12 text-center" style={{ borderColor: 'rgba(165,142,116,0.3)', backgroundColor: 'rgba(244,230,199,0.2)' }}>
+                <Percent size={36} className="mx-auto text-natural mb-3 opacity-60" />
+                <h3 className="font-serif text-lg font-semibold text-fern mb-1">No vouchers created</h3>
+                <p className="text-xs text-natural font-medium max-w-sm mx-auto leading-relaxed">
+                  There are currently no active vouchers or discount codes available on the checkout page. Use the builder form to create one.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {vouchers.map((v) => (
+                  <div
+                    key={v.code}
+                    className="border bg-white rounded-3xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                    style={{ borderColor: 'rgba(165,142,116,0.2)' }}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm font-bold bg-[#F4E6C7] text-fern px-2.5 py-1 rounded-lg select-all">
+                          {v.code}
+                        </span>
+                        <span className="text-xs font-bold text-apricot">
+                          {v.type === "PERCENT" ? `${v.value}% OFF` : `$${v.value.toFixed(2)} OFF`}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-xs font-semibold text-natural">
+                        <div className="flex justify-between">
+                          <span>Constraint:</span>
+                          <span className="text-fern">Min. Order ${v.minOrder.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Expires:</span>
+                          <span className="text-fern">{v.expiry}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteVoucher(v.code)}
+                      className="w-full h-8.5 mt-4 rounded-xl border hover:bg-red-50 text-red-600 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                      style={{ borderColor: 'rgba(234,67,53,0.2)' }}
+                    >
+                      <Trash2 size={12} />
+                      Delete Voucher
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
