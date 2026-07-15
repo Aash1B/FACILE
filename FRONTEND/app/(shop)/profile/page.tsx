@@ -182,18 +182,17 @@ function ProfileContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  // Auth Guard (Bypassed redirect to enable static preview on account & profile pages)
+  // Auth Guard
   useEffect(() => {
-    if (user) {
+    if (!isLoading && !user) {
+      router.push("/login");
+    } else if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
-    } else {
-      setProfileName("Guest User");
-      setProfileEmail("guest@example.com");
     }
-  }, [user]);
+  }, [user, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="auth-palette min-h-[60vh] flex items-center justify-center" style={{ backgroundColor: '#faf3e3' }}>
         <div className="flex flex-col items-center gap-3">
@@ -241,19 +240,6 @@ function ProfileContent() {
   return (
     <div className="auth-palette min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#faf3e3' }}>
       <div className="max-w-6xl mx-auto">
-        
-        {/* Guest Warning Banner */}
-        {!user && (
-          <div className="mb-6 p-4 bg-apricot/10 border border-apricot/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-semibold text-fern">
-            <p>You are currently viewing this page as a guest. Register or sign in to view your real order history, saved addresses, and profile settings.</p>
-            <button 
-              onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
-            >
-              Sign In / Sign Up
-            </button>
-          </div>
-        )}
         
         {/* Page Title */}
         <div className="mb-8">
