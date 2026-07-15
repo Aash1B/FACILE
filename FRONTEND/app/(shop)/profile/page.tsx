@@ -173,12 +173,20 @@ function ProfileContent() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Load saved photo from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('facile_profile_photo');
+    if (saved) setProfilePhoto(saved);
+  }, []);
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setProfilePhoto(ev.target?.result as string);
+      const dataUrl = ev.target?.result as string;
+      setProfilePhoto(dataUrl);
+      localStorage.setItem('facile_profile_photo', dataUrl);
     };
     reader.readAsDataURL(file);
   };

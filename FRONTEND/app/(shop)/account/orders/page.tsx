@@ -66,6 +66,25 @@ export default function OrderHistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('facile_profile_photo');
+    if (saved) setProfilePhoto(saved);
+  }, []);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setProfilePhoto(dataUrl);
+      localStorage.setItem('facile_profile_photo', dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -122,10 +141,24 @@ export default function OrderHistoryPage() {
             <div className="bg-[#F4F4F0] border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-apricot" />
               <div className="relative inline-block mt-2">
-                <div className="w-16 h-16 bg-[#F4F4F0] text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner">
-                  {displayName.slice(0, 2)}
+                <div className="w-16 h-16 bg-[#F4F4F0] text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner overflow-hidden">
+                  {profilePhoto
+                    ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                    : displayName.slice(0, 2)
+                  }
                 </div>
-                <button className="absolute bottom-0 right-0 p-1.5 bg-fern text-warm-ivory rounded-full shadow hover:bg-apricot transition-colors duration-200" aria-label="Change photo">
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                />
+                <button
+                  onClick={() => photoInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#4A5568] text-warm-ivory rounded-full shadow hover:bg-[#4A5568]/90 transition-colors duration-200 cursor-pointer"
+                  aria-label="Change photo"
+                >
                   <Camera size={12} />
                 </button>
               </div>
