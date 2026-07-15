@@ -8,7 +8,8 @@
     "dev:backend-order": "cd order-cart-service && cross-env JAVA_HOME=\"C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot\" mvnw.cmd spring-boot:run",
     "dev:backend-payment": "cd payment-notification-service && cross-env JAVA_HOME=\"C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot\" mvnw.cmd spring-boot:run",
     "dev:backend-auth": "cd auth-user-service && cross-env JAVA_HOME=\"C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot\" mvnw.cmd spring-boot:run",
-    "dev": "npm run dev:databases && concurrently --kill-others \"npm run dev:frontend\" \"npm run dev:backend-order\" \"npm run dev:backend-payment\" \"npm run dev:backend-auth\"",
+    "dev:backend-inventory": "cd product-inventory-service/product-inventory-service && cross-env JAVA_HOME=\"C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot\" mvnw.cmd spring-boot:run",
+    "dev": "npm run dev:databases && concurrently --kill-others \"npm run dev:frontend\" \"npm run dev:backend-order\" \"npm run dev:backend-payment\" \"npm run dev:backend-auth\" \"npm run dev:backend-inventory\"",
     "build": "next build FRONTEND",
     "start": "next start FRONTEND",
     "lint": "eslint FRONTEND"
