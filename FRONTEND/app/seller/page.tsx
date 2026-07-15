@@ -194,7 +194,7 @@ export default function SellerDashboardPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!title || !description || !mrp || !sellingPrice || !stocks || !selectedCategoryId || !selectedSubCategoryId) {
+    if (!title || !description || !mrp || !sellingPrice || !stocks) {
       setFormError("Please fill out all required fields.");
       return;
     }
@@ -222,6 +222,10 @@ export default function SellerDashboardPage() {
 
     const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
+    // Set fallback IDs from the loaded lists or default to 1
+    const fallbackCatId = categoriesList[0]?.id || 1;
+    const fallbackSubCatId = subcategoriesList[0]?.id || 1;
+
     const payload = {
       title,
       description,
@@ -229,10 +233,10 @@ export default function SellerDashboardPage() {
       sellingPrice: priceNum,
       image: imageSource,
       category: {
-        id: Number(selectedCategoryId)
+        id: Number(selectedCategoryId) || Number(fallbackCatId)
       },
       subCategory: {
-        id: Number(selectedSubCategoryId)
+        id: Number(selectedSubCategoryId) || Number(fallbackSubCatId)
       }
     };
 
@@ -443,44 +447,7 @@ export default function SellerDashboardPage() {
               />
             </div>
 
-            {/* Category & Subcategory */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                  Category
-                </label>
-                <select
-                  value={selectedCategoryId}
-                  onChange={(e) => setSelectedCategoryId(e.target.value)}
-                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
-                  required
-                >
-                  <option value="" disabled>Select Category</option>
-                  {categoriesList.map((c) => (
-                    <option key={c.id} value={c.id} className="bg-[#F4E6C7]">{c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                  Subcategory
-                </label>
-                <select
-                  value={selectedSubCategoryId}
-                  onChange={(e) => setSelectedSubCategoryId(e.target.value)}
-                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
-                  required
-                >
-                  <option value="" disabled>Select Subcategory</option>
-                  {subcategoriesList.map((sc) => (
-                    <option key={sc.id} value={sc.id} className="bg-[#F4E6C7]">{sc.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            {/* Category & Subcategory options removed from form UI */}
 
             {/* Pricing Details */}
             <div className="grid grid-cols-2 gap-4">
