@@ -598,7 +598,7 @@ function HomeContent() {
           {TESTIMONIALS.slice(testimonialIndex, testimonialIndex + 3).map((testimonial) => (
             <div
               key={testimonial.id}
-              className="bg-white border border-natural/15 p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-6 hover:shadow-sm transition-all duration-300"
+              className="bg-white hover:bg-[#DDE0F0] border border-natural/15 p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-6 hover:shadow-sm transition-all duration-300"
             >
               <div className="space-y-4">
                 <Quote size={28} className="text-green-200 fill-green-500/10 stroke-[1.5px]" />
