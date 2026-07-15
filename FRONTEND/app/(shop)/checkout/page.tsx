@@ -131,10 +131,75 @@ export default function CheckoutPage() {
 
   // Calculations
   const subtotal = checkoutItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  // Voucher Discount State
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<{
+    code: string;
+    type: "PERCENT" | "FIXED";
+    value: number;
+    minOrder: number;
+  } | null>(null);
+  const [voucherError, setVoucherError] = useState("");
+  const [voucherSuccess, setVoucherSuccess] = useState("");
+
+  // Calculate discount
+  let discountAmount = 0;
+  if (appliedVoucher) {
+    if (appliedVoucher.type === "PERCENT") {
+      discountAmount = Math.round((subtotal * appliedVoucher.value) / 100);
+    } else {
+      discountAmount = Math.min(appliedVoucher.value, subtotal);
+    }
+  }
+
   // Free delivery for orders over ₹15,000, else ₹99 delivery charge
   const deliveryCharge = subtotal >= 15000 || subtotal === 0 ? 0 : 99;
   const platformFee = subtotal === 0 ? 0 : 5;
-  const totalAmount = subtotal + deliveryCharge + platformFee;
+  const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge + platformFee);
+
+  const handleApplyVoucher = () => {
+    setVoucherError("");
+    setVoucherSuccess("");
+
+    if (!voucherCodeInput.trim()) {
+      setVoucherError("Please enter a voucher code.");
+      return;
+    }
+
+    const code = voucherCodeInput.trim().toUpperCase();
+    const stored = localStorage.getItem("facile_vouchers");
+    const activeVouchers = stored ? JSON.parse(stored) : [];
+
+    const found = activeVouchers.find((v: any) => v.code === code);
+    if (!found) {
+      setVoucherError("Invalid or expired voucher code.");
+      return;
+    }
+
+    // Check expiry
+    const today = new Date().toISOString().split("T")[0];
+    if (found.expiry && found.expiry < today) {
+      setVoucherError("This voucher code has expired.");
+      return;
+    }
+
+    // Check min order constraint
+    if (subtotal < found.minOrder) {
+      setVoucherError(`Minimum order value of ₹${found.minOrder.toLocaleString("en-IN")} required.`);
+      return;
+    }
+
+    setAppliedVoucher(found);
+    setVoucherSuccess("Voucher applied successfully!");
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCodeInput("");
+    setVoucherSuccess("");
+    setVoucherError("");
+  };
 
   const handleAddCustomAddress = (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,6 +698,61 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span>Platform Fee</span>
                   <span className="text-warm-ivory font-bold">{formatPrice(platformFee)}</span>
+                </div>
+
+                {appliedVoucher && (
+                  <div className="flex justify-between text-green-700 bg-green-500/10 p-2.5 rounded-xl border border-green-500/20">
+                    <span className="font-bold">Discount ({appliedVoucher.code})</span>
+                    <span className="font-extrabold">-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+
+                {/* Promo Code Input */}
+                <div className="border-t border-natural/10 pt-4 space-y-2">
+                  <p className="text-[10px] font-bold text-natural uppercase tracking-wider">Promo Code / Voucher</p>
+                  {appliedVoucher ? (
+                    <div className="flex items-center justify-between bg-warm-ivory/40 p-3 rounded-xl border border-[#4A5568]/20">
+                      <div>
+                        <p className="text-xs font-bold text-black uppercase">{appliedVoucher.code}</p>
+                        <p className="text-[9px] text-[#424530]/80 font-bold">Discount applied</p>
+                      </div>
+                      <button
+                        onClick={handleRemoveVoucher}
+                        className="text-[10px] font-bold text-red-600 hover:text-red-700 underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={voucherCodeInput}
+                          onChange={(e) => {
+                            setVoucherCodeInput(e.target.value);
+                            if (voucherError) setVoucherError("");
+                            if (voucherSuccess) setVoucherSuccess("");
+                          }}
+                          placeholder="e.g. WELCOME10"
+                          className="flex-1 h-9 px-3 text-xs font-medium rounded-xl border bg-warm-ivory outline-none focus:border-fern text-black placeholder-stone-400"
+                          style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                        />
+                        <button
+                          onClick={handleApplyVoucher}
+                          className="h-9 px-4 bg-[#424530] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all hover:bg-stone-900"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      {voucherError && (
+                        <p className="text-[10px] font-bold text-red-600 animate-fade-in">⚠️ {voucherError}</p>
+                      )}
+                      {voucherSuccess && (
+                        <p className="text-[10px] font-bold text-green-700 animate-fade-in">✓ {voucherSuccess}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {subtotal < 15000 && subtotal > 0 && (
