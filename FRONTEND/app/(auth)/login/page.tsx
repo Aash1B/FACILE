@@ -111,7 +111,6 @@ export default function LoginPage() {
         setShowSuccessToast(true);
         setTimeout(() => router.push("/profile"), 1500);
       } catch (e: any) {
-        console.error(e);
         setIsSubmitting(false);
         setErrors({ email: e.message || "Google sign-in failed." });
       }

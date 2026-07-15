@@ -47,6 +47,17 @@
   }
 }
 
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ─── Base ──────────────────────────────────────────────────────── */
 html,
 body {
@@ -64,13 +75,13 @@ body {
    CSS-variable overrides don't affect generated utility classes.
    We use explicit CSS rules here to force the correct colors. */
 .auth-palette {
-  background-color: #faf3e3 !important;
+  background-color: #F4F4F0 !important;
   --color-apricot: #4A5568 !important;
 }
 
 /* Right-side form panel background */
 .auth-palette > div:last-child {
-  background-color: #faf3e3;
+  background-color: #F4F4F0;
 }
 
 /* Input, textarea, & select boxes — override backgrounds and focus behaviors */
@@ -137,7 +148,7 @@ body {
 
 /* Divider "or continue with" span bg */
 .auth-palette span[class*="bg-warm"] {
-  background-color: #faf3e3 !important;
+  background-color: #F4F4F0 !important;
 }
 
 /* Explicit utility classes for the auth palette extra colors */

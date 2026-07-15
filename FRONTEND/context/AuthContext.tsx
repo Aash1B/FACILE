@@ -113,8 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      console.error("Google login error:", error);
-      throw new Error(error.response?.data?.error || "Google sign in failed.");
+      const message = error.response?.data?.error
+        || error.response?.data?.message
+        || (error.code === "ERR_NETWORK" ? "Authentication service is unavailable." : null)
+        || "Google sign in failed.";
+      throw new Error(message);
     } finally {
       setIsLoading(false);
     }

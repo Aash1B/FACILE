@@ -581,13 +581,13 @@ export default function Navbar() {
                 <Home size={15} className="text-black/70 flex-shrink-0" /> Home
               </Link>
 
-              <a
-                href="#categories"
+              <Link
+                href="/categories"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 bg-[#DDE0F0] rounded-xl transition-all"
               >
-                <LayoutGrid size={15} className="text-black/70 flex-shrink-0" /> Categories
-              </a>
+                <LayoutGrid size={15} className="text-[#4a556a] flex-shrink-0" /> Categories
+              </Link>
               <a
                 href="#best-sellers"
                 onClick={() => setIsMobileMenuOpen(false)}

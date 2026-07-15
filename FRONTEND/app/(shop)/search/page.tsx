@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -11,10 +11,15 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  ChevronUp,
   ArrowLeft,
   Check,
   Search,
+  Zap,
+  Tag,
+  Clock,
+  Palette,
+  Ruler,
+  Store,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,98 +33,46 @@ type Product = {
   rating: number;
   reviews: number;
   category: string;
+  brand?: string;
+  color?: string;
+  size?: string;
+  deliveryDays?: number;
 };
 
 // ─── Fallback Data ────────────────────────────────────────────────────────────
 const FALLBACK_PRODUCTS: Product[] = [
-  {
-    id: "bs1",
-    name: "Smart Watch Series 5",
-    description: "Stay connected with premium Smart Watch. Features heart rate monitoring, fitness tracking, GPS, and always-on display.",
-    price: 8999, originalPrice: 12999,
-    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
-    rating: 4.5, reviews: 128, category: "Electronics",
-  },
-  {
-    id: "bs2",
-    name: "Wireless Headphones",
-    description: "Premium sound with hybrid Active Noise Cancelling. 40 hours playtime, memory-foam earcups, crystal-clear calls.",
-    price: 5999, originalPrice: 8999,
-    image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
-    rating: 4.7, reviews: 98, category: "Electronics",
-  },
-  {
-    id: "bs3",
-    name: "Travel Backpack",
-    description: "Water-resistant backpack with laptop compartment, hidden pockets, USB port, and ergonomic straps.",
-    price: 3999, originalPrice: 5999,
-    image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400",
-    rating: 4.6, reviews: 156, category: "Fashion",
-  },
-  {
-    id: "bs4",
-    name: "Running Shoes",
-    description: "High-performance running shoes with breathable mesh upper, responsive foam midsole, and rubber outsole.",
-    price: 4999, originalPrice: 7999,
-    image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400",
-    rating: 4.4, reviews: 78, category: "Sports",
-  },
-  {
-    id: "bs5",
-    name: "Luxury Perfume",
-    description: "Enchanting floral oriental fragrance. Long-lasting with bergamot top notes and sandalwood base.",
-    price: 2999, originalPrice: 4999,
-    image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400",
-    rating: 4.8, reviews: 64, category: "Beauty",
-  },
-  {
-    id: "bs6",
-    name: "Portable Bluetooth Speaker",
-    description: "360° immersive sound with deep bass. Waterproof, 20-hour battery, and built-in mic for hands-free calls.",
-    price: 2499, originalPrice: 3499,
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400",
-    rating: 4.6, reviews: 112, category: "Electronics",
-  },
-  {
-    id: "bs7",
-    name: "Classic Sunglasses",
-    description: "UV400 protected lenses in a timeless frame. Lightweight, durable, and stylish for all occasions.",
-    price: 1499, originalPrice: 2299,
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400",
-    rating: 4.5, reviews: 87, category: "Fashion",
-  },
-  {
-    id: "bs8",
-    name: "Ceramic Coffee Set",
-    description: "Handcrafted ceramic coffee set with 4 cups and matching pour-over dripper. Dishwasher safe.",
-    price: 1899, originalPrice: 2799,
-    image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400",
-    rating: 4.7, reviews: 73, category: "Home & Kitchen",
-  },
-  {
-    id: "bs9",
-    name: "Premium Yoga Mat",
-    description: "Eco-friendly non-slip yoga mat with alignment lines, carrying strap, and 6mm cushioning.",
-    price: 1299, originalPrice: 1999,
-    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400",
-    rating: 4.8, reviews: 145, category: "Sports",
-  },
-  {
-    id: "bs10",
-    name: "Minimal Desk Lamp",
-    description: "Touch-controlled LED lamp with 3 color temps, 10 brightness levels, and USB charging port.",
-    price: 2199, originalPrice: 3199,
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400",
-    rating: 4.4, reviews: 59, category: "Home & Kitchen",
-  },
+  { id: "bs1", name: "Smart Watch Series 5", description: "Stay connected with premium Smart Watch. Features heart rate monitoring, fitness tracking, GPS, and always-on display.", price: 8999, originalPrice: 12999, image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400", rating: 4.5, reviews: 128, category: "Electronics", brand: "Samsung", color: "Black", size: "One Size", deliveryDays: 2 },
+  { id: "bs2", name: "Wireless Headphones", description: "Premium sound with hybrid Active Noise Cancelling. 40 hours playtime, memory-foam earcups, crystal-clear calls.", price: 5999, originalPrice: 8999, image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400", rating: 4.7, reviews: 98, category: "Electronics", brand: "Sony", color: "Black", size: "One Size", deliveryDays: 2 },
+  { id: "bs3", name: "Travel Backpack", description: "Water-resistant backpack with laptop compartment, hidden pockets, USB port, and ergonomic straps.", price: 3999, originalPrice: 5999, image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400", rating: 4.6, reviews: 156, category: "Fashion", brand: "Adidas", color: "Black", size: "One Size", deliveryDays: 3 },
+  { id: "bs4", name: "Running Shoes", description: "High-performance running shoes with breathable mesh upper, responsive foam midsole, and rubber outsole.", price: 4999, originalPrice: 7999, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400", rating: 4.4, reviews: 78, category: "Sports", brand: "Nike", color: "White", size: "8 UK", deliveryDays: 3 },
+  { id: "bs5", name: "Luxury Perfume", description: "Enchanting floral oriental fragrance. Long-lasting with bergamot top notes and sandalwood base.", price: 2999, originalPrice: 4999, image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400", rating: 4.8, reviews: 64, category: "Beauty", brand: "Fogg", color: "Gold", size: "One Size", deliveryDays: 3 },
+  { id: "bs6", name: "Portable Bluetooth Speaker", description: "360° immersive sound with deep bass. Waterproof, 20-hour battery, and built-in mic for hands-free calls.", price: 2499, originalPrice: 3499, image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400", rating: 4.6, reviews: 112, category: "Electronics", brand: "JBL", color: "Red", size: "One Size", deliveryDays: 3 },
+  { id: "bs7", name: "Classic Sunglasses", description: "UV400 protected lenses in a timeless frame. Lightweight, durable, and stylish for all occasions.", price: 1499, originalPrice: 2299, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400", rating: 4.5, reviews: 87, category: "Fashion", brand: "Ray-Ban", color: "Brown", size: "One Size", deliveryDays: 4 },
+  { id: "bs8", name: "Ceramic Coffee Set", description: "Handcrafted ceramic coffee set with 4 cups and matching pour-over dripper. Dishwasher safe.", price: 1899, originalPrice: 2799, image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400", rating: 4.7, reviews: 73, category: "Home & Kitchen", brand: "Bodum", color: "White", size: "One Size", deliveryDays: 5 },
+  { id: "bs9", name: "Premium Yoga Mat", description: "Eco-friendly non-slip yoga mat with alignment lines, carrying strap, and 6mm cushioning.", price: 1299, originalPrice: 1999, image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400", rating: 4.8, reviews: 145, category: "Sports", brand: "Boldfit", color: "Purple", size: "One Size", deliveryDays: 3 },
+  { id: "bs10", name: "Minimal Desk Lamp", description: "Touch-controlled LED lamp with 3 color temps, 10 brightness levels, and USB charging port.", price: 2199, originalPrice: 3199, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400", rating: 4.4, reviews: 59, category: "Home & Kitchen", brand: "Syska", color: "White", size: "One Size", deliveryDays: 3 },
 ];
 
 // ─── Filter Constants ─────────────────────────────────────────────────────────
 const PRICE_RANGES = [
-  { label: "Under ₹1,000", min: 0, max: 1000 },
+  { label: "Under ₹500", min: 0, max: 500 },
+  { label: "₹500 – ₹1,000", min: 500, max: 1000 },
   { label: "₹1,000 – ₹2,500", min: 1000, max: 2500 },
   { label: "₹2,500 – ₹5,000", min: 2500, max: 5000 },
   { label: "Above ₹5,000", min: 5000, max: Infinity },
+];
+
+const DISCOUNT_RANGES = [
+  { label: "10% and above", min: 10 },
+  { label: "20% and above", min: 20 },
+  { label: "30% and above", min: 30 },
+  { label: "50% and above", min: 50 },
+];
+
+const DELIVERY_OPTIONS = [
+  { label: "1–2 Days", maxDays: 2 },
+  { label: "3–5 Days", maxDays: 5 },
+  { label: "7+ Days", maxDays: 999 },
 ];
 
 const SORT_OPTIONS = [
@@ -127,7 +80,101 @@ const SORT_OPTIONS = [
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "rating", label: "Avg. Customer Rating" },
+  { value: "discount", label: "Biggest Discount" },
 ];
+
+// ─── Custom Sort Dropdown ────────────────────────────────────────────────────
+function SortDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const selected = SORT_OPTIONS.find((o) => o.value === value) ?? SORT_OPTIONS[0];
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
+          open
+            ? "bg-[#4a556a] text-white border-[#4a556a] shadow-md"
+            : "bg-white text-[#4a556a] border-natural/20 hover:border-[#4a556a]/40 hover:shadow-md"
+        }`}
+      >
+        <span className={`text-[10px] font-semibold mr-0.5 ${ open ? "text-white/60" : "text-[#4a556a]/45" }`}>
+          Sort
+        </span>
+        <span className="truncate max-w-[110px]">{selected.label}</span>
+        <ChevronDown
+          size={13}
+          className={`flex-shrink-0 transition-transform duration-200 ${
+            open ? "rotate-180 text-white/70" : "text-[#4a556a]/40"
+          }`}
+        />
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div
+          className="absolute right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-xl border border-natural/10 overflow-hidden"
+          style={{ minWidth: "190px", animation: "fadeSlideDown 0.15s ease" }}
+        >
+          {/* Header strip */}
+          <div className="px-4 py-2 bg-[#4a556a]/5 border-b border-natural/8">
+            <p className="text-[9px] font-bold text-[#4a556a]/50 uppercase tracking-widest">Sort by</p>
+          </div>
+
+          {SORT_OPTIONS.map((opt, idx) => (
+            <button
+              key={opt.value}
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-[11px] font-semibold transition-all duration-150 cursor-pointer group ${
+                opt.value === value
+                  ? "bg-apricot/8 text-apricot"
+                  : "text-[#4a556a]/75 hover:bg-[#4a556a] hover:text-white"
+              } ${idx !== SORT_OPTIONS.length - 1 ? "border-b border-natural/6" : ""}`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${
+                  opt.value === value
+                    ? "bg-apricot scale-110"
+                    : "bg-[#4a556a]/20 group-hover:bg-white/60"
+                }`}
+              />
+              {opt.label}
+              {opt.value === value && (
+                <Check size={11} className="ml-auto text-apricot flex-shrink-0" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function calcDiscount(price: number, original: number) {
+  if (original <= 0) return 0;
+  return Math.round(((original - price) / original) * 100);
+}
 
 // ─── FilterCheckbox ───────────────────────────────────────────────────────────
 function FilterCheckbox({
@@ -140,117 +187,280 @@ function FilterCheckbox({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer group" onClick={onToggle}>
+    <label
+      className="flex items-center gap-3 py-3 border-b border-natural/8 cursor-pointer group last:border-b-0"
+      onClick={onToggle}
+    >
       <div
-        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-all ${checked
-            ? "bg-[#4a556a] border-[#4a556a]"
-            : "border-natural/30 group-hover:border-[#4a556a]"
-          }`}
+        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-all ${
+          checked
+            ? "bg-apricot border-apricot"
+            : "border-natural/30 group-hover:border-apricot"
+        }`}
       >
         {checked && <Check size={10} className="text-white stroke-[3px]" />}
       </div>
-      <span className="text-[11px] font-medium text-[#4a556a]/80 group-hover:text-[#4a556a] leading-tight">
+      <span className="text-[12px] font-medium text-[#4a556a]/80 group-hover:text-[#4a556a] leading-tight flex-1">
         {children}
       </span>
     </label>
   );
 }
 
-// ─── FilterSidebar ────────────────────────────────────────────────────────────
-function FilterSidebar({
-  selectedPriceRanges,
-  togglePriceRange,
-  selectedRating,
-  setSelectedRating,
-  hasActiveFilters,
-  clearAllFilters,
-}: {
+// ─── Two-panel FilterPanel (reference-image style) ────────────────────────────
+interface FilterPanelProps {
+  products: Product[];
+  // brand
+  selectedBrands: string[];
+  toggleBrand: (b: string) => void;
+  // color
+  selectedColors: string[];
+  toggleColor: (c: string) => void;
+  // size
+  selectedSizes: string[];
+  toggleSize: (s: string) => void;
+  // price
   selectedPriceRanges: number[];
-  togglePriceRange: (idx: number) => void;
+  togglePriceRange: (i: number) => void;
+  // discount
+  selectedDiscounts: number[];
+  toggleDiscount: (i: number) => void;
+  // rating
   selectedRating: number | null;
   setSelectedRating: (r: number | null) => void;
+  // delivery
+  selectedDelivery: number | null;
+  setSelectedDelivery: (d: number | null) => void;
+  // clear
   hasActiveFilters: boolean;
   clearAllFilters: () => void;
-}) {
-  const [isPriceOpen, setIsPriceOpen] = useState(true);
-  const [isRatingOpen, setIsRatingOpen] = useState(true);
+}
+
+function FilterPanel({
+  products,
+  selectedBrands, toggleBrand,
+  selectedColors, toggleColor,
+  selectedSizes, toggleSize,
+  selectedPriceRanges, togglePriceRange,
+  selectedDiscounts, toggleDiscount,
+  selectedRating, setSelectedRating,
+  selectedDelivery, setSelectedDelivery,
+  hasActiveFilters, clearAllFilters,
+}: FilterPanelProps) {
+
+  // Accordion open state — multiple sections can be open at once
+  const [openSections, setOpenSections] = useState<string[]>(["brand"]);
+  const toggleSection = (id: string) =>
+    setOpenSections((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+
+  // Derive unique values from product data
+  const brands = useMemo(() => {
+    const s = new Set(products.map((p) => p.brand).filter(Boolean) as string[]);
+    return Array.from(s).sort();
+  }, [products]);
+
+  const colors = useMemo(() => {
+    const s = new Set(products.map((p) => p.color).filter(Boolean) as string[]);
+    return Array.from(s).sort();
+  }, [products]);
+
+  const sizes = useMemo(() => {
+    const ORDER = ["XS","S","M","L","XL","XXL","Free Size","One Size"];
+    const s = new Set(products.map((p) => p.size).filter(Boolean) as string[]);
+    const arr = Array.from(s);
+    return arr.sort((a, b) => {
+      const ai = ORDER.indexOf(a), bi = ORDER.indexOf(b);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [products]);
+
+  // Reusable accordion section
+  const Section = ({
+    id, icon, label, badge, children,
+  }: {
+    id: string;
+    icon: React.ReactNode;
+    label: string;
+    badge: number;
+    children: React.ReactNode;
+  }) => {
+    const open = openSections.includes(id);
+    return (
+      <div className="border-b border-natural/10 last:border-b-0">
+        <button
+          onClick={() => toggleSection(id)}
+          className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-bold text-[#4a556a] hover:bg-warm-ivory/60 transition-colors cursor-pointer group"
+        >
+          <span className="flex items-center gap-2">
+            <span className={`transition-colors ${open ? "text-apricot" : "text-[#4a556a]/40 group-hover:text-[#4a556a]/60"}`}>
+              {icon}
+            </span>
+            {label}
+          </span>
+          <span className="flex items-center gap-1.5">
+            {badge > 0 && (
+              <span className="w-4 h-4 bg-apricot text-white rounded-full text-[8px] flex items-center justify-center font-bold">
+                {badge}
+              </span>
+            )}
+            <ChevronDown
+              size={13}
+              className={`text-[#4a556a]/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
+          </span>
+        </button>
+        {open && (
+          <div className="px-4 pb-3 space-y-0.5">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-natural/10">
         <h2 className="text-sm font-bold text-[#4a556a]">Filters</h2>
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="text-[10px] font-bold text-apricot hover:underline cursor-pointer"
+            className="text-[10px] font-bold text-apricot hover:underline cursor-pointer uppercase tracking-wide"
           >
             Clear All
           </button>
         )}
       </div>
 
-      {/* Price Range */}
-      <div className="bg-white border border-natural/10 rounded-2xl overflow-hidden shadow-xs">
-        <button
-          onClick={() => setIsPriceOpen(!isPriceOpen)}
-          className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-[#4a556a] hover:bg-warm-ivory/60 transition-colors cursor-pointer"
-        >
-          Price Range
-          {isPriceOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
-        {isPriceOpen && (
-          <div className="px-4 pb-4 space-y-3 border-t border-natural/8">
-            {PRICE_RANGES.map((range, idx) => (
-              <FilterCheckbox
-                key={idx}
-                checked={selectedPriceRanges.includes(idx)}
-                onToggle={() => togglePriceRange(idx)}
-              >
-                {range.label}
-              </FilterCheckbox>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Brand */}
+      <Section id="brand" icon={<Store size={12} />} label="Brand" badge={selectedBrands.length}>
+        {brands.map((b) => (
+          <FilterCheckbox key={b} checked={selectedBrands.includes(b)} onToggle={() => toggleBrand(b)}>
+            {b}
+          </FilterCheckbox>
+        ))}
+      </Section>
 
-      {/* Customer Rating */}
-      <div className="bg-white border border-natural/10 rounded-2xl overflow-hidden shadow-xs">
-        <button
-          onClick={() => setIsRatingOpen(!isRatingOpen)}
-          className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-[#4a556a] hover:bg-warm-ivory/60 transition-colors cursor-pointer"
-        >
-          Customer Rating
-          {isRatingOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
-        {isRatingOpen && (
-          <div className="px-4 pb-4 space-y-3 border-t border-natural/8">
-            {[4, 3, 2].map((stars) => (
-              <FilterCheckbox
-                key={stars}
-                checked={selectedRating === stars}
-                onToggle={() => setSelectedRating(selectedRating === stars ? null : stars)}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={10}
-                        className={
-                          i < stars
-                            ? "text-amber-400 fill-amber-400"
-                            : "text-natural/20 fill-natural/10"
-                        }
-                      />
-                    ))}
-                  </span>
-                  <span className="text-[#4a556a]/60">& up</span>
-                </span>
-              </FilterCheckbox>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Color */}
+      <Section id="color" icon={<Palette size={12} />} label="Color" badge={selectedColors.length}>
+        {colors.map((c) => (
+          <FilterCheckbox key={c} checked={selectedColors.includes(c)} onToggle={() => toggleColor(c)}>
+            <span className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full border border-natural/20 flex-shrink-0"
+                style={{ background: COLOR_MAP[c] || "#ccc" }}
+              />
+              {c}
+            </span>
+          </FilterCheckbox>
+        ))}
+      </Section>
+
+      {/* Size */}
+      <Section id="size" icon={<Ruler size={12} />} label="Size" badge={selectedSizes.length}>
+        {sizes.map((s) => (
+          <FilterCheckbox key={s} checked={selectedSizes.includes(s)} onToggle={() => toggleSize(s)}>
+            {s}
+          </FilterCheckbox>
+        ))}
+      </Section>
+
+      {/* Price Range */}
+      <Section id="price" icon={<Tag size={12} />} label="Price Range" badge={selectedPriceRanges.length}>
+        {PRICE_RANGES.map((r, i) => (
+          <FilterCheckbox key={i} checked={selectedPriceRanges.includes(i)} onToggle={() => togglePriceRange(i)}>
+            {r.label}
+          </FilterCheckbox>
+        ))}
+      </Section>
+
+      {/* Discount */}
+      <Section id="discount" icon={<Zap size={12} />} label="Discount" badge={selectedDiscounts.length}>
+        {DISCOUNT_RANGES.map((d, i) => (
+          <FilterCheckbox key={i} checked={selectedDiscounts.includes(i)} onToggle={() => toggleDiscount(i)}>
+            {d.label}
+          </FilterCheckbox>
+        ))}
+      </Section>
+
+      {/* Rating */}
+      <Section id="rating" icon={<Star size={12} />} label="Rating" badge={selectedRating ? 1 : 0}>
+        {[4, 3, 2].map((stars) => (
+          <FilterCheckbox
+            key={stars}
+            checked={selectedRating === stars}
+            onToggle={() => setSelectedRating(selectedRating === stars ? null : stars)}
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    size={11}
+                    className={i < stars ? "text-amber-400 fill-amber-400" : "text-natural/20 fill-natural/10"}
+                  />
+                ))}
+              </span>
+              <span className="text-[#4a556a]/60">& up</span>
+            </span>
+          </FilterCheckbox>
+        ))}
+      </Section>
+
+      {/* Delivery Time */}
+      <Section id="delivery" icon={<Clock size={12} />} label="Delivery Time" badge={selectedDelivery != null ? 1 : 0}>
+        {DELIVERY_OPTIONS.map((opt) => (
+          <FilterCheckbox
+            key={opt.maxDays}
+            checked={selectedDelivery === opt.maxDays}
+            onToggle={() => setSelectedDelivery(selectedDelivery === opt.maxDays ? null : opt.maxDays)}
+          >
+            <span className="flex items-center gap-1.5">
+              <Clock size={11} className="text-apricot" />
+              {opt.label}
+            </span>
+          </FilterCheckbox>
+        ))}
+      </Section>
+    </div>
+  );
+}
+
+// ─── Color map for swatches ───────────────────────────────────────────────────
+const COLOR_MAP: Record<string, string> = {
+  Black: "#111827",
+  White: "#f9fafb",
+  Red: "#ef4444",
+  Blue: "#3b82f6",
+  Green: "#22c55e",
+  Yellow: "#eab308",
+  Orange: "#f97316",
+  Purple: "#a855f7",
+  Pink: "#ec4899",
+  Brown: "#92400e",
+  Grey: "#6b7280",
+  Silver: "#9ca3af",
+  Gold: "#ca8a04",
+  Beige: "#d4b896",
+  Charcoal: "#374151",
+  Clear: "#e5e7eb",
+  Multicolor: "linear-gradient(135deg, #ef4444, #3b82f6, #22c55e, #eab308)",
+  "Rose Gold": "#be9b8f",
+  "8 UK": "#60a5fa",
+  "Free Size": "#a3e635",
+};
+
+// ─── Desktop sidebar wrapper ──────────────────────────────────────────────────
+function FilterSidebar(props: FilterPanelProps) {
+  return (
+    <div className="bg-white border border-natural/10 rounded-2xl overflow-hidden shadow-xs">
+      <FilterPanel {...props} />
     </div>
   );
 }
@@ -267,9 +477,7 @@ function ProductCard({
   onAddToCart: (e: React.MouseEvent) => void;
   onToggleFavorite: (e: React.MouseEvent) => void;
 }) {
-  const discount = Math.round(
-    ((product.originalPrice - product.price) / product.originalPrice) * 100
-  );
+  const discount = calcDiscount(product.price, product.originalPrice);
 
   return (
     <div className="group bg-white hover:bg-[#4A5568] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
@@ -301,6 +509,11 @@ function ProductCard({
             <p className="text-[9px] font-bold text-apricot group-hover:text-warm-ivory/85 uppercase tracking-wider transition-colors">
               {product.category}
             </p>
+            {product.brand && (
+              <p className="text-[9px] font-semibold text-[#4a556a]/50 group-hover:text-warm-ivory/60 transition-colors">
+                {product.brand}
+              </p>
+            )}
             <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
               {product.name}
             </h3>
@@ -323,7 +536,14 @@ function ProductCard({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-natural/8 mt-3">
+          <div className="pt-3 border-t border-natural/8 mt-3 space-y-2">
+            {/* Delivery badge */}
+            {product.deliveryDays != null && (
+              <div className="flex items-center gap-1 text-[9px] font-semibold text-fern/80 group-hover:text-warm-ivory/70 transition-colors">
+                <Clock size={9} />
+                {product.deliveryDays <= 2 ? "Express " : ""}Delivery in {product.deliveryDays} day{product.deliveryDays !== 1 ? "s" : ""}
+              </div>
+            )}
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
                 ₹{product.price.toLocaleString("en-IN")}
@@ -359,8 +579,15 @@ function SearchContent() {
 
   const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
   const [sortBy, setSortBy] = useState("featured");
+
+  // Filter state
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<number[]>([]);
+  const [selectedDiscounts, setSelectedDiscounts] = useState<number[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<number | null>(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -381,6 +608,10 @@ function SearchContent() {
               rating: p.rating,
               reviews: p.reviews,
               category: p.category?.name || "General",
+              brand: p.brand || undefined,
+              color: p.color || undefined,
+              size: p.size || undefined,
+              deliveryDays: p.deliveryDays || undefined,
             }));
             setProducts(mapped);
           }
@@ -404,7 +635,7 @@ function SearchContent() {
       id: product.id,
       name: product.name,
       price: product.price,
-      brand: "facile Store",
+      brand: product.brand || "facile Store",
       image: product.image,
     });
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
@@ -418,59 +649,119 @@ function SearchContent() {
     triggerToast(isNow ? `Added ${name} to Wishlist! ❤️` : `Removed ${name} from Wishlist.`);
   };
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
+  // ── Toggles ─────────────────────────────────────────────────────────────────
+  const toggleBrand = (b: string) =>
+    setSelectedBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]);
+
+  const toggleColor = (c: string) =>
+    setSelectedColors((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+
+  const toggleSize = (s: string) =>
+    setSelectedSizes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+
+  const togglePriceRange = (idx: number) =>
+    setSelectedPriceRanges((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+
+  const toggleDiscount = (idx: number) =>
+    setSelectedDiscounts((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+
+  const clearAllFilters = () => {
+    setSelectedBrands([]);
+    setSelectedColors([]);
+    setSelectedSizes([]);
+    setSelectedPriceRanges([]);
+    setSelectedDiscounts([]);
+    setSelectedRating(null);
+    setSelectedDelivery(null);
+    setSortBy("featured");
+  };
+
+  // ── Filtering Pipeline ──────────────────────────────────────────────────────
   const queryFiltered = products.filter((p) => {
     if (!query.trim()) return true;
     const q = query.toLowerCase();
     return (
       p.name.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+      p.category.toLowerCase().includes(q) ||
+      (p.brand || "").toLowerCase().includes(q)
     );
   });
+
+  const brandFiltered =
+    selectedBrands.length === 0
+      ? queryFiltered
+      : queryFiltered.filter((p) => p.brand && selectedBrands.includes(p.brand));
+
+  const colorFiltered =
+    selectedColors.length === 0
+      ? brandFiltered
+      : brandFiltered.filter((p) => p.color && selectedColors.includes(p.color));
+
+  const sizeFiltered =
+    selectedSizes.length === 0
+      ? colorFiltered
+      : colorFiltered.filter((p) => p.size && selectedSizes.includes(p.size));
 
   const priceFiltered =
     selectedPriceRanges.length === 0
-      ? queryFiltered
-      : queryFiltered.filter((p) =>
-        selectedPriceRanges.some((idx) => {
-          const r = PRICE_RANGES[idx];
-          return p.price >= r.min && p.price < r.max;
-        })
-      );
+      ? sizeFiltered
+      : sizeFiltered.filter((p) =>
+          selectedPriceRanges.some((idx) => {
+            const r = PRICE_RANGES[idx];
+            return p.price >= r.min && p.price < r.max;
+          })
+        );
+
+  const discountFiltered =
+    selectedDiscounts.length === 0
+      ? priceFiltered
+      : priceFiltered.filter((p) => {
+          const disc = calcDiscount(p.price, p.originalPrice);
+          return selectedDiscounts.some((idx) => disc >= DISCOUNT_RANGES[idx].min);
+        });
 
   const ratingFiltered = selectedRating
-    ? priceFiltered.filter((p) => p.rating >= selectedRating)
-    : priceFiltered;
+    ? discountFiltered.filter((p) => p.rating >= selectedRating)
+    : discountFiltered;
 
-  const sortedProducts = [...ratingFiltered].sort((a, b) => {
+  const deliveryFiltered =
+    selectedDelivery == null
+      ? ratingFiltered
+      : ratingFiltered.filter(
+          (p) => p.deliveryDays != null && p.deliveryDays <= selectedDelivery
+        );
+
+  const sortedProducts = [...deliveryFiltered].sort((a, b) => {
     if (sortBy === "price-asc") return a.price - b.price;
     if (sortBy === "price-desc") return b.price - a.price;
     if (sortBy === "rating") return b.rating - a.rating;
+    if (sortBy === "discount")
+      return calcDiscount(b.price, b.originalPrice) - calcDiscount(a.price, a.originalPrice);
     return 0;
   });
 
-  const togglePriceRange = (idx: number) => {
-    setSelectedPriceRanges((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-  };
+  const totalActiveFilters =
+    selectedBrands.length +
+    selectedColors.length +
+    selectedSizes.length +
+    selectedPriceRanges.length +
+    selectedDiscounts.length +
+    (selectedRating ? 1 : 0) +
+    (selectedDelivery != null ? 1 : 0);
 
-  const clearAllFilters = () => {
-    setSelectedPriceRanges([]);
-    setSelectedRating(null);
-    setSortBy("featured");
-  };
+  const hasActiveFilters = totalActiveFilters > 0;
 
-  const hasActiveFilters = selectedPriceRanges.length > 0 || selectedRating !== null;
-
-  const filterSidebarProps = {
-    selectedPriceRanges,
-    togglePriceRange,
-    selectedRating,
-    setSelectedRating,
-    hasActiveFilters,
-    clearAllFilters,
+  const filterPanelProps: FilterPanelProps = {
+    products,
+    selectedBrands, toggleBrand,
+    selectedColors, toggleColor,
+    selectedSizes, toggleSize,
+    selectedPriceRanges, togglePriceRange,
+    selectedDiscounts, toggleDiscount,
+    selectedRating, setSelectedRating,
+    selectedDelivery, setSelectedDelivery,
+    hasActiveFilters, clearAllFilters,
   };
 
   return (
@@ -491,23 +782,28 @@ function SearchContent() {
             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setIsMobileFilterOpen(false)}
           />
-          <div className="relative ml-auto w-72 bg-[#FAF3E3] h-full shadow-2xl p-5 overflow-y-auto animate-slide-in">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-bold text-[#4a556a]">Filters</h2>
+          <div className="relative ml-auto w-72 bg-white h-full shadow-2xl flex flex-col animate-slide-in">
+            {/* Scrollable accordion body */}
+            <div className="flex-1 overflow-y-auto">
+              <FilterPanel {...filterPanelProps} />
+            </div>
+
+            {/* Footer */}
+            <div className="flex border-t border-natural/10">
+              <button
+                onClick={() => { clearAllFilters(); setIsMobileFilterOpen(false); }}
+                className="flex-1 py-3.5 text-xs font-bold text-[#4a556a]/60 hover:text-[#4a556a] transition-colors cursor-pointer"
+              >
+                CLOSE
+              </button>
+              <div className="w-px bg-natural/10" />
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="p-1.5 hover:bg-natural/10 rounded-full cursor-pointer text-[#4a556a]"
+                className="flex-1 py-3.5 text-xs font-bold text-apricot hover:text-apricot/80 transition-colors cursor-pointer"
               >
-                <X size={18} />
+                APPLY ({sortedProducts.length})
               </button>
             </div>
-            <FilterSidebar {...filterSidebarProps} />
-            <button
-              onClick={() => setIsMobileFilterOpen(false)}
-              className="mt-6 w-full h-10 bg-[#4a556a] text-warm-ivory text-xs font-bold rounded-xl cursor-pointer hover:bg-[#4a556a]/90 transition-all shadow-sm"
-            >
-              Show {sortedProducts.length} Result{sortedProducts.length !== 1 ? "s" : ""}
-            </button>
           </div>
         </div>
       )}
@@ -550,49 +846,54 @@ function SearchContent() {
               Filters
               {hasActiveFilters && (
                 <span className="w-4 h-4 bg-apricot text-white rounded-full text-[9px] flex items-center justify-center font-bold">
-                  {selectedPriceRanges.length + (selectedRating ? 1 : 0)}
+                  {totalActiveFilters}
                 </span>
               )}
             </button>
 
             {/* Sort dropdown */}
-            <div className="relative flex items-center gap-1.5 bg-white border border-natural/20 rounded-full pl-3 pr-8 py-1.5 shadow-xs">
-              <span className="text-[10px] text-[#4a556a]/45 font-semibold whitespace-nowrap">
-                Sort by:
-              </span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-transparent text-[#4a556a] font-bold text-xs focus:outline-none cursor-pointer appearance-none"
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <ChevronDown size={12} className="absolute right-3 pointer-events-none text-[#4a556a]/40" />
-            </div>
+            <SortDropdown value={sortBy} onChange={setSortBy} />
           </div>
         </div>
 
-        {/* Active filter tags */}
+        {/* Active filter pills */}
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-5 ml-11 sm:ml-0">
+            {selectedBrands.map((b) => (
+              <button key={b} onClick={() => toggleBrand(b)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                <Store size={8} />{b}<X size={9} />
+              </button>
+            ))}
+            {selectedColors.map((c) => (
+              <button key={c} onClick={() => toggleColor(c)} className="flex items-center gap-1.5 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                <span className="w-2.5 h-2.5 rounded-full border border-natural/20 flex-shrink-0" style={{ background: COLOR_MAP[c] || "#ccc" }} />
+                {c}<X size={9} />
+              </button>
+            ))}
+            {selectedSizes.map((s) => (
+              <button key={s} onClick={() => toggleSize(s)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                <Ruler size={8} />{s}<X size={9} />
+              </button>
+            ))}
             {selectedPriceRanges.map((idx) => (
-              <button
-                key={idx}
-                onClick={() => togglePriceRange(idx)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer"
-              >
-                {PRICE_RANGES[idx].label}
-                <X size={9} />
+              <button key={idx} onClick={() => togglePriceRange(idx)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                {PRICE_RANGES[idx].label}<X size={9} />
+              </button>
+            ))}
+            {selectedDiscounts.map((idx) => (
+              <button key={idx} onClick={() => toggleDiscount(idx)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                <Zap size={8} />{DISCOUNT_RANGES[idx].label}<X size={9} />
               </button>
             ))}
             {selectedRating && (
-              <button
-                onClick={() => setSelectedRating(null)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer"
-              >
-                {selectedRating}★ & up
+              <button onClick={() => setSelectedRating(null)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                {selectedRating}★ & up<X size={9} />
+              </button>
+            )}
+            {selectedDelivery != null && (
+              <button onClick={() => setSelectedDelivery(null)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                <Clock size={8} />
+                {DELIVERY_OPTIONS.find((o) => o.maxDays === selectedDelivery)?.label}
                 <X size={9} />
               </button>
             )}
@@ -602,8 +903,8 @@ function SearchContent() {
         {/* Two-column layout */}
         <div className="flex gap-6">
           {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-52 flex-shrink-0">
-            <FilterSidebar {...filterSidebarProps} />
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <FilterSidebar {...filterPanelProps} />
           </aside>
 
           {/* Product Grid */}
@@ -615,8 +916,7 @@ function SearchContent() {
                 </div>
                 <h2 className="text-base font-bold text-[#4a556a] mb-2">No results found</h2>
                 <p className="text-xs text-[#4a556a]/55 max-w-xs leading-relaxed mb-6">
-                  We couldn&apos;t find anything for{" "}
-                  <span className="font-bold text-apricot">&ldquo;{query}&rdquo;</span>.
+                  We couldn&apos;t find anything matching your filters.
                   Try a different search term or clear your filters.
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center">

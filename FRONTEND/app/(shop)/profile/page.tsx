@@ -170,6 +170,18 @@ function ProfileContent() {
   const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
   const [profileBio, setProfileBio] = useState("Architect & design enthusiast. Passionate about slow living, ceramics, and sustainable craftsmanship.");
   const [showSaveToast, setShowSaveToast] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setProfilePhoto(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Address Form State
   const [addresses, setAddresses] = useState(MOCK_ADDRESSES);
@@ -182,18 +194,17 @@ function ProfileContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  // Auth Guard (Bypassed redirect to enable static preview on account & profile pages)
+  // Auth Guard
   useEffect(() => {
-    if (user) {
+    if (!isLoading && !user) {
+      router.push("/login");
+    } else if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
-    } else {
-      setProfileName("Guest User");
-      setProfileEmail("guest@example.com");
     }
-  }, [user]);
+  }, [user, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="auth-palette min-h-[60vh] flex items-center justify-center" style={{ backgroundColor: '#faf3e3' }}>
         <div className="flex flex-col items-center gap-3">
@@ -239,21 +250,8 @@ function ProfileContent() {
   };
 
   return (
-    <div className="auth-palette min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#faf3e3' }}>
+    <div className="auth-palette min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#F4F4F0' }}>
       <div className="max-w-6xl mx-auto">
-        
-        {/* Guest Warning Banner */}
-        {!user && (
-          <div className="mb-6 p-4 bg-apricot/10 border border-apricot/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-semibold text-fern">
-            <p>You are currently viewing this page as a guest. Register or sign in to view your real order history, saved addresses, and profile settings.</p>
-            <button 
-              onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
-            >
-              Sign In / Sign Up
-            </button>
-          </div>
-        )}
         
         {/* Page Title */}
         <div className="mb-8">
@@ -275,13 +273,27 @@ function ProfileContent() {
             <div className="bg-white border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#4A5568]" />
               <div className="relative inline-block mt-2">
-                <div className="w-16 h-16 bg-warm-ivory text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner">
-                  {profileName ? profileName.slice(0, 2) : "US"}
+                  <div className="w-16 h-16 bg-[#F4F4F0] text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner overflow-hidden">
+                    {profilePhoto
+                      ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                      : (profileName ? profileName.slice(0, 2) : "US")
+                    }
+                  </div>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 p-1.5 bg-[#4A5568] text-warm-ivory rounded-full shadow hover:bg-[#4A5568]/90 transition-colors duration-200 cursor-pointer"
+                    aria-label="Change photo"
+                  >
+                    <Camera size={12} />
+                  </button>
                 </div>
-                <button className="absolute bottom-0 right-0 p-1.5 bg-[#4A5568] text-warm-ivory rounded-full shadow hover:bg-[#4A5568]/90 transition-colors duration-200" aria-label="Change photo">
-                  <Camera size={12} />
-                </button>
-              </div>
               <h3 className="text-sm font-bold text-fern mt-3 truncate">{profileName}</h3>
               <p className="text-[10px] font-bold text-natural uppercase tracking-wider">{user ? "Member Since 2026" : "Guest Account"}</p>
             </div>
