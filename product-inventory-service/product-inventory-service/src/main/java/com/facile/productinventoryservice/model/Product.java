@@ -3,6 +3,7 @@ package com.facile.productinventoryservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -44,4 +45,19 @@ public class Product {
 
     @Builder.Default
     private Integer reviews = 0;
+
+    // ── New filterable attributes ─────────────────────────────────────────────
+
+    /** e.g. "Sony", "Nike", "Lakme" */
+    private String brand;
+
+    /** e.g. "Black", "White", "Red", "Blue" */
+    private String color;
+
+    /** e.g. "S", "M", "L", "XL", "One Size", "6 UK" */
+    private String size;
+
+    /** Estimated delivery in calendar days (1–7+) */
+    @Column(name = "delivery_days")
+    private Integer deliveryDays;
 }
