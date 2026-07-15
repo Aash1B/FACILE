@@ -815,7 +815,7 @@ export default function ProfilePage() {
                           <div className="flex flex-col items-center gap-3 py-2 bg-white rounded-xl border border-natural/15">
                             {/* QR Code using Google Charts API */}
                             <img 
-                              src={`https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&hl=en&chl=${encodeURIComponent(mfaSecretData.qrCodeUrl)}`}
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaSecretData.qrCodeUrl)}`}
                               alt="Scan this TOTP QR Code"
                               className="w-40 h-40 border border-natural/10"
                             />

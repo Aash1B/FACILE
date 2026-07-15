@@ -31,6 +31,18 @@ public class AuthService {
     private final TotpService totpService;
 
     public AuthResponse register(RegisterRequest request) {
+        Role userRole = Role.USER;
+        if (request.getRole() != null) {
+            try {
+                Role reqRole = Role.valueOf(request.getRole().toUpperCase());
+                if (reqRole != Role.ADMIN) {
+                    userRole = reqRole;
+                }
+            } catch (IllegalArgumentException e) {
+                // Fallback to USER role
+            }
+        }
+
         java.util.Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
         if (existingUserOpt.isPresent()) {
             User existingUser = existingUserOpt.get();
@@ -41,6 +53,7 @@ public class AuthService {
                 String otpCode = generateOtp();
                 existingUser.setName(request.getName());
                 existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+                existingUser.setRole(userRole);
                 existingUser.setOtpCode(otpCode);
                 existingUser.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
                 User savedUser = userRepository.save(existingUser);
@@ -60,7 +73,7 @@ public class AuthService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(userRole)
                 .enabled(false) // Unverified by default
                 .otpCode(otpCode)
                 .otpExpiry(LocalDateTime.now().plusMinutes(5)) // 5 minute expiry

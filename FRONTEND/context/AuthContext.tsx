@@ -18,7 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ requiresMfa: boolean; mfaToken?: string } | boolean>;
   loginWithGoogle: (idToken: string) => Promise<boolean>;
   verifyMfa: (mfaToken: string, code: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<{ requiresVerification: boolean; email: string }>;
+  register: (name: string, email: string, password: string, role?: string) => Promise<{ requiresVerification: boolean; email: string }>;
   verifyOtp: (email: string, otpCode: string) => Promise<boolean>;
   resendOtp: (email: string) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
@@ -137,10 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<{ requiresVerification: boolean; email: string }> => {
+  const register = async (name: string, email: string, password: string, role?: string): Promise<{ requiresVerification: boolean; email: string }> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/register", { name, email, password });
+      const response = await api.post("/api/auth/register", { name, email, password, role });
       const data = response.data;
       if (data.requiresVerification) {
         return { requiresVerification: true, email: data.email };
