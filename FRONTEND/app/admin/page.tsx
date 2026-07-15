@@ -381,8 +381,8 @@ export default function AdminDashboardPage() {
             onClick={() => setActiveTab("executive")}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
             style={{
-              backgroundColor: activeTab === "executive" ? '#424530' : 'transparent',
-              color: activeTab === "executive" ? '#F4E6C7' : '#424530'
+              backgroundColor: activeTab === "executive" ? '#4A5568' : 'transparent',
+              color: activeTab === "executive" ? '#F4E6C7' : '#4A5568'
             }}
           >
             <TrendingUp size={14} />
@@ -392,8 +392,8 @@ export default function AdminDashboardPage() {
             onClick={() => setActiveTab("sellers")}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
             style={{
-              backgroundColor: activeTab === "sellers" ? '#424530' : 'transparent',
-              color: activeTab === "sellers" ? '#F4E6C7' : '#424530'
+              backgroundColor: activeTab === "sellers" ? '#4A5568' : 'transparent',
+              color: activeTab === "sellers" ? '#F4E6C7' : '#4A5568'
             }}
           >
             <Users size={14} />
@@ -403,8 +403,8 @@ export default function AdminDashboardPage() {
             onClick={() => setActiveTab("vouchers")}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
             style={{
-              backgroundColor: activeTab === "vouchers" ? '#424530' : 'transparent',
-              color: activeTab === "vouchers" ? '#F4E6C7' : '#424530'
+              backgroundColor: activeTab === "vouchers" ? '#4A5568' : 'transparent',
+              color: activeTab === "vouchers" ? '#F4E6C7' : '#4A5568'
             }}
           >
             <Percent size={14} />
@@ -601,7 +601,7 @@ export default function AdminDashboardPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search merchant name/email..."
                 className="w-full h-10 pl-10 pr-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none focus:border-fern"
-                style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                style={{ borderColor: 'rgba(74,85,104,0.2)' }}
               />
             </div>
 
@@ -613,8 +613,8 @@ export default function AdminDashboardPage() {
                   onClick={() => setStatusFilter(s)}
                   className="px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap"
                   style={{
-                    backgroundColor: statusFilter === s ? '#424530' : 'transparent',
-                    color: statusFilter === s ? '#F4E6C7' : '#424530'
+                    backgroundColor: statusFilter === s ? '#4A5568' : 'transparent',
+                    color: statusFilter === s ? '#F4E6C7' : '#4A5568'
                   }}
                 >
                   {s}
@@ -724,7 +724,7 @@ export default function AdminDashboardPage() {
                     <button
                       onClick={() => setSelectedSellerDocs(seller)}
                       className="flex-1 h-8.5 rounded-xl border flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer hover:bg-stone-50"
-                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#4A5568' }}
                     >
                       <FileText size={11} />
                       Docs
@@ -732,7 +732,7 @@ export default function AdminDashboardPage() {
                     <button
                       onClick={() => setSelectedSellerProfile(seller)}
                       className="flex-1 h-8.5 rounded-xl border flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer hover:bg-stone-50"
-                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#4A5568' }}
                     >
                       <Users size={11} />
                       Profile
@@ -851,7 +851,7 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setVCode(e.target.value)}
                   placeholder="e.g. SUMMER20"
                   className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none uppercase"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                   required
                 />
               </div>
@@ -865,7 +865,7 @@ export default function AdminDashboardPage() {
                   value={vType}
                   onChange={(e) => setVType(e.target.value as "PERCENT" | "FIXED")}
                   className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 >
                   <option value="PERCENT" className="bg-[#F4E6C7]">Percentage (%)</option>
                   <option value="FIXED" className="bg-[#F4E6C7]">Fixed Amount (₹)</option>
@@ -884,7 +884,7 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setVValue(e.target.value)}
                   placeholder={vType === "PERCENT" ? "10" : "15.00"}
                   className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                   required
                 />
               </div>
@@ -901,7 +901,7 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setVMinOrder(e.target.value)}
                   placeholder="30.00"
                   className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                   required
                 />
               </div>
@@ -916,7 +916,7 @@ export default function AdminDashboardPage() {
                   value={vExpiry}
                   onChange={(e) => setVExpiry(e.target.value)}
                   className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                   required
                 />
               </div>
@@ -925,9 +925,9 @@ export default function AdminDashboardPage() {
               <button
                 type="submit"
                 className="w-full h-11 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all duration-200 mt-2 shadow-sm"
-                style={{ backgroundColor: '#424530' }}
+                style={{ backgroundColor: '#4A5568' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2c2e20'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#424530'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#4A5568'}
               >
                 Create Voucher
               </button>
@@ -1051,7 +1051,7 @@ export default function AdminDashboardPage() {
               <button
                 onClick={() => setSelectedSellerDocs(null)}
                 className="h-9 px-4 rounded-xl border text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#4A5568' }}
               >
                 Close Compliance View
               </button>
@@ -1118,7 +1118,7 @@ export default function AdminDashboardPage() {
               <button
                 onClick={() => setSelectedSellerProfile(null)}
                 className="h-9 px-4 rounded-xl border text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#4A5568' }}
               >
                 Close Profile
               </button>
@@ -1129,3 +1129,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+

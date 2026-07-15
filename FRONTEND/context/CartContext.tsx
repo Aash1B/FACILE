@@ -91,7 +91,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               name: i.productName,
               price: i.price,
               brand: "Facile",
-              image: "", // mock image path
+              image: i.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300", // mock image path
               quantity: i.quantity,
             }));
             setCart(mappedCart);

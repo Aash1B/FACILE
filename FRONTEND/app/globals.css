@@ -7,10 +7,10 @@
   --font-mono: var(--font-geist-mono);
 
   /* Brand Colors */
-  --color-fern:       #424530;   /* Fern: Primary text, headers, dark buttons */
+  --color-fern:       #4A5568;   /* Fern: Primary text, headers, dark buttons */
   --color-warm-ivory: #FAF3E3;   /* Warm Ivory: Primary background, light surfaces */
   --color-apricot:    #E8437F;   /* Apricot: Accents, highlights, call-to-actions */
-  --color-natural:    #FAF3E3;   /* Natural: Secondary text, borders, neutral elements */
+  --color-natural:    #4A5568;   /* Natural: Secondary text, borders, neutral elements */
   --color-sand:       #FAF3E3;
   --color-azul:       #DDE0F0;   /* Azul: Very light blue-grey alternative */
   --color-custom-bg:  #FAF3E3;   /* Custom Background: Global page background */

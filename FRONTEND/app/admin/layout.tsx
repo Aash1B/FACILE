@@ -25,8 +25,8 @@ export default function AdminLayout({
   // If loading authentication state, show a loading container
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#FAF6EE', color: '#424530' }}>
-        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#424530', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#FAF6EE', color: '#4A5568' }}>
+        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#4A5568', borderTopColor: 'transparent' }} />
         <span className="text-xs font-bold tracking-widest uppercase opacity-75">Verifying admin credentials...</span>
       </div>
     );
@@ -40,7 +40,7 @@ export default function AdminLayout({
   // Redirect to login if user is not authenticated or is not an ADMIN
   if (!user || user.role !== "ADMIN") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: '#FAF6EE', color: '#424530' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: '#FAF6EE', color: '#4A5568' }}>
         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-red-500/10 text-red-600">
           <ShieldAlert size={32} />
         </div>
@@ -52,14 +52,14 @@ export default function AdminLayout({
           <Link
             href="/admin/login"
             className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm"
-            style={{ backgroundColor: '#424530', color: '#F4E6C7' }}
+            style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}
           >
             Go to Admin Login
           </Link>
           <Link
             href="/"
             className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl border transition-all flex items-center justify-center cursor-pointer"
-            style={{ borderColor: 'rgba(66,69,48,0.3)', color: '#424530' }}
+            style={{ borderColor: 'rgba(74,85,104,0.3)', color: '#4A5568' }}
           >
             Back to Shop
           </Link>
@@ -76,10 +76,10 @@ export default function AdminLayout({
         <div className="space-y-8">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#424530' }}>
+            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#4A5568' }}>
               facile
             </span>
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded" style={{ backgroundColor: '#E09132', color: '#424530' }}>
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded" style={{ backgroundColor: '#E09132', color: '#4A5568' }}>
               Admin
             </span>
           </div>
@@ -90,8 +90,8 @@ export default function AdminLayout({
               href="/admin"
               className="flex items-center gap-3 px-4 h-11 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200"
               style={{
-                backgroundColor: pathname === "/admin" ? '#424530' : 'transparent',
-                color: pathname === "/admin" ? '#F4E6C7' : '#424530'
+                backgroundColor: pathname === "/admin" ? '#4A5568' : 'transparent',
+                color: pathname === "/admin" ? '#F4E6C7' : '#4A5568'
               }}
             >
               <BarChart3 size={15} />
@@ -101,16 +101,16 @@ export default function AdminLayout({
             <Link
               href="/admin#sellers"
               className="flex items-center gap-3 px-4 h-11 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:bg-stone-500/5"
-              style={{ color: '#424530' }}
+              style={{ color: '#4A5568' }}
             >
               <Users size={15} />
               <span>Sellers</span>
             </Link>
 
-            <div className="pt-4 border-t my-4" style={{ borderColor: 'rgba(66,69,48,0.1)' }} />
+            <div className="pt-4 border-t my-4" style={{ borderColor: 'rgba(74,85,104,0.1)' }} />
 
             <div className="px-4 py-2 space-y-3">
-              <div className="flex items-center justify-between text-[10px] font-bold tracking-wider uppercase opacity-65" style={{ color: '#424530' }}>
+              <div className="flex items-center justify-between text-[10px] font-bold tracking-wider uppercase opacity-65" style={{ color: '#4A5568' }}>
                 <span>System Status</span>
                 <Wifi size={12} className="text-green-600 animate-pulse" />
               </div>
@@ -127,7 +127,7 @@ export default function AdminLayout({
         {/* Footer Admin Info */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 px-3 py-2 rounded-2xl border bg-white/40" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase text-[#F4E6C7]" style={{ backgroundColor: '#424530' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase text-[#F4E6C7]" style={{ backgroundColor: '#4A5568' }}>
               {user.name.charAt(0)}
             </div>
             <div className="overflow-hidden">
@@ -151,10 +151,10 @@ export default function AdminLayout({
         {/* Mobile Header */}
         <header className="flex md:hidden items-center justify-between h-16 px-6 border-b" style={{ backgroundColor: '#F4E6C7', borderColor: 'rgba(165,142,116,0.2)' }}>
           <div className="flex items-center gap-2">
-            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#424530' }}>
+            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#4A5568' }}>
               facile
             </span>
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded" style={{ backgroundColor: '#E09132', color: '#424530' }}>
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded" style={{ backgroundColor: '#E09132', color: '#4A5568' }}>
               Admin
             </span>
           </div>
@@ -175,3 +175,5 @@ export default function AdminLayout({
     </div>
   );
 }
+
+

@@ -98,11 +98,28 @@ export default function CheckoutPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
-  const [checkoutItems, setCheckoutItems] = useState(cart);
+  const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
 
   useEffect(() => {
+    // Check if it's a Buy Now session
+    const searchParams = new URLSearchParams(window.location.search);
+    const isBuyNow = searchParams.get("buynow") === "true";
+    if (isBuyNow) {
+      const buyNowData = localStorage.getItem("facile_buynow");
+      if (buyNowData) {
+        try {
+          setCheckoutItems(JSON.parse(buyNowData));
+          return;
+        } catch (e) {
+          console.error("Failed to parse buy now data:", e);
+        }
+      }
+    }
+
     if (cart.length > 0) {
       setCheckoutItems(cart);
+    } else {
+      setCheckoutItems([]);
     }
   }, [cart]);
 
@@ -228,6 +245,14 @@ export default function CheckoutPage() {
     setShowPaymentModal(true);
   };
 
+  const handleCheckoutCompletion = () => {
+    if (localStorage.getItem("facile_buynow")) {
+      localStorage.removeItem("facile_buynow");
+    } else {
+      clearCart();
+    }
+  };
+
   const handleConfirmPayment = async () => {
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
@@ -236,7 +261,7 @@ export default function CheckoutPage() {
       setTimeout(() => {
         setIsProcessing(false);
         setPaymentSuccess(true);
-        clearCart();
+        handleCheckoutCompletion();
       }, 2000);
       return;
     }
@@ -281,7 +306,7 @@ export default function CheckoutPage() {
           // Payment successful!
           setIsProcessing(false);
           setPaymentSuccess(true);
-          clearCart();
+          handleCheckoutCompletion();
         },
         prefill: {
           name: activeAddress?.name || "",
@@ -289,7 +314,7 @@ export default function CheckoutPage() {
           email: user?.email || "",
         },
         theme: {
-          color: "#424530", // Brand green (fern)
+          color: "#4A5568", // Brand green (fern)
         },
         modal: {
           ondismiss: function () {
@@ -380,8 +405,6 @@ export default function CheckoutPage() {
             <ArrowLeft size={13} />
             Back to Bag
           </button>
-          <ChevronRight size={12} className="opacity-55" />
-          <span className="text-[#4A5568]">Secure Checkout</span>
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-grey mb-8 tracking-wide">
@@ -490,7 +513,7 @@ export default function CheckoutPage() {
 
                   <button
                     type="submit"
-                    className="w-full h-9.5 bg-[#4A5568] hover:bg-[#3B4455] text-natural text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-[0.98] shadow-sm"
+                    className="w-full h-9.5 bg-[#4A5568] hover:bg-[#3B4455] text-white text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-[0.98] shadow-sm"
                   >
                     Confirm Custom Address
                   </button>
@@ -517,7 +540,7 @@ export default function CheckoutPage() {
                             {addr.label}
                           </span>
                           {isSelected && (
-                            <div className="w-4 h-4 bg-[#4A5568] rounded-full flex items-center justify-center text-natural shadow-sm">
+                            <div className="w-4 h-4 bg-[#4A5568] rounded-full flex items-center justify-center text-white shadow-sm">
                               <Check size={10} className="stroke-[3.5px] text-[#E8A1C4]" />
                             </div>
                           )}
@@ -635,18 +658,18 @@ export default function CheckoutPage() {
                     <div key={item.id} className="py-4.5 flex gap-4 first:pt-0 last:pb-0 items-center justify-between">
                       <div className="flex gap-3.5 items-center min-w-0">
                         <img
-                          src={item.image}
+                          src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                           alt={item.name}
                           className="w-14 h-14 object-cover rounded-xl bg-natural/30 border border-natural/15 flex-shrink-0"
                         />
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
-                          <h4 className="text-xs font-bold text-warm-ivory truncate leading-snug">{item.name}</h4>
+                          <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
                           <span className="text-[10px] font-bold text-natural mt-1 block">Qty: {item.quantity}</span>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-extrabold text-warm-ivory">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="text-xs font-extrabold text-[#4A5568]">{formatPrice(item.price * item.quantity)}</p>
                         {item.quantity > 1 && (
                           <p className="text-[9px] text-natural font-medium mt-0.5">({formatPrice(item.price)} each)</p>
                         )}
@@ -663,11 +686,11 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-[120px]">
 
             {/* Secured Checkout Badge */}
-            <div className="bg-[#4A5568] text-natural rounded-2xl p-4 flex items-center gap-3 border border-natural/20 shadow-sm">
+            <div className="bg-[#4A5568] text-white rounded-2xl p-4 flex items-center gap-3 border border-natural/20 shadow-sm">
               <ShieldCheck size={26} className="text-[#E8A1C4] stroke-[2.5px] flex-shrink-0" />
               <div>
-                <h4 className="text-[11px] font-extrabold uppercase tracking-wider">100% Secure Checkout</h4>
-                <p className="text-[9px] text-natural/80 font-medium">SSL encryption protects your financial transactions.</p>
+                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-white">100% Secure Checkout</h4>
+                <p className="text-[9px] text-white/80 font-medium">SSL encryption protects your financial transactions.</p>
               </div>
             </div>
 
@@ -682,7 +705,7 @@ export default function CheckoutPage() {
               <div className="space-y-3.5 text-xs text-natural font-semibold">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="text-warm-ivory font-bold">{formatPrice(subtotal)}</span>
+                  <span className="font-bold">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1">
@@ -691,13 +714,13 @@ export default function CheckoutPage() {
                       <span className="text-[9px] bg-green-100 text-green-700 font-extrabold px-1.5 py-0.2 rounded-md uppercase tracking-wider">Free Option</span>
                     )}
                   </div>
-                  <span className="text-warm-ivory font-bold">
+                  <span className="font-bold">
                     {deliveryCharge === 0 ? "FREE" : formatPrice(deliveryCharge)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Platform Fee</span>
-                  <span className="text-warm-ivory font-bold">{formatPrice(platformFee)}</span>
+                  <span className="font-bold">{formatPrice(platformFee)}</span>
                 </div>
 
                 {appliedVoucher && (
@@ -714,7 +737,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-between bg-warm-ivory/40 p-3 rounded-xl border border-[#4A5568]/20">
                       <div>
                         <p className="text-xs font-bold text-black uppercase">{appliedVoucher.code}</p>
-                        <p className="text-[9px] text-[#424530]/80 font-bold">Discount applied</p>
+                        <p className="text-[9px] text-[#4A5568]/80 font-bold">Discount applied</p>
                       </div>
                       <button
                         onClick={handleRemoveVoucher}
@@ -736,11 +759,11 @@ export default function CheckoutPage() {
                           }}
                           placeholder="e.g. WELCOME10"
                           className="flex-1 h-9 px-3 text-xs font-medium rounded-xl border bg-warm-ivory outline-none focus:border-fern text-black placeholder-stone-400"
-                          style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                          style={{ borderColor: 'rgba(74,85,104,0.2)' }}
                         />
                         <button
                           onClick={handleApplyVoucher}
-                          className="h-9 px-4 bg-[#424530] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all hover:bg-stone-900"
+                          className="h-9 px-4 bg-[#4A5568] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-white transition-all hover:bg-[#4A5568]/90"
                         >
                           Apply
                         </button>
@@ -768,19 +791,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Promo Code Box */}
-              <div className="pt-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter Coupon Code"
-                    className="flex-1 h-9 px-3 bg-natural/15 border border-natural/20 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#4A5568] text-warm-ivory placeholder-natural/60"
-                  />
-                  <button className="h-9 px-3.5 bg-natural hover:bg-natural/90 active:scale-97 text-fern text-[10px] font-bold tracking-wider rounded-xl uppercase transition-all shadow-sm cursor-pointer">
-                    Apply
-                  </button>
-                </div>
-              </div>
 
               {/* Action Button */}
               <button
@@ -977,3 +987,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+

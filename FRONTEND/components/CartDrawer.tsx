@@ -68,12 +68,12 @@ export default function CartDrawer() {
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="p-4 bg-natural/10 rounded-full text-natural/70">
+                    <div className="p-4 bg-[#4A5568]/10 rounded-full text-[#4A5568]/70">
                       <ShoppingBag size={32} />
                     </div>
                     <div>
                       <p className="font-serif text-base font-semibold">Your bag is empty</p>
-                      <p className="text-xs text-natural mt-1">Browse our featured brands to add slow crafted items!</p>
+                      <p className="text-xs text-[#4A5568]/80 mt-1">Browse our featured brands to add slow crafted items!</p>
                     </div>
                     <button
                       onClick={() => setIsCartOpen(false)}
@@ -89,23 +89,23 @@ export default function CartDrawer() {
                       className="flex items-center gap-4 p-3 bg-white border border-natural/15 rounded-xl shadow-xs hover:border-natural/40 transition-colors"
                     >
                       <img 
-                        src={item.image} 
+                        src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} 
                         alt={item.name} 
                         className="w-16 h-16 object-cover rounded-lg bg-natural/10 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold text-natural uppercase tracking-wider block">
+                        <span className="text-[10px] font-bold text-[#4A5568]/70 uppercase tracking-wider block">
                           {item.brand}
                         </span>
                         <h4 className="text-xs font-semibold text-fern truncate mb-1">{item.name}</h4>
-                        <p className="text-xs font-bold text-apricot">₹{item.price.toLocaleString("en-IN")}</p>
+                        <p className="text-xs font-bold text-[#4A5568]">₹{item.price.toLocaleString("en-IN")}</p>
                       </div>
 
                       {/* Quantity Controls */}
                       <div className="flex flex-col items-end gap-2">
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          className="p-1 text-natural/60 hover:text-red-500 transition-colors"
+                          className="p-1 text-[#E8A1C4] hover:text-[#E8A1C4]/80 transition-colors"
                           aria-label="Remove item"
                         >
                           <Trash2 size={14} />
@@ -114,7 +114,7 @@ export default function CartDrawer() {
                         <div className="flex items-center border border-natural/20 rounded-full bg-natural/20 p-0.5">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-natural"
+                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-[#4A5568]"
                             aria-label="Decrease quantity"
                           >
                             <Minus size={10} />
@@ -122,7 +122,7 @@ export default function CartDrawer() {
                           <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-natural"
+                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-[#4A5568]"
                             aria-label="Increase quantity"
                           >
                             <Plus size={10} />
@@ -138,11 +138,11 @@ export default function CartDrawer() {
               {cart.length > 0 && (
                 <div className="border-t border-natural/20 bg-white p-6 space-y-4">
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs text-natural">
+                    <div className="flex justify-between text-xs text-[#4A5568]">
                       <span>Subtotal</span>
                       <span>₹{subtotal.toLocaleString("en-IN")}</span>
                     </div>
-                    <div className="flex justify-between text-xs text-natural">
+                    <div className="flex justify-between text-xs text-[#4A5568]">
                       <span>Shipping</span>
                       <span>{subtotal >= 1500 ? "Free" : "₹99"}</span>
                     </div>

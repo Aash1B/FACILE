@@ -159,18 +159,6 @@ export default function Navbar() {
 
           {/* Right Links & Icons */}
           <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto">
-            <a 
-              href="#testimonials" 
-              className="hidden md:inline-block text-black hover:text-apricot transition-colors duration-200"
-            >
-              Blogs
-            </a>
-            <a 
-              href="#testimonials" 
-              className="hidden md:inline-block text-black hover:text-apricot transition-colors duration-200 mr-2"
-            >
-              FAQs
-            </a>
 
             {/* Favorite Icon */}
             <button

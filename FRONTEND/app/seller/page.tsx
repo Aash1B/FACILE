@@ -330,8 +330,8 @@ export default function SellerDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]" style={{ color: '#424530' }}>
-        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#424530', borderTopColor: 'transparent' }} />
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]" style={{ color: '#4A5568' }}>
+        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#4A5568', borderTopColor: 'transparent' }} />
         <span className="text-sm font-semibold tracking-wider uppercase opacity-80">
           Loading Workspace...
         </span>
@@ -350,13 +350,13 @@ export default function SellerDashboardPage() {
       {showSuccessToast && (
         <div
           className="fixed bottom-6 right-6 z-50 py-3.5 px-5 rounded-2xl flex items-center gap-2.5 border animate-slide-in text-xs font-semibold shadow-xl"
-          style={{ backgroundColor: "#424530", color: "#F4E6C7", borderColor: "#A58E74" }}
+          style={{ backgroundColor: "#4A5568", color: "#F4E6C7", borderColor: "#A58E74" }}
         >
           <div
             className="w-5 h-5 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "#E09132" }}
           >
-            <Check size={12} style={{ color: "#424530" }} className="stroke-[3px]" />
+            <Check size={12} style={{ color: "#4A5568" }} className="stroke-[3px]" />
           </div>
           <span>Product listed successfully in shop catalog! 🌟</span>
         </div>
@@ -465,7 +465,7 @@ export default function SellerDashboardPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Stoneware Serving Bowl"
                 className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent transition-all outline-none"
-                style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 required
               />
             </div>
@@ -481,7 +481,7 @@ export default function SellerDashboardPage() {
                 placeholder="Handcrafted details, materials used, glaze finish..."
                 rows={3}
                 className="w-full p-3.5 text-xs font-medium rounded-xl border bg-transparent transition-all outline-none resize-none"
-                style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 required
               />
             </div>
@@ -496,7 +496,7 @@ export default function SellerDashboardPage() {
                   value={selectedCategoryId}
                   onChange={(e) => setSelectedCategoryId(e.target.value)}
                   className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern font-medium"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)' }}
                   required
                 >
                   <option value="" disabled>Select Category</option>
@@ -514,7 +514,7 @@ export default function SellerDashboardPage() {
                   value={selectedSubCategoryId}
                   onChange={(e) => setSelectedSubCategoryId(e.target.value)}
                   className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern font-medium"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)' }}
                   required
                 >
                   <option value="" disabled>Select Subcategory</option>
@@ -542,7 +542,7 @@ export default function SellerDashboardPage() {
                     onChange={(e) => setMrp(e.target.value)}
                     placeholder="39.99"
                     className="w-full h-10 pl-8 pr-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                    style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                    style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                     required
                   />
                 </div>
@@ -563,7 +563,7 @@ export default function SellerDashboardPage() {
                     onChange={(e) => setSellingPrice(e.target.value)}
                     placeholder="35.00"
                     className="w-full h-10 pl-8 pr-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                    style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                    style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                     required
                   />
                 </div>
@@ -581,7 +581,7 @@ export default function SellerDashboardPage() {
                 onChange={(e) => setStocks(e.target.value)}
                 placeholder="20"
                 className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
-                style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 required
               />
             </div>
@@ -599,7 +599,7 @@ export default function SellerDashboardPage() {
                   onChange={(e) => setNewImageUrl(e.target.value)}
                   placeholder="https://image-url.com/file.jpg"
                   className="flex-1 h-9 px-3.5 text-[11px] font-medium rounded-xl border bg-transparent outline-none text-fern"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  style={{ borderColor: 'rgba(74,85,104,0.2)' }}
                 />
                 <button
                   type="button"
@@ -610,7 +610,7 @@ export default function SellerDashboardPage() {
                 </button>
               </div>
 
-              <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/10" style={{ borderColor: 'rgba(66,69,48,0.15)' }}>
+              <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/10" style={{ borderColor: 'rgba(74,85,104,0.15)' }}>
                 <input
                   type="file"
                   multiple
@@ -653,9 +653,9 @@ export default function SellerDashboardPage() {
             <button
               type="submit"
               className="w-full h-11 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all duration-200 mt-2 shadow-sm"
-              style={{ backgroundColor: '#424530' }}
+              style={{ backgroundColor: '#4A5568' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2c2e20'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#424530'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#4A5568'}
             >
               List Product to Store
             </button>
@@ -734,7 +734,7 @@ export default function SellerDashboardPage() {
 
                   {/* Actions / Stocks footer */}
                   <div className="px-5 py-4 border-t flex items-center justify-between bg-stone-50/50" style={{ borderColor: 'rgba(165,142,116,0.1)' }}>
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold" style={{ color: p.stocks <= 5 ? '#E09132' : '#424530' }}>
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold" style={{ color: p.stocks <= 5 ? '#E09132' : '#4A5568' }}>
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.stocks <= 5 ? '#E09132' : '#34A853' }} />
                       <span>{p.stocks} units left</span>
                     </div>
@@ -764,3 +764,5 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
+
