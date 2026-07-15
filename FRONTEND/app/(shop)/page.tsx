@@ -367,7 +367,7 @@ export default function Home() {
                   {/* Product Image */}
                   <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
                     <img
-                      src={product.image}
+                      src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                       alt={product.name}
                       className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
                     />

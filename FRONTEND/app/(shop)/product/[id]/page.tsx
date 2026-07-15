@@ -222,7 +222,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               </span>
             )}
             <img
-              src={product.image}
+              src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
               alt={product.name}
               className="max-w-full max-h-full object-contain mix-blend-multiply"
             />

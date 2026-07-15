@@ -89,7 +89,7 @@ export default function CartDrawer() {
                       className="flex items-center gap-4 p-3 bg-white border border-natural/15 rounded-xl shadow-xs hover:border-natural/40 transition-colors"
                     >
                       <img 
-                        src={item.image} 
+                        src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} 
                         alt={item.name} 
                         className="w-16 h-16 object-cover rounded-lg bg-natural/10 flex-shrink-0"
                       />

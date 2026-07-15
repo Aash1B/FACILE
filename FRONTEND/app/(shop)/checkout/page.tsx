@@ -380,8 +380,6 @@ export default function CheckoutPage() {
             <ArrowLeft size={13} />
             Back to Bag
           </button>
-          <ChevronRight size={12} className="opacity-55" />
-          <span className="text-[#4A5568]">Secure Checkout</span>
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-grey mb-8 tracking-wide">
@@ -635,13 +633,13 @@ export default function CheckoutPage() {
                     <div key={item.id} className="py-4.5 flex gap-4 first:pt-0 last:pb-0 items-center justify-between">
                       <div className="flex gap-3.5 items-center min-w-0">
                         <img
-                          src={item.image}
+                          src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                           alt={item.name}
                           className="w-14 h-14 object-cover rounded-xl bg-natural/30 border border-natural/15 flex-shrink-0"
                         />
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
-                          <h4 className="text-xs font-bold text-warm-ivory truncate leading-snug">{item.name}</h4>
+                          <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
                           <span className="text-[10px] font-bold text-natural mt-1 block">Qty: {item.quantity}</span>
                         </div>
                       </div>
@@ -740,7 +738,7 @@ export default function CheckoutPage() {
                         />
                         <button
                           onClick={handleApplyVoucher}
-                          className="h-9 px-4 bg-[#424530] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all hover:bg-stone-900"
+                          className="h-9 px-4 bg-[#4A5568] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all hover:bg-[#4A5568]/90"
                         >
                           Apply
                         </button>
