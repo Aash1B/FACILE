@@ -101,7 +101,7 @@ export default function Navbar() {
     e.preventDefault();
     setShowSuggestions(false);
     if (searchQuery.trim()) {
-      router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     } else {
       router.push("/");
     }
