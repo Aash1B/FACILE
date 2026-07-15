@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { 
   User, 
@@ -74,12 +74,22 @@ const MOCK_ADDRESSES = [
   }
 ];
 
-export default function ProfilePage() {
+function ProfileContent() {
   const { user, logout, isLoading, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "security">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams) {
+      const tab = searchParams.get("tab");
+      if (tab === "profile" || tab === "orders" || tab === "addresses" || tab === "security") {
+        setActiveTab(tab as any);
+      }
+    }
+  }, [searchParams]);
 
   // Security Tab state variables
   const [sessionsList, setSessionsList] = useState<any[]>([]);
@@ -940,5 +950,20 @@ export default function ProfilePage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAF3E3] flex items-center justify-center text-fern font-semibold">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-fern border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm">Loading profile...</p>
+        </div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

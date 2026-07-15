@@ -215,7 +215,7 @@ export default function Navbar() {
                         <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
                       </div>
                       <Link
-                        href="/profile"
+                        href="/profile?tab=profile"
                         onClick={() => setIsProfileOpen(false)}
                         className="w-full py-1.5 px-2 hover:bg-warm-ivory text-black rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left mb-1 flex"
                       >
@@ -561,13 +561,7 @@ export default function Navbar() {
               >
                 <Home size={15} className="text-black/70 flex-shrink-0" /> Home
               </Link>
-              <a 
-                href="#best-sellers" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
-              >
-                <Store size={15} className="text-black/70 flex-shrink-0" /> Shop
-              </a>
+
               <a 
                 href="#categories" 
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -582,13 +576,7 @@ export default function Navbar() {
               >
                 <Sparkles size={15} className="text-black/70 flex-shrink-0" /> New Arrivals
               </a>
-              <a 
-                href="#special-offer" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
-              >
-                <TrendingUp size={15} className="text-black/70 flex-shrink-0" /> Trending
-              </a>
+
               <a 
                 href="#favorites" 
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -609,21 +597,21 @@ export default function Navbar() {
               <hr className="border-t border-natural/20 my-3" />
 
               <Link 
-                href="/profile" 
+                href="/profile?tab=profile" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
                 <User size={15} className="text-black/70 flex-shrink-0" /> My Profile
               </Link>
               <Link 
-                href="/profile" 
+                href="/profile?tab=orders" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
                 <Package size={15} className="text-black/70 flex-shrink-0" /> My Orders
               </Link>
               <Link 
-                href="/profile" 
+                href="/profile?tab=addresses" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >

@@ -282,11 +282,11 @@ function HomeContent() {
               <span>NEW ARRIVALS</span>
             </div>
 
-            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#dde0f0] leading-[1.15] tracking-tight">
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
               Discover The Best Products for You
             </h1>
 
-            <p className="text-xs sm:text-sm text-[#dde0f0] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
               Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
             </p>
 
@@ -314,7 +314,7 @@ function HomeContent() {
                 <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
                 <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
               </div>
-              <p className="text-[11px] font-bold text-[#dde0f0] tracking-wide">
+              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
                 Trusted by 10,000+ Happy Customers
               </p>
             </div>
@@ -556,10 +556,10 @@ function HomeContent() {
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] leading-tight">
                 Up to 50% Off
               </h2>
-              <p className="text-xs sm:text-sm text-[#dde0f0] max-w-md leading-relaxed font-medium">
+              <p className="text-xs sm:text-sm text-[#4A5568] max-w-md leading-relaxed font-medium">
                 Limited time offer on selected items. Hurry up and grab the best deals!
               </p>
-              <button className="h-11 px-6 bg-[#dde0f0] hover:bg-[#dde0f0]/90 active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
+              <button className="h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
                 Shop the Sale
                 <ArrowRight size={14} />
               </button>
