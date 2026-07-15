@@ -13,16 +13,11 @@ import {
   ShieldCheck,
   RefreshCw,
   Headset,
-  Headphones,
-  Shirt,
-  Armchair,
-  Sparkles,
-  Flame,
-  Watch,
   Check,
   ChevronLeft,
   ChevronRight,
-  Quote
+  Quote,
+  Sparkles
 } from "lucide-react";
 
 // Mock Database of Best Selling Products
@@ -71,6 +66,51 @@ const BEST_SELLERS = [
     image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400",
     rating: 4.8,
     reviews: 64
+  },
+  {
+    id: "bs6",
+    name: "Portable Bluetooth Speaker",
+    price: 2499,
+    originalPrice: 3499,
+    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400",
+    rating: 4.6,
+    reviews: 112
+  },
+  {
+    id: "bs7",
+    name: "Classic Sunglasses",
+    price: 1499,
+    originalPrice: 2299,
+    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400",
+    rating: 4.5,
+    reviews: 87
+  },
+  {
+    id: "bs8",
+    name: "Ceramic Coffee Set",
+    price: 1899,
+    originalPrice: 2799,
+    image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400",
+    rating: 4.7,
+    reviews: 73
+  },
+  {
+    id: "bs9",
+    name: "Premium Yoga Mat",
+    price: 1299,
+    originalPrice: 1999,
+    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400",
+    rating: 4.8,
+    reviews: 145
+  },
+  {
+    id: "bs10",
+    name: "Minimal Desk Lamp",
+    price: 2199,
+    originalPrice: 3199,
+    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400",
+    rating: 4.4,
+    reviews: 59
   }
 ];
 
@@ -83,6 +123,17 @@ const CATEGORIES = [
   { id: "c5", label: "Sports", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250", bgColor: "bg-teal-50/55 border border-teal-100/40" },
   { id: "c6", label: "Toys & Baby", image: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
 ];
+
+type ApiProduct = {
+  id: number | string;
+  title: string;
+  sellingPrice: number;
+  mrp: number;
+  image?: string;
+  rating: number;
+  reviews: number;
+  description?: string;
+};
 
 // Mock Testimonials
 const TESTIMONIALS = [
@@ -113,9 +164,14 @@ function HomeContent() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+  const [productPage, setProductPage] = useState(0);
   
   const searchParams = useSearchParams();
   const searchQuery = searchParams ? searchParams.get("search") || "" : "";
+
+  useEffect(() => {
+    setProductPage(0);
+  }, [searchQuery]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -124,17 +180,18 @@ function HomeContent() {
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            const mapped = data.map((p: any) => ({
+            const mapped = (data as ApiProduct[]).map((p) => ({
               id: "bs" + p.id,
               name: p.title,
               description: p.description || "",
               price: p.sellingPrice,
               originalPrice: p.mrp,
-              image: p.image,
+              image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
               rating: p.rating,
               reviews: p.reviews
             }));
             setProducts(mapped);
+            setProductPage(0);
           }
         }
       } catch (err) {
@@ -152,6 +209,13 @@ function HomeContent() {
       (p.description && p.description.toLowerCase().includes(query))
     );
   });
+
+  const productsPerPage = 5;
+  const productPageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
+  const visibleProducts = filteredProducts.slice(
+    productPage * productsPerPage,
+    productPage * productsPerPage + productsPerPage
+  );
 
   const triggerToast = (message: string) => {
     setToastMessage(message);
@@ -309,34 +373,34 @@ function HomeContent() {
       <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
-          <a 
-            href="#all-categories" 
+          <Link 
+            href="/categories" 
             className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
           >
             View All Categories
             <ArrowRight size={12} />
-          </a>
+          </Link>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
           {CATEGORIES.map((category) => {
             return (
-              <a
+              <Link
                 key={category.id}
-                href={`#${category.label.toLowerCase()}`}
-                className="flex flex-col items-center gap-3 group"
+                href={`/category/${category.id.replace("c", "")}`}
+                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apricot"
               >
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-105 group-hover:shadow-md ${category.bgColor}`}>
+                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg ${category.bgColor}`}>
                   <img
                     src={category.image}
                     alt={category.label}
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <span className="text-xs font-bold text-[#4a556a] group-hover:text-apricot transition-colors text-center">
+                <span className="text-sm font-bold text-[#4a556a] group-hover:text-apricot transition-colors text-center">
                   {category.label}
                 </span>
-              </a>
+              </Link>
             );
           })}
         </div>
@@ -344,26 +408,45 @@ function HomeContent() {
 
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
             {searchQuery ? `Search Results for "${searchQuery}"` : "Best Selling Products"}
           </h2>
-          {searchQuery ? (
-            <Link 
-              href="/" 
-              className="text-xs font-bold px-3 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm cursor-pointer"
-            >
-              Clear Search
-            </Link>
-          ) : (
-            <a 
-              href="#all-products" 
-              className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
-            >
-              View All Products
-              <ArrowRight size={12} />
-            </a>
-          )}
+          <div className="flex items-center gap-4 self-end sm:self-auto">
+            {searchQuery && (
+              <Link 
+                href="/" 
+                className="text-xs font-bold px-3 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm cursor-pointer"
+              >
+                Clear Search
+              </Link>
+            )}
+            {productPageCount > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:block text-[11px] font-semibold text-[#4a556a]/70 mr-1">
+                  {productPage + 1} / {productPageCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setProductPage((page) => Math.max(0, page - 1))}
+                  disabled={productPage === 0}
+                  aria-label="Show previous products"
+                  className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductPage((page) => Math.min(productPageCount - 1, page + 1))}
+                  disabled={productPage >= productPageCount - 1}
+                  aria-label="Show more products"
+                  className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -383,7 +466,7 @@ function HomeContent() {
         ) : (
           /* 5-Column Grid */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {filteredProducts.map((product: any) => {
+            {visibleProducts.map((product) => {
               const isFav = favorites.includes(product.id);
               return (
                 <div
