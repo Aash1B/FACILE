@@ -63,13 +63,16 @@ export default function SellerDashboardPage() {
     }
   }, [user, isLoading, router]);
 
-  // Form states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [mrp, setMrp] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
-  const [subcategory, setSubcategory] = useState("");
+  
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [subcategoriesList, setSubcategoriesList] = useState<any[]>([]);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("");
+  
   const [stocks, setStocks] = useState("");
   const [image, setImage] = useState("");
   
@@ -78,9 +81,90 @@ export default function SellerDashboardPage() {
   const [newImageUrl, setNewImageUrl] = useState("");
 
   // Listing states
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [formError, setFormError] = useState("");
+
+  const fetchProductsFromDb = async () => {
+    try {
+      const res = await fetch("/api/products");
+      if (res.ok) {
+        const data = await res.json();
+        const mapped: Product[] = data.map((p: any) => ({
+          id: String(p.id),
+          title: p.title,
+          description: p.description,
+          mrp: Number(p.mrp),
+          sellingPrice: Number(p.sellingPrice),
+          category: p.category?.name || "General",
+          subcategory: p.subCategory?.name || "General",
+          stocks: 50,
+          image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
+          images: [p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"]
+        }));
+        
+        setProducts(mapped);
+        
+        // Background fetch stock levels
+        mapped.forEach(async (prod) => {
+          try {
+            const resInv = await fetch(`/api/products/${prod.id}/inventory`);
+            if (resInv.ok) {
+              const inv = await resInv.json();
+              setProducts(prev => prev.map(pr => pr.id === prod.id ? { ...pr, stocks: inv.stock } : pr));
+            }
+          } catch (e) {
+            console.error("Failed to load inventory for product id: " + prod.id, e);
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load products from database:", err);
+    }
+  };
+
+  const fetchCategoriesFromDb = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      if (res.ok) {
+        const data = await res.json();
+        setCategoriesList(data);
+        if (data.length > 0) {
+          setSelectedCategoryId(String(data[0].id));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role === "SELLER") {
+      fetchProductsFromDb();
+      fetchCategoriesFromDb();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      if (!selectedCategoryId) return;
+      try {
+        const res = await fetch(`/api/categories/${selectedCategoryId}/subcategories`);
+        if (res.ok) {
+          const data = await res.json();
+          setSubcategoriesList(data);
+          if (data.length > 0) {
+            setSelectedSubCategoryId(String(data[0].id));
+          } else {
+            setSelectedSubCategoryId("");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load subcategories:", err);
+      }
+    };
+    fetchSubcategories();
+  }, [selectedCategoryId]);
 
   const handleMultipleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -106,11 +190,11 @@ export default function SellerDashboardPage() {
     setImages(prev => prev.filter((_, idx) => idx !== index));
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
 
-    if (!title || !description || !mrp || !sellingPrice || !stocks) {
+    if (!title || !description || !mrp || !sellingPrice || !stocks || !selectedCategoryId || !selectedSubCategoryId) {
       setFormError("Please fill out all required fields.");
       return;
     }
@@ -138,40 +222,67 @@ export default function SellerDashboardPage() {
 
     const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
-    const newProduct: Product = {
-      id: "p_" + Math.random().toString(36).substr(2, 9),
+    const payload = {
       title,
       description,
       mrp: mrpNum,
       sellingPrice: priceNum,
-      category,
-      subcategory: subcategory || "General",
-      stocks: stockNum,
       image: imageSource,
-      images: images.length > 0 ? images : [imageSource]
+      category: {
+        id: Number(selectedCategoryId)
+      },
+      subCategory: {
+        id: Number(selectedSubCategoryId)
+      }
     };
 
-    setProducts([newProduct, ...products]);
-    setShowSuccessToast(true);
+    try {
+      const res = await fetch(`/api/products?initialStock=${stockNum}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-    // Reset Form
-    setTitle("");
-    setDescription("");
-    setMrp("");
-    setSellingPrice("");
-    setCategory(CATEGORIES[0]);
-    setSubcategory("");
-    setStocks("");
-    setImages([]);
-    setNewImageUrl("");
+      if (res.ok) {
+        setShowSuccessToast(true);
+        setTitle("");
+        setDescription("");
+        setMrp("");
+        setSellingPrice("");
+        setStocks("");
+        setImages([]);
+        setNewImageUrl("");
+        
+        await fetchProductsFromDb();
 
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 3000);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+        }, 3000);
+      } else {
+        setFormError("Failed to save product in database. Please check connection.");
+      }
+    } catch (err) {
+      setFormError("Error occurred while connecting to database.");
+      console.error(err);
+    }
   };
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(p => p.id !== id));
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await fetchProductsFromDb();
+      } else {
+        alert("Failed to delete product from database.");
+      }
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+      alert("Error occurred while deleting product from database.");
+    }
   };
 
   if (isLoading) {
@@ -339,13 +450,15 @@ export default function SellerDashboardPage() {
                   Category
                 </label>
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  value={selectedCategoryId}
+                  onChange={(e) => setSelectedCategoryId(e.target.value)}
+                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  required
                 >
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c} className="bg-[#F4E6C7]">{c}</option>
+                  <option value="" disabled>Select Category</option>
+                  {categoriesList.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-[#F4E6C7]">{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -354,14 +467,18 @@ export default function SellerDashboardPage() {
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
                   Subcategory
                 </label>
-                <input
-                  type="text"
-                  value={subcategory}
-                  onChange={(e) => setSubcategory(e.target.value)}
-                  placeholder="e.g. Tableware"
-                  className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent transition-all outline-none"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
-                />
+                <select
+                  value={selectedSubCategoryId}
+                  onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                  className="w-full h-10 px-2 text-xs font-semibold rounded-xl border bg-transparent outline-none cursor-pointer text-fern"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
+                  required
+                >
+                  <option value="" disabled>Select Subcategory</option>
+                  {subcategoriesList.map((sc) => (
+                    <option key={sc.id} value={sc.id} className="bg-[#F4E6C7]">{sc.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
