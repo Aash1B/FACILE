@@ -12,7 +12,7 @@ const CATEGORIES = [
 
 export default function CategoriesPage() {
   return (
-    <main className="min-h-screen bg-[#FAF3E3] text-[#4a556a] pb-20">
+    <main className="min-h-screen bg-[#F4F4F0] text-[#4a556a] pb-20">
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-8">
           <ArrowLeft size={15} /> Back to home

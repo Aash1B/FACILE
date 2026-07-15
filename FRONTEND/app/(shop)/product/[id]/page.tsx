@@ -239,7 +239,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Amazon-Style Redesigned Layout: 3 Columns on Large Screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-warm-ivory border border-natural/15 rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-[#F4F4F0] border border-natural/15 rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-xs">
           
           {/* COLUMN 1: Image Gallery & Main Image (Span 5 on Desktop) */}
           <div className="lg:col-span-5 flex flex-col md:flex-row gap-4">
@@ -331,17 +331,17 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <span>Special Offers</span>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                <div className="min-w-[150px] bg-warm-ivory/50 border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
+                <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Bank Offer</p>
                   <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Get 10% off up to ₹1,500 on HDFC Cards.</p>
                   <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
                 </div>
-                <div className="min-w-[150px] bg-warm-ivory/50 border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
+                <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Cashback</p>
                   <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Up to ₹500 cashback on UPI payments.</p>
                   <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">2 offers &gt;</span>
                 </div>
-                <div className="min-w-[150px] bg-warm-ivory/50 border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
+                <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Partner Offer</p>
                   <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Save up to 18% with GST business invoice.</p>
                   <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
@@ -387,7 +387,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
           {/* COLUMN 3: Buy Box (Span 3 on Desktop, Sticky) */}
           <div className="lg:col-span-3">
-            <div className="bg-warm-ivory/50 border border-natural/15 rounded-3xl p-5 space-y-3.5 lg:sticky lg:top-[120px] shadow-xs">
+            <div className="bg-[#F4F4F0] border border-natural/15 rounded-3xl p-5 space-y-3.5 lg:sticky lg:top-[120px] shadow-xs">
               
               {/* Delivery and Prime branding */}
               <div className="space-y-2">
