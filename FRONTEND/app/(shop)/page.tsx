@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import {
   Heart,
@@ -17,7 +16,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Quote,
-  Sparkles
 } from "lucide-react";
 
 // Mock Database of Best Selling Products
@@ -165,13 +163,6 @@ function HomeContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
-  
-  const searchParams = useSearchParams();
-  const searchQuery = searchParams ? searchParams.get("search") || "" : "";
-
-  useEffect(() => {
-    setProductPage(0);
-  }, [searchQuery]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -201,18 +192,9 @@ function HomeContent() {
     loadProducts();
   }, []);
 
-  const filteredProducts = products.filter((p: any) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(query) ||
-      (p.description && p.description.toLowerCase().includes(query))
-    );
-  });
-
   const productsPerPage = 5;
-  const productPageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
-  const visibleProducts = filteredProducts.slice(
+  const productPageCount = Math.max(1, Math.ceil(products.length / productsPerPage));
+  const visibleProducts = products.slice(
     productPage * productsPerPage,
     productPage * productsPerPage + productsPerPage
   );
@@ -410,17 +392,9 @@ function HomeContent() {
       <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
-            {searchQuery ? `Search Results for "${searchQuery}"` : "Best Selling Products"}
+            Best Selling Products
           </h2>
           <div className="flex items-center gap-4 self-end sm:self-auto">
-            {searchQuery && (
-              <Link 
-                href="/" 
-                className="text-xs font-bold px-3 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm cursor-pointer"
-              >
-                Clear Search
-              </Link>
-            )}
             {productPageCount > 1 && (
               <div className="flex items-center gap-2">
                 <span className="hidden sm:block text-[11px] font-semibold text-[#4a556a]/70 mr-1">
@@ -449,23 +423,8 @@ function HomeContent() {
           </div>
         </div>
 
-        {filteredProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 bg-warm-ivory border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-xs">
-            <Sparkles size={32} className="text-[#E8A1C4] mb-3 animate-bounce" />
-            <h3 className="text-xs font-bold text-[#4a556a] mb-1">No matching products found</h3>
-            <p className="text-[11px] text-black/60 mb-5 leading-normal">
-              We couldn't find any products matching "{searchQuery}" on the home page. Try checking your spelling or search term.
-            </p>
-            <Link 
-              href="/" 
-              className="text-[11px] font-bold px-3.5 py-1.5 bg-[#4a556a] hover:bg-[#4a556a]/90 text-warm-ivory rounded-full transition-all shadow-sm"
-            >
-              Show All Products
-            </Link>
-          </div>
-        ) : (
-          /* 5-Column Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {/* 5-Column Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {visibleProducts.map((product) => {
               const isFav = favorites.includes(product.id);
               return (
@@ -536,7 +495,6 @@ function HomeContent() {
               );
             })}
           </div>
-        )}
       </section>
 
       {/* 5. Special Offer Banner */}
@@ -637,9 +595,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#FAF3E3] flex items-center justify-center text-xs text-[#4a556a]/60 font-bold">Loading products...</div>}>
-      <HomeContent />
-    </Suspense>
-  );
+  return <HomeContent />;
 }
