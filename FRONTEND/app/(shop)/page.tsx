@@ -337,7 +337,7 @@ function HomeContent() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white border border-natural/15 rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 shadow-xs">
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Truck size={22} />
             </div>
@@ -347,7 +347,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <ShieldCheck size={22} />
             </div>
@@ -357,7 +357,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <RefreshCw size={22} />
             </div>
@@ -367,7 +367,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Headset size={22} />
             </div>
