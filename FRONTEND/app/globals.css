@@ -65,7 +65,7 @@ body {
    We use explicit CSS rules here to force the correct colors. */
 .auth-palette {
   background-color: #faf3e3 !important;
-  --color-apricot: #738290 !important;
+  --color-apricot: #4A5568 !important;
 }
 
 /* Right-side form panel background */
@@ -87,7 +87,7 @@ body {
 }
 .auth-palette input::placeholder,
 .auth-palette textarea::placeholder {
-  color: rgba(115, 130, 144, 0.45) !important;
+  color: rgba(74, 85, 104, 0.45) !important;
 }
 
 /* Accent element translation rules for wrapping other brand pages */
@@ -100,11 +100,11 @@ body {
   background-color: #a1b5d8 !important;
 }
 .auth-palette .bg-fern {
-  background-color: #738290 !important;
+  background-color: #4A5568 !important;
   color: #faf3e3 !important;
 }
 .auth-palette .text-apricot {
-  color: #738290 !important;
+  color: #4A5568 !important;
 }
 .auth-palette .text-fern {
   color: #4a5568 !important;
@@ -113,7 +113,7 @@ body {
 
 /* Label text on auth pages */
 .auth-palette label {
-  color: #e8a1c4 !important;
+  color: #e8437f !important;
 }
 
 /* "Back to store" link and similar secondary text */
@@ -127,12 +127,12 @@ body {
 /* Icon colors inside inputs */
 .auth-palette .text-natural\/70,
 .auth-palette [class*="text-natural"] {
-  color: rgba(115, 130, 144, 0.7) !important;
+  color: rgba(74, 85, 104, 0.7) !important;
 }
 
 /* Divider border */
 .auth-palette .border-t {
-  border-color: rgba(115, 130, 144, 0.18) !important;
+  border-color: rgba(74, 85, 104, 0.18) !important;
 }
 
 /* Divider "or continue with" span bg */
@@ -142,27 +142,27 @@ body {
 
 /* Explicit utility classes for the auth palette extra colors */
 .auth-palette .bg-auth-sage    { background-color: #e4f0d0; }
-.auth-palette .bg-auth-green   { background-color: #738290; }
-.auth-palette .text-auth-green { color: #738290; }
-.auth-palette .border-auth-green { border-color: #738290; }
+.auth-palette .bg-auth-green   { background-color: #4A5568; }
+.auth-palette .text-auth-green { color: #4A5568; }
+.auth-palette .border-auth-green { border-color: #4A5568; }
 
-/* Force-override any baked apricot/orange utilities to #738290 on auth pages */
+/* Force-override any baked apricot/orange utilities to #4A5568 on auth pages */
 .auth-palette .text-apricot,
 .auth-palette [class*="text-apricot"] {
-  color: #738290 !important;
+  color: #4A5568 !important;
 }
 .auth-palette .bg-apricot,
 .auth-palette [class*="bg-apricot"] {
-  background-color: #738290 !important;
+  background-color: #4A5568 !important;
 }
 .auth-palette .border-apricot,
 .auth-palette [class*="border-apricot"] {
-  border-color: #738290 !important;
+  border-color: #4A5568 !important;
 }
 .auth-palette input.border-apricot:focus,
 .auth-palette input[class*="border-apricot"]:focus {
-  border-color: #738290 !important;
-  box-shadow: 0 0 0 2px rgba(115, 130, 144, 0.2) !important;
+  border-color: #4A5568 !important;
+  box-shadow: 0 0 0 2px rgba(74, 85, 104, 0.2) !important;
 }
 
 

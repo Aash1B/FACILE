@@ -209,11 +209,11 @@ export default function LoginPage() {
       {showSuccessToast && (
         <div
           className="fixed bottom-6 right-6 z-50 py-3.5 px-5 rounded-2xl flex items-center gap-2.5 border animate-slide-in text-xs font-semibold"
-          style={{ backgroundColor: "#4a5568", color: "#faf3e3", borderColor: "#738290" }}
+          style={{ backgroundColor: "#4a5568", color: "#faf3e3", borderColor: "#4A5568" }}
         >
           <div
             className="w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: "#738290" }}
+            style={{ backgroundColor: "#4A5568" }}
           >
             <Check size={12} style={{ color: "#4a5568" }} className="stroke-[3px]" />
           </div>

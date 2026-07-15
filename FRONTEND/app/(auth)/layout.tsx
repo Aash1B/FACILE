@@ -27,7 +27,7 @@ export default function AuthLayout({
         
         {/* Decorative soft shapes for visual interest */}
         <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#a1b5d8' }} />
-        <div className="absolute bottom-16 left-8 w-48 h-48 rounded-full opacity-15 blur-2xl" style={{ backgroundColor: '#738290' }} />
+        <div className="absolute bottom-16 left-8 w-48 h-48 rounded-full opacity-15 blur-2xl" style={{ backgroundColor: '#4A5568' }} />
         <div className="absolute top-1/3 left-1/4 w-32 h-32 rounded-full opacity-10 blur-xl" style={{ backgroundColor: '#e4f0d0' }} />
 
         {/* Gradient overlay */}

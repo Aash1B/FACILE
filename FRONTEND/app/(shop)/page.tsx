@@ -119,7 +119,7 @@ const CATEGORIES = [
   { id: "c3", label: "Home & Kitchen", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c4", label: "Beauty", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250", bgColor: "bg-purple-50/55 border border-purple-100/40" },
   { id: "c5", label: "Sports", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250", bgColor: "bg-teal-50/55 border border-teal-100/40" },
-  { id: "c6", label: "Toys & Baby", image: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
+  { id: "c6", label: "Toys & Baby", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
 ];
 
 type ApiProduct = {
@@ -269,7 +269,7 @@ function HomeContent() {
 
       {/* 1. Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden shadow-xs min-h-[380px] sm:min-h-[480px] flex items-center">
+        <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-center" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           {/* Background Image positioned on the right */}
           <img
@@ -335,9 +335,9 @@ function HomeContent() {
 
       {/* 2. Feature Highlights Bar */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white border border-natural/15 rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 shadow-xs">
+        <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
+          <div className="flex items-center gap-4">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Truck size={22} />
             </div>
@@ -347,7 +347,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
+          <div className="flex items-center gap-4">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <ShieldCheck size={22} />
             </div>
@@ -357,7 +357,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
+          <div className="flex items-center gap-4">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <RefreshCw size={22} />
             </div>
@@ -367,7 +367,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#DDE0F0] transition-all duration-300">
+          <div className="flex items-center gap-4">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
               <Headset size={22} />
             </div>
@@ -401,7 +401,7 @@ function HomeContent() {
                 href={`/category/${category.id.replace("c", "")}`}
                 className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4]"
               >
-                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg ${category.bgColor}`}>
+                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_24px_rgba(74,85,104,0.45)] ${category.bgColor}`}>
                   <img
                     src={category.image}
                     alt={category.label}
@@ -459,7 +459,7 @@ function HomeContent() {
             return (
               <div
                 key={product.id}
-                className="group bg-warm-ivory hover:bg-[#DDE0F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-warm-ivory hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Wishlist Button */}
                 <button
@@ -476,25 +476,25 @@ function HomeContent() {
 
                 <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
                   {/* Product Image */}
-                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
                     <img
                       src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                       alt={product.name}
-                      className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                     />
                   </div>
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
+                      <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
 
                       {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
                         <Star size={11} className="text-amber-400 fill-amber-400" />
-                        <span className="text-[#4a556a] font-bold">{product.rating}</span>
+                        <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating}</span>
                         <span>({product.reviews})</span>
                       </div>
                     </div>
@@ -502,8 +502,8 @@ function HomeContent() {
                     {/* Price */}
                     <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   </div>
@@ -513,7 +513,7 @@ function HomeContent() {
                 <div className="px-4 pb-4">
                   <button
                     onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    className="w-full h-8.5 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                   >
                     <ShoppingCart size={12} className="stroke-[2.5px]" />
                     Add to Cart
@@ -528,7 +528,10 @@ function HomeContent() {
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-[#E8A1C4]/10 border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative">
+        <div className="group bg-[#FAF3E3] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
+
+          {/* Shimmer overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-[-100%] group-hover:translate-x-[100%] ease-in-out" style={{ transition: 'opacity 0.4s ease, transform 0.8s ease' }} />
 
           {/* Subtle Leaf Shadow Graphic overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-natural/5 via-transparent to-transparent pointer-events-none" />
@@ -537,16 +540,16 @@ function HomeContent() {
 
             {/* Banner Left Details */}
             <div className="md:col-span-7 space-y-4 text-center md:text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E8A1C4]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E8437F]">
                 Special Offer
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] group-hover:text-[#2d3748] leading-tight transition-colors duration-300">
                 Up to 50% Off
               </h2>
               <p className="text-xs sm:text-sm text-[#4A5568] max-w-md leading-relaxed font-medium">
                 Limited time offer on selected items. Hurry up and grab the best deals!
               </p>
-              <button className="h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white active:scale-98 text-black font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer">
+              <button className="h-11 px-6 bg-[#DDE0F0] group-hover:bg-[#4A5568] group-hover:text-white border border-transparent active:scale-98 text-[#4A5568] font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer hover:scale-[1.02]">
                 Shop the Sale
                 <ArrowRight size={14} />
               </button>
@@ -557,7 +560,7 @@ function HomeContent() {
               <img
                 src="/special_offer.png"
                 alt="Special Offer Sale Kraft Bag"
-                className="w-full max-w-[340px] h-auto object-contain hover:scale-[1.02] transition-transform duration-500 drop-shadow-xl select-none"
+                className="w-full max-w-[340px] h-auto object-contain transition-all duration-500 group-hover:scale-[1.06] group-hover:drop-shadow-2xl select-none"
                 onError={(e) => {
                   e.currentTarget.src = "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=400";
                 }}

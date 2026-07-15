@@ -105,7 +105,7 @@ export default function CartDrawer() {
                       <div className="flex flex-col items-end gap-2">
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          className="p-1 text-[#E8A1C4] hover:text-[#E8A1C4]/80 transition-colors"
+                          className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors"
                           aria-label="Remove item"
                         >
                           <Trash2 size={14} />

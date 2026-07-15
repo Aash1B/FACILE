@@ -161,7 +161,7 @@ export default function Navbar() {
                   console.log("Hamburger button clicked! Setting isMobileMenuOpen to true.");
                   setIsMobileMenuOpen(true);
                 }}
-                className="p-2 -ml-2 rounded-full text-black select-none hover:bg-natural/10 focus:outline-none cursor-pointer"
+                className="p-2 -ml-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
                 aria-label="Open Menu"
               >
                 <Menu size={22} className="stroke-[2px]" />
@@ -184,7 +184,7 @@ export default function Navbar() {
               {/* Favorite Icon */}
               <Link
                 href="/wishlist"
-                className="p-2 rounded-full text-black hover:bg-natural/10 transition-all duration-200 relative group focus:outline-none cursor-pointer"
+                className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Favorites"
               >
                 <Heart
@@ -193,7 +193,7 @@ export default function Navbar() {
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
                 {totalFavorites > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8A1C4] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory animate-bounce">
+                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalFavorites}
                   </span>
                 )}
@@ -202,12 +202,12 @@ export default function Navbar() {
               {/* Shopping Cart Icon */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="p-2 rounded-full text-black hover:bg-natural/10 transition-all duration-200 relative group focus:outline-none"
+                className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Shopping Cart"
               >
                 <ShoppingCart size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
                 {totalCartItems > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8A1C4] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
+                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
                   </span>
                 )}
@@ -219,10 +219,10 @@ export default function Navbar() {
                   <>
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
-                      className="p-2 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                      className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                       aria-label="Profile Menu"
                     >
-                      <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#E8A1C4]" />
+                      <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#E8437F]" />
                       <span className="hidden lg:inline text-xs font-bold truncate max-w-[80px]">
                         {user.name}
                       </span>
@@ -564,7 +564,7 @@ export default function Navbar() {
                   console.log("Close button clicked! Setting isMobileMenuOpen to false.");
                   setIsMobileMenuOpen(false);
                 }}
-                className="p-2 -mr-2 rounded-full text-black hover:bg-natural/10 transition-colors focus:outline-none cursor-pointer"
+                className="p-2 -mr-2 rounded-full text-black hover:bg-[#DDE0F0] transition-colors focus:outline-none cursor-pointer"
                 aria-label="Close Menu"
               >
                 <X size={20} />
@@ -576,7 +576,7 @@ export default function Navbar() {
               <Link
                 href="/"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Home size={15} className="text-black/70 flex-shrink-0" /> Home
               </Link>
@@ -584,14 +584,14 @@ export default function Navbar() {
               <a
                 href="#categories"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <LayoutGrid size={15} className="text-black/70 flex-shrink-0" /> Categories
               </a>
               <a
                 href="#best-sellers"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Sparkles size={15} className="text-black/70 flex-shrink-0" /> New Arrivals
               </a>
@@ -599,7 +599,7 @@ export default function Navbar() {
               <Link
                 href="/wishlist"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Heart size={15} className="text-black/70 flex-shrink-0" /> Wishlist
               </Link>
@@ -608,7 +608,7 @@ export default function Navbar() {
                   setIsMobileMenuOpen(false);
                   setIsCartOpen(true);
                 }}
-                className="w-full flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all text-left font-bold cursor-pointer"
+                className="w-full flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all text-left font-bold cursor-pointer"
               >
                 <ShoppingCart size={15} className="text-black/70 flex-shrink-0" /> Cart
               </button>
@@ -618,21 +618,21 @@ export default function Navbar() {
               <Link
                 href="/profile?tab=profile"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <User size={15} className="text-black/70 flex-shrink-0" /> My Profile
               </Link>
               <Link
                 href="/profile?tab=orders"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Package size={15} className="text-black/70 flex-shrink-0" /> My Orders
               </Link>
               <Link
                 href="/profile?tab=addresses"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <MapPin size={15} className="text-black/70 flex-shrink-0" /> Addresses
               </Link>
@@ -642,21 +642,21 @@ export default function Navbar() {
               <a
                 href="#testimonials"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Info size={15} className="text-black/70 flex-shrink-0" /> About Us
               </a>
               <a
                 href="#testimonials"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <Mail size={15} className="text-black/70 flex-shrink-0" /> Contact
               </a>
               <a
                 href="#testimonials"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
+                className="flex items-center gap-3 py-2 px-3 hover:bg-[#DDE0F0] rounded-xl transition-all"
               >
                 <HelpCircle size={15} className="text-black/70 flex-shrink-0" /> Help
               </a>

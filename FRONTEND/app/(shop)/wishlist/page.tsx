@@ -176,7 +176,7 @@ export default function WishlistPage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#4a556a] text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
-          <Trash2 size={16} className="text-[#E8A1C4]" />
+          <Trash2 size={16} className="text-[#E8437F]" />
           {toastMessage}
         </div>
       )}
@@ -188,7 +188,7 @@ export default function WishlistPage() {
             <ArrowLeft size={16} /> Back to Shop
           </Link>
           <h1 className="text-xl font-extrabold font-serif text-[#4a556a]">My Wishlist</h1>
-          <div className="text-xs font-bold bg-[#E8A1C4]/10 text-[#E8A1C4] px-3 py-1 rounded-full border border-[#E8A1C4]/20 shadow-xs">
+          <div className="text-xs font-bold bg-[#E8437F]/10 text-[#E8437F] px-3 py-1 rounded-full border border-[#E8437F]/20 shadow-xs">
             {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function WishlistPage() {
           </div>
         ) : wishlistItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4 bg-white border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-sm">
-            <Heart size={44} className="text-[#E8A1C4] mb-4 animate-pulse fill-[#E8A1C4]/10" />
+            <Heart size={44} className="text-[#E8437F] mb-4 animate-pulse fill-[#E8437F]/10" />
             <h2 className="text-md font-extrabold text-[#4a556a] mb-2 font-serif">Your Wishlist is Empty</h2>
             <p className="text-xs text-[#4a556a]/70 mb-6 leading-relaxed max-w-xs">
               Save items you love here to find them easily later. Add some products and they will appear here!
@@ -217,7 +217,7 @@ export default function WishlistPage() {
             {wishlistItems.map((product) => (
               <div
                 key={product.id}
-                className="group bg-white hover:bg-[#DDE0F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-white hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Remove Button */}
                 <button
@@ -230,25 +230,25 @@ export default function WishlistPage() {
 
                 <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
                   {/* Product Image */}
-                  <div className="aspect-square bg-neutral-100/30 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                  <div className="aspect-square bg-neutral-100/30 relative overflow-hidden flex-shrink-0">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                     />
                   </div>
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
+                      <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
 
                       {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
                         <Star size={11} className="text-amber-400 fill-amber-400" />
-                        <span className="text-[#4a556a] font-bold">{product.rating}</span>
+                        <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating}</span>
                         <span>({product.reviews})</span>
                       </div>
                     </div>
@@ -256,8 +256,8 @@ export default function WishlistPage() {
                     {/* Price */}
                     <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   </div>
@@ -267,7 +267,7 @@ export default function WishlistPage() {
                 <div className="px-4 pb-4">
                   <button
                     onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    className="w-full h-8.5 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                   >
                     <ShoppingCart size={12} className="stroke-[2.5px]" />
                     Add to Cart

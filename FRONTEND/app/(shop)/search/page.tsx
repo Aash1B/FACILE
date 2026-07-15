@@ -116,17 +116,17 @@ const FALLBACK_PRODUCTS: Product[] = [
 
 // ─── Filter Constants ─────────────────────────────────────────────────────────
 const PRICE_RANGES = [
-  { label: "Under ₹1,000",     min: 0,    max: 1000     },
-  { label: "₹1,000 – ₹2,500", min: 1000, max: 2500     },
-  { label: "₹2,500 – ₹5,000", min: 2500, max: 5000     },
-  { label: "Above ₹5,000",     min: 5000, max: Infinity },
+  { label: "Under ₹1,000", min: 0, max: 1000 },
+  { label: "₹1,000 – ₹2,500", min: 1000, max: 2500 },
+  { label: "₹2,500 – ₹5,000", min: 2500, max: 5000 },
+  { label: "Above ₹5,000", min: 5000, max: Infinity },
 ];
 
 const SORT_OPTIONS = [
-  { value: "featured",    label: "Featured"             },
-  { value: "price-asc",  label: "Price: Low to High"   },
-  { value: "price-desc", label: "Price: High to Low"   },
-  { value: "rating",     label: "Avg. Customer Rating" },
+  { value: "featured", label: "Featured" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+  { value: "rating", label: "Avg. Customer Rating" },
 ];
 
 // ─── FilterCheckbox ───────────────────────────────────────────────────────────
@@ -142,11 +142,10 @@ function FilterCheckbox({
   return (
     <label className="flex items-center gap-2.5 cursor-pointer group" onClick={onToggle}>
       <div
-        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-all ${
-          checked
+        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-all ${checked
             ? "bg-[#4a556a] border-[#4a556a]"
             : "border-natural/30 group-hover:border-[#4a556a]"
-        }`}
+          }`}
       >
         {checked && <Check size={10} className="text-white stroke-[3px]" />}
       </div>
@@ -273,7 +272,7 @@ function ProductCard({
   );
 
   return (
-    <div className="group bg-white border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
+    <div className="group bg-white hover:bg-[#4A5568] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
       {discount > 0 && (
         <div className="absolute top-3 left-3 z-10 px-1.5 py-0.5 bg-apricot text-white text-[9px] font-bold rounded-full shadow-sm">
           -{discount}%
@@ -289,20 +288,20 @@ function ProductCard({
       </button>
 
       <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
-        <div className="aspect-square bg-neutral-50 p-4 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="aspect-square bg-neutral-50 overflow-hidden flex-shrink-0">
           <img
             src={product.image}
             alt={product.name}
-            className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </div>
 
         <div className="p-3.5 flex-1 flex flex-col justify-between">
           <div className="space-y-1">
-            <p className="text-[9px] font-bold text-apricot uppercase tracking-wider">
+            <p className="text-[9px] font-bold text-apricot group-hover:text-warm-ivory/85 uppercase tracking-wider transition-colors">
               {product.category}
             </p>
-            <h3 className="text-xs font-bold text-[#4a556a] leading-snug line-clamp-2">
+            <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
               {product.name}
             </h3>
             <div className="flex items-center gap-1">
@@ -319,17 +318,17 @@ function ProductCard({
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-bold text-[#4a556a]">{product.rating}</span>
-              <span className="text-[10px] text-natural/50">({product.reviews})</span>
+              <span className="text-[10px] font-bold text-[#4a556a] group-hover:text-warm-ivory transition-colors">{product.rating}</span>
+              <span className="text-[10px] text-natural/50 group-hover:text-warm-ivory/60 transition-colors">({product.reviews})</span>
             </div>
           </div>
 
           <div className="pt-3 border-t border-natural/8 mt-3">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-extrabold text-[#4a556a]">
+              <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
                 ₹{product.price.toLocaleString("en-IN")}
               </span>
-              <span className="text-[10px] text-natural/45 line-through font-medium">
+              <span className="text-[10px] text-natural/45 group-hover:text-warm-ivory/60 line-through font-medium transition-colors">
                 ₹{product.originalPrice.toLocaleString("en-IN")}
               </span>
             </div>
@@ -340,7 +339,7 @@ function ProductCard({
       <div className="px-3.5 pb-3.5">
         <button
           onClick={onAddToCart}
-          className="w-full h-8 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-[0.98] text-warm-ivory text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+          className="w-full h-8 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-[0.98] text-warm-ivory text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
         >
           <ShoppingCart size={11} className="stroke-[2.5px]" />
           Add to Cart
@@ -434,11 +433,11 @@ function SearchContent() {
     selectedPriceRanges.length === 0
       ? queryFiltered
       : queryFiltered.filter((p) =>
-          selectedPriceRanges.some((idx) => {
-            const r = PRICE_RANGES[idx];
-            return p.price >= r.min && p.price < r.max;
-          })
-        );
+        selectedPriceRanges.some((idx) => {
+          const r = PRICE_RANGES[idx];
+          return p.price >= r.min && p.price < r.max;
+        })
+      );
 
   const ratingFiltered = selectedRating
     ? priceFiltered.filter((p) => p.rating >= selectedRating)

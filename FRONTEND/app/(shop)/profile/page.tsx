@@ -197,7 +197,7 @@ function ProfileContent() {
     return (
       <div className="auth-palette min-h-[60vh] flex items-center justify-center" style={{ backgroundColor: '#faf3e3' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" style={{ borderColor: '#738290', borderTopColor: 'transparent' }} />
+          <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4A5568', borderTopColor: 'transparent' }} />
           <p className="text-sm font-semibold text-fern" style={{ color: '#4a5568' }}>Loading secure dashboard...</p>
         </div>
       </div>
@@ -248,7 +248,7 @@ function ProfileContent() {
             <p>You are currently viewing this page as a guest. Register or sign in to view your real order history, saved addresses, and profile settings.</p>
             <button 
               onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-fern hover:bg-apricot text-warm-ivory rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
+              className="px-4 py-2 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] rounded-xl transition-colors cursor-pointer flex-shrink-0 font-bold"
             >
               Sign In / Sign Up
             </button>
@@ -273,12 +273,12 @@ function ProfileContent() {
             
             {/* User Short Info Card */}
             <div className="bg-white border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-apricot" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#4A5568]" />
               <div className="relative inline-block mt-2">
                 <div className="w-16 h-16 bg-warm-ivory text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner">
                   {profileName ? profileName.slice(0, 2) : "US"}
                 </div>
-                <button className="absolute bottom-0 right-0 p-1.5 bg-fern text-warm-ivory rounded-full shadow hover:bg-apricot transition-colors duration-200" aria-label="Change photo">
+                <button className="absolute bottom-0 right-0 p-1.5 bg-[#4A5568] text-warm-ivory rounded-full shadow hover:bg-[#4A5568]/90 transition-colors duration-200" aria-label="Change photo">
                   <Camera size={12} />
                 </button>
               </div>
@@ -337,7 +337,7 @@ function ProfileContent() {
 
               <button
                 onClick={logout}
-                className="flex lg:hidden items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl text-apricot hover:bg-apricot/5 transition-all duration-200 cursor-pointer flex-shrink-0"
+                className="flex lg:hidden items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl text-[#4A5568] hover:bg-warm-ivory/30 transition-all duration-200 cursor-pointer flex-shrink-0"
               >
                 Sign Out
               </button>
@@ -345,7 +345,7 @@ function ProfileContent() {
             
             <button
               onClick={logout}
-              className="hidden lg:flex items-center justify-center gap-2 w-full py-3 bg-white hover:bg-apricot/5 border border-natural/25 hover:border-apricot text-apricot text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
+              className="hidden lg:flex items-center justify-center gap-2 w-full py-3 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm border border-transparent"
             >
               Sign Out
             </button>
@@ -438,7 +438,7 @@ function ProfileContent() {
                     <div className="flex justify-end pt-2">
                       <button
                         type="submit"
-                        className="h-10 px-8 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-all active:scale-97 shadow hover:shadow-md"
+                        className="h-10 px-8 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-all active:scale-97 shadow hover:shadow-md border border-transparent"
                       >
                         Save Changes
                       </button>
@@ -448,7 +448,7 @@ function ProfileContent() {
                   {/* Toast Alert */}
                   {showSaveToast && (
                     <div className="flex items-center gap-3 bg-fern text-warm-ivory p-4 rounded-xl shadow-md animate-fade-in border border-apricot/20">
-                      <div className="w-5 h-5 bg-apricot rounded-full flex items-center justify-center text-warm-ivory">
+                      <div className="w-5 h-5 bg-[#4A5568] rounded-full flex items-center justify-center text-[#FAF3E3]">
                         <Check size={11} className="stroke-[3px]" />
                       </div>
                       <p className="text-xs font-semibold">Changes saved successfully! Profile details updated locally.</p>
