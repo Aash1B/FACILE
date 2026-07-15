@@ -380,7 +380,7 @@ export default function AdminDashboardPage() {
             <div className="bg-white border rounded-3xl p-6 shadow-sm flex items-start justify-between" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
               <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Total Platform GMV</p>
-                <h3 className="text-2xl font-bold text-fern">${stats.gmv.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+                <h3 className="text-2xl font-bold text-fern">₹{stats.gmv.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
                 <span className="text-[10px] font-bold text-green-700 bg-green-500/10 px-2 py-0.5 rounded">+14.2% MoM</span>
               </div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-fern bg-[#F4E6C7]">
@@ -392,7 +392,7 @@ export default function AdminDashboardPage() {
             <div className="bg-white border rounded-3xl p-6 shadow-sm flex items-start justify-between" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
               <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Net Revenue</p>
-                <h3 className="text-2xl font-bold text-fern">${stats.netRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+                <h3 className="text-2xl font-bold text-fern">₹{stats.netRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
                 <span className="text-[10px] font-bold text-green-700 bg-green-500/10 px-2 py-0.5 rounded">Payouts Deducted</span>
               </div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-fern bg-[#F4E6C7]">
@@ -404,7 +404,7 @@ export default function AdminDashboardPage() {
             <div className="bg-white border rounded-3xl p-6 shadow-sm flex items-start justify-between" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
               <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Commission Earned</p>
-                <h3 className="text-2xl font-bold text-fern">${stats.commissionEarned.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+                <h3 className="text-2xl font-bold text-fern">₹{stats.commissionEarned.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
                 <span className="text-[10px] font-bold text-apricot bg-apricot/10 px-2 py-0.5 rounded">Avg Rate 12.5%</span>
               </div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#E09132] bg-[#F4E6C7]">
@@ -416,7 +416,7 @@ export default function AdminDashboardPage() {
             <div className="bg-white border rounded-3xl p-6 shadow-sm flex items-start justify-between" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
               <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Platform Profit</p>
-                <h3 className="text-2xl font-bold text-fern">${stats.platformProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+                <h3 className="text-2xl font-bold text-fern">₹{stats.platformProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
                 <span className="text-[10px] font-bold text-green-700 bg-green-500/10 px-2 py-0.5 rounded">Net Earnings</span>
               </div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-fern bg-[#F4E6C7]">
@@ -826,7 +826,7 @@ export default function AdminDashboardPage() {
                   style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
                 >
                   <option value="PERCENT" className="bg-[#F4E6C7]">Percentage (%)</option>
-                  <option value="FIXED" className="bg-[#F4E6C7]">Fixed Amount ($)</option>
+                  <option value="FIXED" className="bg-[#F4E6C7]">Fixed Amount (₹)</option>
                 </select>
               </div>
 
@@ -850,7 +850,7 @@ export default function AdminDashboardPage() {
               {/* Minimum Purchase Constraint */}
               <div className="space-y-1">
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                  Minimum Order Value ($)
+                  Minimum Order Value (₹)
                 </label>
                 <input
                   type="number"
@@ -926,14 +926,14 @@ export default function AdminDashboardPage() {
                           {v.code}
                         </span>
                         <span className="text-xs font-bold text-apricot">
-                          {v.type === "PERCENT" ? `${v.value}% OFF` : `$${v.value.toFixed(2)} OFF`}
+                          {v.type === "PERCENT" ? `${v.value}% OFF` : `₹${v.value.toFixed(2)} OFF`}
                         </span>
                       </div>
 
                       <div className="space-y-1 text-xs font-semibold text-natural">
                         <div className="flex justify-between">
                           <span>Constraint:</span>
-                          <span className="text-fern">Min. Order ${v.minOrder.toFixed(2)}</span>
+                          <span className="text-fern">Min. Order ₹{v.minOrder.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Expires:</span>

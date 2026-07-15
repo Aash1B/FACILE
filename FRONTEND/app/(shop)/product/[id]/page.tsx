@@ -256,10 +256,10 @@ export default function ProductDetailPage({ params }: PageProps) {
               {/* Price Tags */}
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-extrabold text-[#4a556a]">
-                  ${product.price.toFixed(2)}
+                  ₹{product.price.toLocaleString("en-IN")}
                 </span>
                 <span className="text-sm text-natural line-through font-bold">
-                  ${product.originalPrice.toFixed(2)}
+                  ₹{product.originalPrice.toLocaleString("en-IN")}
                 </span>
               </div>
 

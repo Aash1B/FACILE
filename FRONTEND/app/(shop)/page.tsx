@@ -391,8 +391,8 @@ export default function Home() {
                     {/* Price */}
                     <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a]">${product.price.toFixed(2)}</span>
-                        <span className="text-[10px] text-natural line-through font-medium">${product.originalPrice.toFixed(2)}</span>
+                        <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   </div>

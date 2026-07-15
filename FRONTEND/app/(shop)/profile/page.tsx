@@ -25,31 +25,31 @@ const MOCK_ORDERS = [
   {
     id: "FC-84920",
     date: "July 08, 2026",
-    total: "$290.00",
+    total: "₹2,900.00",
     status: "Delivered",
     items: [
-      { name: "Handcrafted Ceramic Pitcher", price: "$120.00", qty: 1, category: "Ceramics" },
-      { name: "Organic Linen Bedspread", price: "$170.00", qty: 1, category: "Home Decor" }
+      { name: "Handcrafted Ceramic Pitcher", price: "₹1,200.00", qty: 1, category: "Ceramics" },
+      { name: "Organic Linen Bedspread", price: "₹1,700.00", qty: 1, category: "Home Decor" }
     ]
   },
   {
     id: "FC-73819",
     date: "June 24, 2026",
-    total: "$85.00",
+    total: "₹850.00",
     status: "In Transit",
     items: [
-      { name: "Minimalist Soy Candle Set", price: "$45.00", qty: 1, category: "Aromatherapy" },
-      { name: "Woven Palm Leaf Coasters", price: "$40.00", qty: 1, category: "Kitchen" }
+      { name: "Minimalist Soy Candle Set", price: "₹450.00", qty: 1, category: "Aromatherapy" },
+      { name: "Woven Palm Leaf Coasters", price: "₹400.00", qty: 1, category: "Kitchen" }
     ]
   },
   {
     id: "FC-62910",
     date: "May 12, 2026",
-    total: "$150.00",
+    total: "₹1,500.00",
     status: "Processing",
     items: [
-      { name: "Earthy Ceramic Coffee Mugs (Set of 2)", price: "$60.00", qty: 1, category: "Ceramics" },
-      { name: "Pure Cotton Tote Bag", price: "$90.00", qty: 1, category: "Bags" }
+      { name: "Earthy Ceramic Coffee Mugs (Set of 2)", price: "₹600.00", qty: 1, category: "Ceramics" },
+      { name: "Pure Cotton Tote Bag", price: "₹900.00", qty: 1, category: "Bags" }
     ]
   }
 ];
