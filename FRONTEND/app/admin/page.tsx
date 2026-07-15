@@ -18,6 +18,12 @@ interface Seller {
   warnings: number;
   status: "PENDING" | "ACTIVE" | "SUSPENDED" | "BANNED" | "BLACKLISTED";
   documents: { type: string; name: string; url: string }[];
+  phone: string;
+  address: string;
+  businessType: string;
+  joinDate: string;
+  totalSales: number;
+  listedCount: number;
 }
 
 const INITIAL_SELLERS: Seller[] = [
@@ -33,7 +39,13 @@ const INITIAL_SELLERS: Seller[] = [
     documents: [
       { type: "ID Proof", name: "owner_passport.pdf", url: "#" },
       { type: "Business License", name: "business_registration.pdf", url: "#" }
-    ]
+    ],
+    phone: "+91 98765 01234",
+    address: "Plot 42, Ceramic Crafts Zone, GIDC, Khurja, Uttar Pradesh - 203131",
+    businessType: "Partnership Firm",
+    joinDate: "2025-05-12",
+    totalSales: 485000,
+    listedCount: 14
   },
   {
     id: "s2",
@@ -47,7 +59,13 @@ const INITIAL_SELLERS: Seller[] = [
     documents: [
       { type: "ID Proof", name: "national_id.pdf", url: "#" },
       { type: "Tax Document", name: "vat_certificate.pdf", url: "#" }
-    ]
+    ],
+    phone: "+91 88765 02468",
+    address: "Block B, Floor 2, Linen Craft Mills, Ludhiana, Punjab - 141001",
+    businessType: "Private Limited",
+    joinDate: "2025-08-20",
+    totalSales: 320000,
+    listedCount: 8
   },
   {
     id: "s3",
@@ -61,7 +79,13 @@ const INITIAL_SELLERS: Seller[] = [
     documents: [
       { type: "ID Proof", name: "driver_license.pdf", url: "#" },
       { type: "Business License", name: "llc_agreement.pdf", url: "#" }
-    ]
+    ],
+    phone: "+91 91234 56789",
+    address: "Studio 3C, Artistan Colony, Bandra West, Mumbai, Maharashtra - 400050",
+    businessType: "Sole Proprietor",
+    joinDate: "2026-07-10",
+    totalSales: 0,
+    listedCount: 0
   },
   {
     id: "s4",
@@ -75,7 +99,13 @@ const INITIAL_SELLERS: Seller[] = [
     documents: [
       { type: "ID Proof", name: "owner_passport.pdf", url: "#" },
       { type: "Business License", name: "tax_registration.pdf", url: "#" }
-    ]
+    ],
+    phone: "+91 76543 21098",
+    address: "18, Terracotta Gali, Kumartuli, Kolkata, West Bengal - 700005",
+    businessType: "Sole Proprietor",
+    joinDate: "2025-03-01",
+    totalSales: 125000,
+    listedCount: 5
   },
   {
     id: "s5",
@@ -88,7 +118,13 @@ const INITIAL_SELLERS: Seller[] = [
     status: "BLACKLISTED",
     documents: [
       { type: "ID Proof", name: "fake_id.pdf", url: "#" }
-    ]
+    ],
+    phone: "+91 99999 88888",
+    address: "Unknown Commercial Area, Sector 5, Salt Lake, Kolkata",
+    businessType: "Unregistered Entity",
+    joinDate: "2025-11-15",
+    totalSales: 18000,
+    listedCount: 1
   }
 ];
 
@@ -187,6 +223,7 @@ export default function AdminDashboardPage() {
 
   // Document modal states
   const [selectedSellerDocs, setSelectedSellerDocs] = useState<Seller | null>(null);
+  const [selectedSellerProfile, setSelectedSellerProfile] = useState<Seller | null>(null);
 
   // Commission editing states
   const [editingCommissionId, setEditingCommissionId] = useState<string | null>(null);
@@ -640,15 +677,25 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Documents View trigger */}
-                  <button
-                    onClick={() => setSelectedSellerDocs(seller)}
-                    className="w-full h-8.5 rounded-xl border flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-stone-50"
-                    style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
-                  >
-                    <FileText size={12} />
-                    View Verification Documents
-                  </button>
+                  {/* Documents & Profile View triggers */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedSellerDocs(seller)}
+                      className="flex-1 h-8.5 rounded-xl border flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer hover:bg-stone-50"
+                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                    >
+                      <FileText size={11} />
+                      Docs
+                    </button>
+                    <button
+                      onClick={() => setSelectedSellerProfile(seller)}
+                      className="flex-1 h-8.5 rounded-xl border flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer hover:bg-stone-50"
+                      style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+                    >
+                      <Users size={11} />
+                      Profile
+                    </button>
+                  </div>
                 </div>
 
                 {/* Status action buttons */}
@@ -965,6 +1012,73 @@ export default function AdminDashboardPage() {
                 style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
               >
                 Close Compliance View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Merchant Profile Modal ──────────────────────────────────────── */}
+      {selectedSellerProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-fade-in font-sans">
+          <div className="bg-[#FAF6EE] border rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6" style={{ borderColor: 'rgba(165,142,116,0.3)' }}>
+            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
+              <div>
+                <span className="text-[10px] font-bold text-apricot tracking-widest uppercase">Merchant Profile</span>
+                <h3 className="font-serif text-xl font-bold text-fern mt-0.5">{selectedSellerProfile.name}</h3>
+              </div>
+              <button 
+                onClick={() => setSelectedSellerProfile(null)}
+                className="p-1.5 rounded-lg hover:bg-stone-200/50 cursor-pointer"
+              >
+                <X size={18} className="text-fern" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs font-semibold text-natural">
+              <div className="grid grid-cols-2 gap-4 border-b pb-4" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Business Type</p>
+                  <span className="text-fern font-bold text-xs">{selectedSellerProfile.businessType}</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Joined Date</p>
+                  <span className="text-fern font-bold text-xs">{selectedSellerProfile.joinDate}</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Contact Phone</p>
+                  <span className="text-fern font-bold text-xs">{selectedSellerProfile.phone}</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Contact Email</p>
+                  <span className="text-fern font-bold text-xs truncate block max-w-[150px]">{selectedSellerProfile.email}</span>
+                </div>
+              </div>
+
+              <div className="border-b pb-4" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
+                <p className="text-[9px] font-bold text-natural uppercase tracking-wider mb-1">Registered Address</p>
+                <span className="text-fern font-bold text-xs leading-relaxed">{selectedSellerProfile.address}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Listed Products</p>
+                  <span className="text-fern font-bold text-xs">{selectedSellerProfile.listedCount} Items</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Estimated Revenue</p>
+                  <span className="text-green-700 font-extrabold text-xs">₹{selectedSellerProfile.totalSales.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t flex justify-end gap-2" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
+              <button
+                onClick={() => setSelectedSellerProfile(null)}
+                className="h-9 px-4 rounded-xl border text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530' }}
+              >
+                Close Profile
               </button>
             </div>
           </div>
