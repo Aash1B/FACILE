@@ -35,6 +35,20 @@ const SUBCATEGORIES: Record<string, string[]> = {
   "Bags & Wallets":        ["Tote Bags", "Clutches", "Backpacks", "Wallets", "Sling Bags"],
 };
 
+// Fallback products for search suggestions when backend is unavailable
+const FALLBACK_PRODUCTS = [
+  { id: "bs1", title: "Smart Watch Series 5", sellingPrice: 8999, image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400" },
+  { id: "bs2", title: "Wireless Headphones", sellingPrice: 5999, image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400" },
+  { id: "bs3", title: "Travel Backpack", sellingPrice: 3999, image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400" },
+  { id: "bs4", title: "Running Shoes", sellingPrice: 4999, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400" },
+  { id: "bs5", title: "Luxury Perfume", sellingPrice: 2999, image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400" },
+  { id: "bs6", title: "Portable Bluetooth Speaker", sellingPrice: 2499, image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400" },
+  { id: "bs7", title: "Classic Sunglasses", sellingPrice: 1499, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400" },
+  { id: "bs8", title: "Ceramic Coffee Set", sellingPrice: 1899, image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400" },
+  { id: "bs9", title: "Premium Yoga Mat", sellingPrice: 1299, image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400" },
+  { id: "bs10", title: "Minimal Desk Lamp", sellingPrice: 2199, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400" },
+];
+
 export default function Navbar() {
   const { cart, favorites, setIsCartOpen } = useCart();
   const { user, logout } = useAuth();
@@ -42,7 +56,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const urlSearch = searchParams ? searchParams.get("search") || "" : "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
-  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>(FALLBACK_PRODUCTS);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLFormElement>(null);
   const mobileSearchContainerRef = useRef<HTMLFormElement>(null);
@@ -57,12 +71,13 @@ export default function Navbar() {
         const res = await fetch("/api/products");
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) {
+          if (Array.isArray(data) && data.length > 0) {
             setAllProducts(data);
           }
         }
       } catch (err) {
-        console.error("Failed to fetch products for search suggestions", err);
+        // Backend not available — fallback products already set
+        console.warn("Product service unavailable, using local fallback for search suggestions.");
       }
     };
     fetchProducts();
@@ -97,6 +112,12 @@ export default function Navbar() {
         product.title.toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 5)
     : [];
+
+  // Helper: avoid double "bs" prefix for fallback products vs backend numeric IDs
+  const getProductHref = (id: string | number) => {
+    const idStr = String(id);
+    return idStr.startsWith("bs") ? `/product/${idStr}` : `/product/bs${idStr}`;
+  };
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -322,7 +343,7 @@ export default function Navbar() {
                     {searchSuggestions.map((product) => (
                       <Link
                         key={product.id}
-                        href={`/product/bs${product.id}`}
+                        href={getProductHref(product.id)}
                         onClick={() => setShowSuggestions(false)}
                         className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
                       >
@@ -391,7 +412,7 @@ export default function Navbar() {
                   {searchSuggestions.map((product) => (
                     <Link
                       key={product.id}
-                      href={`/product/bs${product.id}`}
+                      href={getProductHref(product.id)}
                       onClick={() => setShowSuggestions(false)}
                       className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
                     >
