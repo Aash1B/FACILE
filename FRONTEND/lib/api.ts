@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8082",
+  // Keep browser requests on the frontend origin. Next.js proxies /api/auth/*
+  // to the auth service, so login also works when the app is opened via LAN IP.
+  baseURL: "/",
   headers: {
     "Content-Type": "application/json",
   },
@@ -57,7 +59,7 @@ api.interceptors.response.use(
         }
 
         // Call the refresh endpoint to obtain a new token pair
-        const response = await axios.post("http://localhost:8082/api/auth/refresh", {
+        const response = await axios.post("/api/auth/refresh", {
           refreshToken,
         });
 
