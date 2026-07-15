@@ -250,7 +250,7 @@ function ProfileContent() {
   };
 
   return (
-    <div className="auth-palette min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#F4F4F0' }}>
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: '#F4F4F0' }}>
       <div className="max-w-6xl mx-auto">
         
         {/* Page Title */}
@@ -270,7 +270,7 @@ function ProfileContent() {
           <div className="lg:col-span-1 space-y-6">
             
             {/* User Short Info Card */}
-            <div className="bg-white border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
+            <div className="bg-[#F4F4F0] border border-natural/20 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#4A5568]" />
               <div className="relative inline-block mt-2">
                   <div className="w-16 h-16 bg-[#F4F4F0] text-fern border border-natural/20 rounded-full flex items-center justify-center font-serif text-2xl font-bold uppercase shadow-inner overflow-hidden">
@@ -299,7 +299,7 @@ function ProfileContent() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="bg-white border border-natural/20 rounded-2xl p-2 shadow-sm flex lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar gap-1">
+            <div className="bg-[#F4F4F0] border border-natural/20 rounded-2xl p-2 shadow-sm flex lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar gap-1">
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
@@ -366,7 +366,7 @@ function ProfileContent() {
 
           {/* Main Dashboard Section (Tabs Content) */}
           <div className="lg:col-span-3">
-            <div className="bg-white border border-natural/20 rounded-3xl p-6 sm:p-8 shadow-sm min-h-[480px]">
+            <div className="bg-[#F4F4F0] border border-natural/20 rounded-3xl p-6 sm:p-8 shadow-sm min-h-[480px]">
               
               {/* Tab 1: Profile Settings */}
               {activeTab === "profile" && (

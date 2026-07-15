@@ -459,12 +459,12 @@ function HomeContent() {
             return (
               <div
                 key={product.id}
-                className="group bg-warm-ivory hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-[#F4F4F0] hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Wishlist Button */}
                 <button
                   onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
                   aria-label="Add to wishlist"
                 >
                   <Heart
