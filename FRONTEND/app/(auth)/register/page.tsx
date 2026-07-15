@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Mail, Check, UserPlus } from "lucide-react";
@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, verifyOtp, resendOtp } = useAuth();
+  const { register, verifyOtp, resendOtp, loginWithGoogle } = useAuth();
 
   // Form states
   const [name, setName] = useState("");
@@ -175,6 +175,43 @@ export default function RegisterPage() {
       setIsResending(false);
     }
   };
+
+  useEffect(() => {
+    const handleGoogleCredentialResponse = async (response: any) => {
+      setIsSubmitting(true);
+      try {
+        await loginWithGoogle(response.credential);
+        setShowSuccessToast(true);
+        setTimeout(() => router.push("/profile"), 1500);
+      } catch (e: any) {
+        console.error(e);
+        setIsSubmitting(false);
+        setErrors({ email: e.message || "Google registration failed." });
+      }
+    };
+
+    const initializeGoogle = () => {
+      if (typeof window !== "undefined" && (window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "121404179374-e8b82qes4l6n15r2j0973m08o6qjtf7s.apps.googleusercontent.com",
+          callback: handleGoogleCredentialResponse,
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById("google-signup-btn"),
+          { theme: "outline", size: "large", type: "standard", shape: "rectangular", text: "signup_with", logo_alignment: "left" }
+        );
+      }
+    };
+
+    const timer = setInterval(() => {
+      if (typeof window !== "undefined" && (window as any).google) {
+        initializeGoogle();
+        clearInterval(timer);
+      }
+    }, 300);
+
+    return () => clearInterval(timer);
+  }, [loginWithGoogle, router]);
 
   /* ── OTP Verification View ───────────────────────────────────────── */
   if (isVerifyingOtp) {
@@ -441,6 +478,22 @@ export default function RegisterPage() {
           )}
         </button>
       </form>
+
+      {/* Divider */}
+      <div className="relative flex items-center justify-center py-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t" style={{ borderColor: "rgba(74,85,104,0.2)" }}></div>
+        </div>
+        <span
+          className="relative px-3 text-[10px] font-bold tracking-widest uppercase"
+          style={{ color: "#4a5568", backgroundColor: "#faf3e3" }}
+        >
+          Or continue with
+        </span>
+      </div>
+
+      {/* Google Register Button */}
+      <div id="google-signup-btn" className="w-full flex justify-center min-h-[44px]"></div>
 
       {/* Footer Link */}
       <div className="text-center pt-2 border-t" style={{ borderColor: "rgba(74,85,104,0.15)" }}>

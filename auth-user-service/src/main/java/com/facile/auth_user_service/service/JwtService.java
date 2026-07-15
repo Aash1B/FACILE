@@ -82,6 +82,22 @@ public class JwtService {
                 .getPayload();
     }
 
+    public String generateMfaToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("mfa_pending", true);
+        return buildToken(claims, userDetails, 300000); // 5 minutes expiration
+    }
+
+    public boolean isMfaPending(String token) {
+        try {
+            final Claims claims = extractAllClaims(token);
+            Boolean pending = claims.get("mfa_pending", Boolean.class);
+            return pending != null && pending;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private SecretKey getSignInKey() {
         byte[] keyBytes = java.util.HexFormat.of().parseHex(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);

@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
-    private Long id;
-    private String name;
-    private String email;
-    private String role;
-    private boolean mfaEnabled;
+public class MfaSetupResponse {
+    private String secret;
+    private String qrCodeUrl;
 }

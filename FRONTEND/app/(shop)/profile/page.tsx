@@ -75,11 +75,84 @@ const MOCK_ADDRESSES = [
 ];
 
 export default function ProfilePage() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs } = useAuth();
   const router = useRouter();
   
   const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "security">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  // Security Tab state variables
+  const [sessionsList, setSessionsList] = useState<any[]>([]);
+  const [auditLogsList, setAuditLogsList] = useState<any[]>([]);
+  const [mfaSecretData, setMfaSecretData] = useState<{ secret: string; qrCodeUrl: string } | null>(null);
+  const [mfaSetupCode, setMfaSetupCode] = useState("");
+  const [mfaErrorMsg, setMfaErrorMsg] = useState("");
+  const [mfaSuccessMsg, setMfaSuccessMsg] = useState("");
+  const [showMfaSetup, setShowMfaSetup] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "security" && user) {
+      loadSessionsAndLogs();
+    }
+  }, [activeTab, user]);
+
+  const loadSessionsAndLogs = async () => {
+    try {
+      const sess = await getSessions();
+      setSessionsList(sess);
+      const logs = await getAuditLogs();
+      setAuditLogsList(logs);
+    } catch (e) {
+      console.error("Failed to load security details:", e);
+    }
+  };
+
+  const handleSetupMfa = async () => {
+    try {
+      const data = await setupMfa();
+      setMfaSecretData(data);
+      setShowMfaSetup(true);
+      setMfaErrorMsg("");
+      setMfaSuccessMsg("");
+    } catch (e: any) {
+      setMfaErrorMsg(e.message || "Failed to initiate MFA setup.");
+    }
+  };
+
+  const handleVerifyEnableMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await enableMfa(mfaSetupCode);
+      setMfaSuccessMsg("MFA successfully enabled!");
+      setMfaSecretData(null);
+      setShowMfaSetup(false);
+      setMfaSetupCode("");
+      loadSessionsAndLogs();
+    } catch (e: any) {
+      setMfaErrorMsg(e.message || "Invalid code. Please try again.");
+    }
+  };
+
+  const handleDisableMfa = async () => {
+    if (confirm("Are you sure you want to disable 2FA? This will decrease your account security.")) {
+      try {
+        await disableMfa();
+        alert("MFA has been disabled.");
+        loadSessionsAndLogs();
+      } catch (e: any) {
+        alert(e.message || "Failed to disable MFA.");
+      }
+    }
+  };
+
+  const handleRevokeSession = async (id: number) => {
+    try {
+      await revokeSession(id);
+      loadSessionsAndLogs();
+    } catch (e: any) {
+      alert(e.message || "Failed to revoke session.");
+    }
+  };
   
   // Profile Form State
   const [profileName, setProfileName] = useState("");
@@ -624,10 +697,11 @@ export default function ProfilePage() {
 
               {/* Tab 4: Security */}
               {activeTab === "security" && (
-                <div className="space-y-6">
+                <div className="space-y-8">
+                  {/* Password Change Form */}
                   <div>
-                    <h2 className="font-serif text-xl font-bold text-fern">Account Security</h2>
-                    <p className="text-[11px] text-natural font-medium mt-0.5">Update credentials and configure login protection options.</p>
+                    <h2 className="font-serif text-xl font-bold text-fern">Account Credentials</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Update password credentials.</p>
                   </div>
 
                   <form onSubmit={handlePasswordUpdate} className="space-y-4 max-w-md">
@@ -680,26 +754,180 @@ export default function ProfilePage() {
                       <div className="w-5 h-5 bg-apricot rounded-full flex items-center justify-center text-warm-ivory">
                         <Check size={11} className="stroke-[3px]" />
                       </div>
-                      <p className="text-xs font-semibold font-sans">Password updated locally! New credential has been saved.</p>
+                      <p className="text-xs font-semibold font-sans">Password updated successfully!</p>
                     </div>
                   )}
 
                   <div className="h-px bg-natural/10 my-6" />
 
-                  {/* Two-Factor Authentication Info */}
-                  <div className="border border-natural/20 rounded-2xl p-5 bg-warm-ivory/5 flex flex-col sm:flex-row items-start justify-between gap-4">
-                    <div className="space-y-1 max-w-lg">
-                      <h4 className="text-xs font-bold text-fern flex items-center gap-1.5">
-                        Two-Factor Authentication (2FA)
-                        <span className="px-2 py-0.5 bg-apricot/15 text-apricot font-bold text-[8px] uppercase tracking-wider rounded-md">Highly Recommended</span>
-                      </h4>
-                      <p className="text-[11px] text-natural/95 leading-relaxed font-semibold">
-                        Add an extra layer of protection. When signing in, you will be required to input a secure passcode from a code generator app (like Google Authenticator).
-                      </p>
+                  {/* Two-Factor Authentication (2FA) Setup */}
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Two-Factor Authentication (2FA)</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Secure your account with multi-factor passcodes.</p>
+                  </div>
+
+                  {user?.mfaEnabled ? (
+                    <div className="border border-natural/20 rounded-2xl p-5 bg-green-50/50 flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold text-fern flex items-center gap-1.5">
+                          2FA is currently ENABLED
+                          <span className="px-2 py-0.5 bg-fern text-warm-ivory font-bold text-[8px] uppercase tracking-wider rounded-md">Active</span>
+                        </h4>
+                        <p className="text-[11px] text-natural font-semibold">
+                          Your account is protected by TOTP code validation during sign in.
+                        </p>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={handleDisableMfa}
+                        className="h-8.5 px-4 bg-apricot hover:bg-apricot/90 text-warm-ivory text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm self-center"
+                      >
+                        Disable 2FA
+                      </button>
                     </div>
-                    <button type="button" className="h-8.5 px-4 border border-natural/25 hover:border-fern text-fern text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer bg-white self-start sm:self-center flex-shrink-0">
-                      Enable 2FA
-                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="border border-natural/20 rounded-2xl p-5 bg-warm-ivory/5 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div className="space-y-1 max-w-lg">
+                          <h4 className="text-xs font-bold text-fern flex items-center gap-1.5">
+                            2FA is currently DISABLED
+                            <span className="px-2 py-0.5 bg-apricot/15 text-apricot font-bold text-[8px] uppercase tracking-wider rounded-md font-sans">Recommended</span>
+                          </h4>
+                          <p className="text-[11px] text-natural/95 leading-relaxed font-semibold">
+                            Add an extra layer of protection by requiring a code from your authenticator app on login.
+                          </p>
+                        </div>
+                        {!showMfaSetup && (
+                          <button 
+                            type="button" 
+                            onClick={handleSetupMfa}
+                            className="h-8.5 px-4 border border-natural/25 hover:border-fern text-fern text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer bg-white self-center"
+                          >
+                            Enable 2FA
+                          </button>
+                        )}
+                      </div>
+
+                      {showMfaSetup && mfaSecretData && (
+                        <div className="border border-natural/25 rounded-2xl p-5 bg-warm-ivory/10 space-y-4 animate-fade-in max-w-md">
+                          <h4 className="text-xs font-bold text-fern uppercase tracking-wider">MFA Setup instructions</h4>
+                          
+                          <div className="flex flex-col items-center gap-3 py-2 bg-white rounded-xl border border-natural/15">
+                            {/* QR Code using Google Charts API */}
+                            <img 
+                              src={`https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&hl=en&chl=${encodeURIComponent(mfaSecretData.qrCodeUrl)}`}
+                              alt="Scan this TOTP QR Code"
+                              className="w-40 h-40 border border-natural/10"
+                            />
+                            <div className="text-center px-4">
+                              <p className="text-[10px] text-natural uppercase font-bold">Setup Key</p>
+                              <code className="text-xs font-mono font-bold text-fern bg-warm-ivory/40 px-2.5 py-1 rounded-md block mt-1 select-all">
+                                {mfaSecretData.secret}
+                              </code>
+                            </div>
+                          </div>
+
+                          <form onSubmit={handleVerifyEnableMfa} className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-natural block">Enter Authenticator Code</label>
+                            <div className="flex gap-2">
+                              <input 
+                                type="text"
+                                maxLength={6}
+                                required
+                                placeholder="123456"
+                                value={mfaSetupCode}
+                                onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, ""))}
+                                className="w-full h-8.5 px-3 bg-white border border-natural/25 text-xs font-medium text-fern rounded-lg focus:outline-none"
+                              />
+                              <button 
+                                type="submit"
+                                className="h-8.5 px-4 bg-fern hover:bg-apricot text-warm-ivory text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                              >
+                                Enable
+                              </button>
+                            </div>
+                          </form>
+
+                          {mfaErrorMsg && (
+                            <p className="text-[10px] font-bold text-apricot">{mfaErrorMsg}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="h-px bg-natural/10 my-6" />
+
+                  {/* Active Device Sessions */}
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Active Device Sessions</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Manage and revoke active logins on your account.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {sessionsList.map((session) => (
+                      <div 
+                        key={session.id}
+                        className="border border-natural/20 rounded-2xl p-4.5 bg-warm-ivory/5 flex flex-col justify-between gap-3"
+                      >
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-mono font-semibold text-fern truncate max-w-full" title={session.userAgent}>
+                            {session.userAgent || "Unknown Device"}
+                          </p>
+                          <div className="text-[10px] font-bold text-natural uppercase tracking-wider space-y-0.5">
+                            <p>IP Address: <span className="text-fern font-medium">{session.ipAddress || "Unknown"}</span></p>
+                            <p>Last Active: <span className="text-fern font-medium">{new Date(session.lastActiveAt).toLocaleString()}</span></p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => handleRevokeSession(session.id)}
+                          className="h-7 w-full border border-apricot/30 hover:bg-apricot/5 text-apricot text-[9px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
+                        >
+                          Revoke Access
+                        </button>
+                      </div>
+                    ))}
+                    {sessionsList.length === 0 && (
+                      <div className="sm:col-span-2 py-8 text-center text-xs font-semibold text-natural border border-dashed border-natural/30 rounded-2xl">
+                        No active login sessions tracked.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="h-px bg-natural/10 my-6" />
+
+                  {/* Security Audit Logs */}
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-fern">Security Audit Trail</h2>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Historical log of security activities for verification.</p>
+                  </div>
+
+                  <div className="border border-natural/20 rounded-2xl overflow-hidden shadow-sm">
+                    <table className="w-full text-left border-collapse bg-white">
+                      <thead>
+                        <tr className="bg-warm-ivory/40 text-[9px] font-bold uppercase tracking-wider text-natural border-b border-natural/15">
+                          <th className="p-3">Action</th>
+                          <th className="p-3">IP Address</th>
+                          <th className="p-3">Timestamp</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-natural/10 text-xs">
+                        {auditLogsList.map((log) => (
+                          <tr key={log.id} className="hover:bg-warm-ivory/10">
+                            <td className="p-3 font-semibold text-fern">{log.action}</td>
+                            <td className="p-3 text-natural font-medium">{log.ipAddress || "N/A"}</td>
+                            <td className="p-3 text-natural font-medium">{new Date(log.timestamp).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                        {auditLogsList.length === 0 && (
+                          <tr>
+                            <td colSpan={3} className="p-4 text-center text-natural font-semibold">
+                              No security audit logs available.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
 
                 </div>

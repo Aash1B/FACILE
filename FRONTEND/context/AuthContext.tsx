@@ -1,67 +1,137 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "@/lib/api";
 
 interface User {
+  id?: number;
   name: string;
   email: string;
+  role?: string;
+  mfaEnabled?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ requiresMfa: boolean; mfaToken?: string } | boolean>;
+  loginWithGoogle: (idToken: string) => Promise<boolean>;
+  verifyMfa: (mfaToken: string, code: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<{ requiresVerification: boolean; email: string }>;
   verifyOtp: (email: string, otpCode: string) => Promise<boolean>;
   resendOtp: (email: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<boolean>;
+  resetPassword: (email: string, otpCode: string, newPassword: string) => Promise<boolean>;
   logout: () => void;
+  setupMfa: () => Promise<{ secret: string; qrCodeUrl: string }>;
+  enableMfa: (code: string) => Promise<boolean>;
+  disableMfa: () => Promise<boolean>;
+  getSessions: () => Promise<any[]>;
+  revokeSession: (id: number) => Promise<boolean>;
+  getAuditLogs: () => Promise<any[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper to set session details in storage & cookies
+const setAuthSession = (token: string, refreshToken: string, userProfile: User) => {
+  localStorage.setItem("facile_token", token);
+  localStorage.setItem("facile_refresh_token", refreshToken);
+  localStorage.setItem("facile_user", JSON.stringify(userProfile));
+  
+  if (typeof window !== "undefined") {
+    // Expiration set to 7 days to match refresh token
+    document.cookie = `facile_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+  }
+};
+
+// Helper to clear session details from storage & cookies
+const clearAuthSession = () => {
+  localStorage.removeItem("facile_token");
+  localStorage.removeItem("facile_refresh_token");
+  localStorage.removeItem("facile_user");
+  
+  if (typeof window !== "undefined") {
+    document.cookie = "facile_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Check for saved user session on mount
+  // Check for active session verification on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem("facile_user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse saved user:", e);
-        localStorage.removeItem("facile_user");
-        localStorage.removeItem("facile_token");
-        localStorage.removeItem("facile_refresh_token");
+    const checkSession = async () => {
+      const token = localStorage.getItem("facile_token");
+      if (token) {
+        try {
+          const response = await api.get("/api/auth/me");
+          setUser(response.data);
+        } catch (e) {
+          console.error("Session verification failed:", e);
+          clearAuthSession();
+          setUser(null);
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    checkSession();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ requiresMfa: boolean; mfaToken?: string } | boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Login failed. Please check your credentials.");
+      const response = await api.post("/api/auth/login", { email, password });
+      const data = response.data;
+      
+      if (data.requiresMfa) {
+        setIsLoading(false);
+        return { requiresMfa: true, mfaToken: data.mfaToken };
       }
-      const data = await response.json();
-      localStorage.setItem("facile_token", data.accessToken);
-      localStorage.setItem("facile_refresh_token", data.refreshToken);
-      const userProfile: User = { name: data.name, email: data.email };
-      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
       setUser(userProfile);
       return true;
     } catch (error: any) {
       console.error("Login error:", error);
-      throw error;
+      throw new Error(error.response?.data?.error || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (idToken: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/api/auth/google", { idToken });
+      const data = response.data;
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
+      setUser(userProfile);
+      return true;
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      throw new Error(error.response?.data?.error || "Google sign in failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyMfa = async (mfaToken: string, code: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/api/auth/mfa/verify", { mfaToken, code });
+      const data = response.data;
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
+      setUser(userProfile);
+      return true;
+    } catch (error: any) {
+      console.error("MFA Verify error:", error);
+      throw new Error(error.response?.data?.error || "Invalid 2FA code.");
     } finally {
       setIsLoading(false);
     }
@@ -70,29 +140,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string): Promise<{ requiresVerification: boolean; email: string }> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Registration failed.");
-      }
-      const data = await response.json();
+      const response = await api.post("/api/auth/register", { name, email, password });
+      const data = response.data;
       if (data.requiresVerification) {
         return { requiresVerification: true, email: data.email };
       }
       
-      localStorage.setItem("facile_token", data.accessToken);
-      localStorage.setItem("facile_refresh_token", data.refreshToken);
-      const userProfile: User = { name: data.name, email: data.email };
-      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
       setUser(userProfile);
       return { requiresVerification: false, email: data.email };
     } catch (error: any) {
       console.error("Registration error:", error);
-      throw error;
+      throw new Error(error.response?.data?.error || "Registration failed.");
     } finally {
       setIsLoading(false);
     }
@@ -101,25 +161,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtp = async (email: string, otpCode: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otpCode }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "OTP Verification failed.");
-      }
-      const data = await response.json();
-      localStorage.setItem("facile_token", data.accessToken);
-      localStorage.setItem("facile_refresh_token", data.refreshToken);
-      const userProfile: User = { name: data.name, email: data.email };
-      localStorage.setItem("facile_user", JSON.stringify(userProfile));
+      const response = await api.post("/api/auth/verify-otp", { email, otpCode });
+      const data = response.data;
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
       setUser(userProfile);
       return true;
     } catch (error: any) {
       console.error("Verification error:", error);
-      throw error;
+      throw new Error(error.response?.data?.error || "OTP Verification failed.");
     } finally {
       setIsLoading(false);
     }
@@ -127,27 +177,105 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resendOtp = async (email: string): Promise<boolean> => {
     try {
-      const response = await fetch("/api/auth/resend-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to resend OTP.");
-      }
+      await api.post("/api/auth/resend-otp", { email });
       return true;
     } catch (error: any) {
       console.error("Resend OTP error:", error);
-      throw error;
+      throw new Error(error.response?.data?.error || "Failed to resend OTP.");
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("facile_user");
-    localStorage.removeItem("facile_token");
-    localStorage.removeItem("facile_refresh_token");
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    try {
+      await api.post("/api/auth/forgot-password", { email });
+      return true;
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      throw new Error(error.response?.data?.error || "Failed to request recovery code.");
+    }
+  };
+
+  const resetPassword = async (email: string, otpCode: string, newPassword: string): Promise<boolean> => {
+    try {
+      await api.post("/api/auth/reset-password", { email, otpCode, newPassword });
+      return true;
+    } catch (error: any) {
+      console.error("Reset password error:", error);
+      throw new Error(error.response?.data?.error || "Failed to reset password.");
+    }
+  };
+
+  const logout = async () => {
+    const refreshToken = localStorage.getItem("facile_refresh_token");
+    try {
+      await api.post("/api/auth/logout", { refreshToken });
+    } catch (e) {
+      console.error("Backend logout failed:", e);
+    }
+    clearAuthSession();
     setUser(null);
+  };
+
+  const setupMfa = async (): Promise<{ secret: string; qrCodeUrl: string }> => {
+    try {
+      const response = await api.post("/api/auth/mfa/setup");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to setup 2FA.");
+    }
+  };
+
+  const enableMfa = async (code: string): Promise<boolean> => {
+    try {
+      await api.post("/api/auth/mfa/enable", { code });
+      if (user) {
+        setUser({ ...user, mfaEnabled: true });
+        localStorage.setItem("facile_user", JSON.stringify({ ...user, mfaEnabled: true }));
+      }
+      return true;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to enable 2FA.");
+    }
+  };
+
+  const disableMfa = async (): Promise<boolean> => {
+    try {
+      await api.post("/api/auth/mfa/disable");
+      if (user) {
+        setUser({ ...user, mfaEnabled: false });
+        localStorage.setItem("facile_user", JSON.stringify({ ...user, mfaEnabled: false }));
+      }
+      return true;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to disable 2FA.");
+    }
+  };
+
+  const getSessions = async (): Promise<any[]> => {
+    try {
+      const response = await api.get("/api/auth/sessions");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to load active sessions.");
+    }
+  };
+
+  const revokeSession = async (id: number): Promise<boolean> => {
+    try {
+      await api.delete(`/api/auth/sessions/${id}`);
+      return true;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to revoke session.");
+    }
+  };
+
+  const getAuditLogs = async (): Promise<any[]> => {
+    try {
+      const response = await api.get("/api/auth/audit-logs");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || "Failed to load audit logs.");
+    }
   };
 
   return (
@@ -157,10 +285,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
+        verifyMfa,
         register,
         verifyOtp,
         resendOtp,
+        forgotPassword,
+        resetPassword,
         logout,
+        setupMfa,
+        enableMfa,
+        disableMfa,
+        getSessions,
+        revokeSession,
+        getAuditLogs,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -26,22 +27,99 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
-  // Load from localStorage on mount safely
+  // Sync cart from backend or local storage when user state changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem("facile_cart");
-      if (savedCart) {
+    const syncCart = async () => {
+      if (user && user.email) {
+        // Logged-in user: merge local guest cart into backend database
         try {
-          setCart(JSON.parse(savedCart));
+          // Fetch existing db cart
+          const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+          const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
+
+          const localCartStr = localStorage.getItem("facile_cart");
+          if (localCartStr) {
+            const localCart: CartItem[] = JSON.parse(localCartStr);
+            if (localCart.length > 0) {
+              // Perform client-side merge: check and add missing/larger quantities to DB
+              for (const localItem of localCart) {
+                const dbItem = dbCart.items.find((i: any) => i.productId === localItem.id);
+                if (!dbItem) {
+                  // Add item to backend
+                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      productId: localItem.id,
+                      productName: localItem.name,
+                      price: localItem.price,
+                      quantity: localItem.quantity,
+                    }),
+                  });
+                } else if (localItem.quantity > dbItem.quantity) {
+                  // Add the difference
+                  const diff = localItem.quantity - dbItem.quantity;
+                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      productId: localItem.id,
+                      productName: localItem.name,
+                      price: localItem.price,
+                      quantity: diff,
+                    }),
+                  });
+                }
+              }
+              // Clear local guest cart
+              localStorage.removeItem("facile_cart");
+            }
+          }
+
+          // Fetch final synchronized cart
+          const finalRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+          if (finalRes.ok) {
+            const finalCart = await finalRes.json();
+            // Map backend cart structure back to frontend CartItem
+            const mappedCart: CartItem[] = finalCart.items.map((i: any) => ({
+              id: i.productId,
+              name: i.productName,
+              price: i.price,
+              brand: "Facile",
+              image: "", // mock image path
+              quantity: i.quantity,
+            }));
+            setCart(mappedCart);
+          }
         } catch (e) {
-          console.error("Error parsing cart data", e);
+          console.error("Failed to sync cart with backend:", e);
+        }
+      } else {
+        // Guest user: load from local storage
+        const savedCart = localStorage.getItem("facile_cart");
+        if (savedCart) {
+          try {
+            setCart(JSON.parse(savedCart));
+          } catch (e) {
+            console.error("Error parsing cart data", e);
+          }
+        } else {
+          setCart([]);
         }
       }
+    };
 
+    syncCart();
+  }, [user]);
+
+  // Load favorites on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
       const savedFavs = localStorage.getItem("facile_favorites");
       if (savedFavs) {
         try {
@@ -53,9 +131,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const saveCart = (newCart: CartItem[]) => {
+  const saveCartState = (newCart: CartItem[]) => {
     setCart(newCart);
-    if (typeof window !== "undefined") {
+    if (!user && typeof window !== "undefined") {
       localStorage.setItem("facile_cart", JSON.stringify(newCart));
     }
   };
@@ -67,35 +145,131 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
+  const addToCart = async (item: Omit<CartItem, "quantity">) => {
     const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
-    if (existingIndex > -1) {
-      const newCart = [...cart];
-      newCart[existingIndex].quantity += 1;
-      saveCart(newCart);
+    
+    if (user && user.email) {
+      // Sync with database
+      try {
+        await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: item.id,
+            productName: item.name,
+            price: item.price,
+            quantity: 1,
+          }),
+        });
+
+        // Update state
+        if (existingIndex > -1) {
+          const newCart = [...cart];
+          newCart[existingIndex].quantity += 1;
+          saveCartState(newCart);
+        } else {
+          saveCartState([...cart, { ...item, quantity: 1 }]);
+        }
+      } catch (e) {
+        console.error("Failed to add item to db cart:", e);
+      }
     } else {
-      saveCart([...cart, { ...item, quantity: 1 }]);
+      // Guest: local storage
+      if (existingIndex > -1) {
+        const newCart = [...cart];
+        newCart[existingIndex].quantity += 1;
+        saveCartState(newCart);
+      } else {
+        saveCartState([...cart, { ...item, quantity: 1 }]);
+      }
     }
   };
 
-  const removeFromCart = (id: string) => {
-    const newCart = cart.filter((item) => item.id !== id);
-    saveCart(newCart);
+  const removeFromCart = async (id: string) => {
+    if (user && user.email) {
+      try {
+        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+          method: "DELETE",
+        });
+        saveCartState(cart.filter((item) => item.id !== id));
+      } catch (e) {
+        console.error("Failed to remove item from db cart:", e);
+      }
+    } else {
+      saveCartState(cart.filter((item) => item.id !== id));
+    }
   };
 
-  const updateQuantity = (id: string, qty: number) => {
+  const updateQuantity = async (id: string, qty: number) => {
     if (qty <= 0) {
       removeFromCart(id);
       return;
     }
-    const newCart = cart.map((item) =>
-      item.id === id ? { ...item, quantity: qty } : item
-    );
-    saveCart(newCart);
+
+    const currentItem = cart.find((item) => item.id === id);
+    if (!currentItem) return;
+
+    if (user && user.email) {
+      try {
+        const oldQty = currentItem.quantity;
+        if (qty > oldQty) {
+          // Add the difference
+          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId: id,
+              productName: currentItem.name,
+              price: currentItem.price,
+              quantity: qty - oldQty,
+            }),
+          });
+        } else if (qty < oldQty) {
+          // Remove from DB first and add back the smaller quantity
+          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+            method: "DELETE",
+          });
+          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId: id,
+              productName: currentItem.name,
+              price: currentItem.price,
+              quantity: qty,
+            }),
+          });
+        }
+        
+        saveCartState(cart.map((item) =>
+          item.id === id ? { ...item, quantity: qty } : item
+        ));
+      } catch (e) {
+        console.error("Failed to update item quantity in db cart:", e);
+      }
+    } else {
+      saveCartState(cart.map((item) =>
+        item.id === id ? { ...item, quantity: qty } : item
+      ));
+    }
   };
 
-  const clearCart = () => {
-    saveCart([]);
+  const clearCart = async () => {
+    if (user && user.email) {
+      try {
+        // Clear each item in database
+        for (const item of cart) {
+          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
+            method: "DELETE",
+          });
+        }
+        saveCartState([]);
+      } catch (e) {
+        console.error("Failed to clear db cart:", e);
+      }
+    } else {
+      saveCartState([]);
+    }
   };
 
   const toggleFavorite = (id: string) => {

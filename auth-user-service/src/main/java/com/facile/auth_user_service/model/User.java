@@ -47,6 +47,16 @@ public class User implements UserDetails {
     private String otpCode;
     private LocalDateTime otpExpiry;
 
+    private String resetOtpCode;
+    private LocalDateTime resetOtpExpiry;
+
+    private String mfaSecret;
+    private Boolean mfaEnabled = false;
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled != null && mfaEnabled;
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
