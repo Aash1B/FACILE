@@ -182,8 +182,8 @@ export default function Navbar() {
             <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto">
 
               {/* Favorite Icon */}
-              <button
-                onClick={() => setIsNavHeartFilled(prev => !prev)}
+              <Link
+                href="/wishlist"
                 className="p-2 rounded-full text-black hover:bg-natural/10 transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Favorites"
               >
@@ -193,11 +193,11 @@ export default function Navbar() {
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
                 {totalFavorites > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-apricot text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory animate-bounce">
+                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8A1C4] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory animate-bounce">
                     {totalFavorites}
                   </span>
                 )}
-              </button>
+              </Link>
 
               {/* Shopping Cart Icon */}
               <button
@@ -207,7 +207,7 @@ export default function Navbar() {
               >
                 <ShoppingCart size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
                 {totalCartItems > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-apricot text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
+                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8A1C4] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
                   </span>
                 )}
@@ -596,13 +596,13 @@ export default function Navbar() {
                 <Sparkles size={15} className="text-black/70 flex-shrink-0" /> New Arrivals
               </a>
 
-              <a
-                href="#favorites"
+              <Link
+                href="/wishlist"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 py-2 px-3 hover:bg-natural/10 rounded-xl transition-all"
               >
                 <Heart size={15} className="text-black/70 flex-shrink-0" /> Wishlist
-              </a>
+              </Link>
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);

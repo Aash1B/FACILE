@@ -155,6 +155,34 @@ const TESTIMONIALS = [
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150",
     feedback: "Very happy with my purchase. Highly recommend facile to everyone!",
     rating: 5
+  },
+  {
+    id: "t4",
+    name: "Emily R.",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150",
+    feedback: "The design aesthetics are amazing. The customer service helped me track my order immediately.",
+    rating: 5
+  },
+  {
+    id: "t5",
+    name: "David K.",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150",
+    feedback: "Super fast delivery and the packaging was eco-friendly. Very satisfied with the overall experience.",
+    rating: 4
+  },
+  {
+    id: "t6",
+    name: "Jessica P.",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150",
+    feedback: "I am in love with the Hydrating Lip Balm Set! It keeps my lips smooth and hydrated all day long.",
+    rating: 5
+  },
+  {
+    id: "t7",
+    name: "Alex B.",
+    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=150",
+    feedback: "The badminton rackets are outstandingly durable and lightweight. Excellent value for money.",
+    rating: 5
   }
 ];
 
@@ -163,6 +191,7 @@ function HomeContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -241,19 +270,19 @@ function HomeContent() {
       {/* 1. Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden shadow-xs min-h-[380px] sm:min-h-[480px] flex items-center">
-          
+
           {/* Background Image positioned on the right */}
           <img
             src="/hero_product_composition.png"
             alt="Hero Background"
             className="absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0"
           />
-          
+
           {/* Mobile Overlay: Blend image with #FAF3E3 */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#FAF3E3] via-[#FAF3E3] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
           {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
-          <div 
-            className="absolute inset-0 z-10 pointer-events-none hidden sm:block" 
+          <div
+            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
             style={{ background: 'linear-gradient(to right, #FAF3E3 0%, #FAF3E3 42%, transparent 52%)' }}
           />
 
@@ -355,8 +384,8 @@ function HomeContent() {
       <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
-          <Link 
-            href="/categories" 
+          <Link
+            href="/categories"
             className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
           >
             View All Categories
@@ -425,76 +454,76 @@ function HomeContent() {
 
         {/* 5-Column Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {visibleProducts.map((product) => {
-              const isFav = favorites.includes(product.id);
-              return (
-                <div
-                  key={product.id}
-                  className="group bg-warm-ivory hover:bg-[#DDE0F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+          {visibleProducts.map((product) => {
+            const isFav = favorites.includes(product.id);
+            return (
+              <div
+                key={product.id}
+                className="group bg-warm-ivory hover:bg-[#DDE0F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+              >
+                {/* Wishlist Button */}
+                <button
+                  onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                  aria-label="Add to wishlist"
                 >
-                  {/* Wishlist Button */}
-                  <button
-                    onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                    className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
-                    aria-label="Add to wishlist"
-                  >
-                    <Heart
-                      size={14}
-                      className={`transition-colors`}
-                      style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
+                  <Heart
+                    size={14}
+                    className={`transition-colors`}
+                    style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
+                  />
+                </button>
+
+                <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+                  {/* Product Image */}
+                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
+                    <img
+                      src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
+                      alt={product.name}
+                      className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
                     />
-                  </button>
-
-                  <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
-                    {/* Product Image */}
-                    <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0 p-4 flex items-center justify-center">
-                      <img
-                        src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
-                        alt={product.name}
-                        className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
-                      />
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1.5">
-                        <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
-                          {product.name}
-                        </h3>
-
-                        {/* Stars and reviews */}
-                        <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                          <Star size={11} className="text-amber-400 fill-amber-400" />
-                          <span className="text-[#4a556a] font-bold">{product.rating}</span>
-                          <span>({product.reviews})</span>
-                        </div>
-                      </div>
-
-                      {/* Price */}
-                      <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
-                          <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Action Button */}
-                  <div className="px-4 pb-4">
-                    <button
-                      onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
-                    >
-                      <ShoppingCart size={12} className="stroke-[2.5px]" />
-                      Add to Cart
-                    </button>
                   </div>
 
+                  {/* Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1.5">
+                      <h3 className="text-xs font-bold text-[#4a556a] leading-snug truncate transition-colors duration-200">
+                        {product.name}
+                      </h3>
+
+                      {/* Stars and reviews */}
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                        <Star size={11} className="text-amber-400 fill-amber-400" />
+                        <span className="text-[#4a556a] font-bold">{product.rating}</span>
+                        <span>({product.reviews})</span>
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-extrabold text-[#4a556a]">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural line-through font-medium">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Action Button */}
+                <div className="px-4 pb-4">
+                  <button
+                    onClick={(e) => handleAddToCart(product, e)}
+                    className="w-full h-8.5 bg-[#4a556a] hover:bg-[#4a556a]/90 active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                  >
+                    <ShoppingCart size={12} className="stroke-[2.5px]" />
+                    Add to Cart
+                  </button>
                 </div>
-              );
-            })}
-          </div>
+
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* 5. Special Offer Banner */}
@@ -546,17 +575,27 @@ function HomeContent() {
 
           {/* Navigation Arrows */}
           <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
+            <button
+              onClick={() => setTestimonialIndex((prev) => Math.max(0, prev - 1))}
+              disabled={testimonialIndex === 0}
+              className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
+              aria-label="Previous testimonials"
+            >
               <ChevronLeft size={16} />
             </button>
-            <button className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 active:scale-95 transition-all focus:outline-none cursor-pointer">
+            <button
+              onClick={() => setTestimonialIndex((prev) => Math.min(TESTIMONIALS.length - 3, prev + 1))}
+              disabled={testimonialIndex >= TESTIMONIALS.length - 3}
+              className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
+              aria-label="Next testimonials"
+            >
               <ChevronRight size={16} />
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TESTIMONIALS.map((testimonial) => (
+          {TESTIMONIALS.slice(testimonialIndex, testimonialIndex + 3).map((testimonial) => (
             <div
               key={testimonial.id}
               className="bg-white border border-natural/15 p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-6 hover:shadow-sm transition-all duration-300"
