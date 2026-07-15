@@ -98,11 +98,28 @@ export default function CheckoutPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
-  const [checkoutItems, setCheckoutItems] = useState(cart);
+  const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
 
   useEffect(() => {
+    // Check if it's a Buy Now session
+    const searchParams = new URLSearchParams(window.location.search);
+    const isBuyNow = searchParams.get("buynow") === "true";
+    if (isBuyNow) {
+      const buyNowData = localStorage.getItem("facile_buynow");
+      if (buyNowData) {
+        try {
+          setCheckoutItems(JSON.parse(buyNowData));
+          return;
+        } catch (e) {
+          console.error("Failed to parse buy now data:", e);
+        }
+      }
+    }
+
     if (cart.length > 0) {
       setCheckoutItems(cart);
+    } else {
+      setCheckoutItems([]);
     }
   }, [cart]);
 
@@ -228,6 +245,14 @@ export default function CheckoutPage() {
     setShowPaymentModal(true);
   };
 
+  const handleCheckoutCompletion = () => {
+    if (localStorage.getItem("facile_buynow")) {
+      localStorage.removeItem("facile_buynow");
+    } else {
+      clearCart();
+    }
+  };
+
   const handleConfirmPayment = async () => {
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
@@ -236,7 +261,7 @@ export default function CheckoutPage() {
       setTimeout(() => {
         setIsProcessing(false);
         setPaymentSuccess(true);
-        clearCart();
+        handleCheckoutCompletion();
       }, 2000);
       return;
     }
@@ -281,7 +306,7 @@ export default function CheckoutPage() {
           // Payment successful!
           setIsProcessing(false);
           setPaymentSuccess(true);
-          clearCart();
+          handleCheckoutCompletion();
         },
         prefill: {
           name: activeAddress?.name || "",
