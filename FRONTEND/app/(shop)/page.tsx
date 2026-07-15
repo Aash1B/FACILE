@@ -273,7 +273,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
               <a
                 href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] hover:bg-[#dde0f0]/90 text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
               >
                 Shop Now
                 <ArrowRight size={14} />

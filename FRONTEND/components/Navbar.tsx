@@ -207,7 +207,7 @@ export default function Navbar() {
                 <button 
                   ref={buttonRef}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1 px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                  className="flex items-center gap-1 px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                 >
                   All Categories
                   <ChevronDown 
@@ -220,7 +220,7 @@ export default function Navbar() {
               {/* New Arrivals */}
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 New Arrivals
               </a>
@@ -228,7 +228,7 @@ export default function Navbar() {
               {/* Trending Pill */}
               <a 
                 href="#special-offer" 
-                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1"
+                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1"
               >
                 <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
                 Trending
@@ -258,19 +258,19 @@ export default function Navbar() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Best Sellers
               </a>
               <a 
                 href="#special-offer" 
-                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Deals
               </a>
               <a 
                 href="#best-sellers" 
-                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
               >
                 Brands
               </a>
@@ -304,7 +304,7 @@ export default function Navbar() {
                 <button 
                   ref={mobileButtonRef}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1 px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                  className="flex items-center gap-1 px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                 >
                   All Categories
                   <ChevronDown 
@@ -316,14 +316,14 @@ export default function Navbar() {
 
               <a 
                 href="#best-sellers" 
-                className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
               >
                 New Arrivals
               </a>
 
               <a 
                 href="#special-offer" 
-                className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
+                className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#dde0f0]/90 text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
               >
                 <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
                 Trending
