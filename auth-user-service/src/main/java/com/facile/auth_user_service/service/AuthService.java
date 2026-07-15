@@ -536,6 +536,18 @@ public class AuthService {
         userSessionRepository.deleteByRefreshToken(refreshToken);
     }
 
+    public List<UserResponse> getSellers() {
+        return userRepository.findByRole(Role.SELLER).stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .role(user.getRole().name())
+                        .mfaEnabled(user.isMfaEnabled())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private String generateOtp() {
         return String.valueOf((int) (Math.random() * 900000) + 100000);
     }

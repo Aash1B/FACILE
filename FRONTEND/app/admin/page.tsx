@@ -7,6 +7,7 @@ import {
   Trash2, Search, Sliders, ChevronDown, CheckCircle, HelpCircle, Server,
   Plus, Package
 } from "lucide-react";
+import api from "@/lib/api";
 
 interface Seller {
   id: string;
@@ -164,6 +165,47 @@ export default function AdminDashboardPage() {
         setVouchers(defaults);
       }
     }
+  }, []);
+
+  React.useEffect(() => {
+    const fetchDBSellers = async () => {
+      try {
+        const response = await api.get("/api/auth/sellers");
+        if (response.data && Array.isArray(response.data)) {
+          const dbSellersMapped: Seller[] = response.data.map((user: any) => {
+            const valSeed = user.id ? user.id * 1000 : 5000;
+            return {
+              id: "db_" + user.id,
+              name: user.name,
+              email: user.email,
+              rating: 4.2,
+              performanceScore: 92,
+              commissionRate: 10,
+              warnings: 0,
+              status: "ACTIVE",
+              documents: [
+                { type: "ID Proof", name: "identification_document.pdf", url: "#" },
+                { type: "Business License", name: "business_registration_proof.pdf", url: "#" }
+              ],
+              phone: user.phone || `+91 99000 ${String(10000 + (user.id || 0)).substring(1)}`,
+              address: user.address || "Main Merchant Street, Commercial Center, India",
+              businessType: "Sole Proprietorship",
+              joinDate: "2026-07-15",
+              totalSales: 45000 + valSeed,
+              listedCount: 3
+            };
+          });
+          
+          setSellers(prev => {
+            const filteredPrev = prev.filter(p => !dbSellersMapped.some(db => db.email.toLowerCase() === p.email.toLowerCase()));
+            return [...dbSellersMapped, ...filteredPrev];
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load sellers from database:", err);
+      }
+    };
+    fetchDBSellers();
   }, []);
 
   const handleAddVoucher = (e: React.FormEvent) => {
