@@ -176,6 +176,25 @@ export default function SellerDashboardPage() {
             setSubcategoriesList(data);
             setSelectedSubCategoryId(String(data[0].id));
             return;
+          } else {
+            // No subcategories in database for this category! Create one dynamically
+            const catIdNum = Number(selectedCategoryId);
+            const fallbackName = MOCK_SUBCATEGORIES[catIdNum]?.[0]?.name || "General";
+            
+            const createRes = await fetch(`/api/categories/${selectedCategoryId}/subcategories`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ name: fallbackName })
+            });
+            
+            if (createRes.ok) {
+              const newSub = await createRes.json();
+              setSubcategoriesList([newSub]);
+              setSelectedSubCategoryId(String(newSub.id));
+              return;
+            }
           }
         }
       } catch (err) {
