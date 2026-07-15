@@ -15,6 +15,7 @@ interface Product {
   subcategory: string;
   stocks: number;
   image: string;
+  images: string[];
 }
 
 const INITIAL_PRODUCTS: Product[] = [
@@ -27,7 +28,8 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Ceramics & Pottery",
     subcategory: "Drinkware",
     stocks: 14,
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop",
+    images: ["https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"]
   },
   {
     id: "p2",
@@ -38,7 +40,8 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Home Accents",
     subcategory: "Textiles",
     stocks: 25,
-    image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop",
+    images: ["https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop"]
   }
 ];
 
@@ -70,24 +73,37 @@ export default function SellerDashboardPage() {
   const [stocks, setStocks] = useState("");
   const [image, setImage] = useState("");
   
-  // Custom mock image preview helper
-  const [imageFilePreview, setImageFilePreview] = useState<string | null>(null);
+  // Multiple Images State
+  const [images, setImages] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
 
   // Listing states
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const handleMockImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageFilePreview(reader.result as string);
-        setImage(""); // Reset string URL if file is chosen
-      };
-      reader.readAsDataURL(file);
+  const handleMultipleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImages(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const handleAddImageUrl = () => {
+    if (newImageUrl.trim()) {
+      setImages(prev => [...prev, newImageUrl.trim()]);
+      setNewImageUrl("");
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, idx) => idx !== index));
   };
 
   const handleAddProduct = (e: React.FormEvent) => {
@@ -120,7 +136,7 @@ export default function SellerDashboardPage() {
       return;
     }
 
-    const imageSource = imageFilePreview || image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
+    const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
     const newProduct: Product = {
       id: "p_" + Math.random().toString(36).substr(2, 9),
@@ -131,7 +147,8 @@ export default function SellerDashboardPage() {
       category,
       subcategory: subcategory || "General",
       stocks: stockNum,
-      image: imageSource
+      image: imageSource,
+      images: images.length > 0 ? images : [imageSource]
     };
 
     setProducts([newProduct, ...products]);
@@ -145,8 +162,8 @@ export default function SellerDashboardPage() {
     setCategory(CATEGORIES[0]);
     setSubcategory("");
     setStocks("");
-    setImage("");
-    setImageFilePreview(null);
+    setImages([]);
+    setNewImageUrl("");
 
     setTimeout(() => {
       setShowSuccessToast(false);
@@ -409,46 +426,67 @@ export default function SellerDashboardPage() {
               />
             </div>
 
-            {/* Premium Image Uploader visual mock */}
-            <div className="space-y-1.5">
+            {/* Multiple Image Uploader Section */}
+            <div className="space-y-2">
               <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                Product Image
+                Product Image Gallery
               </label>
-              
-              <div className="grid grid-cols-1 gap-2.5">
+
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  value={image}
-                  onChange={(e) => {
-                    setImage(e.target.value);
-                    setImageFilePreview(null); // Reset file if URL is written
-                  }}
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
                   placeholder="https://image-url.com/file.jpg"
-                  className="w-full h-9 px-3.5 text-[11px] font-medium rounded-xl border bg-transparent outline-none"
-                  style={{ borderColor: 'rgba(66,69,48,0.2)', color: '#424530' }}
+                  className="flex-1 h-9 px-3.5 text-[11px] font-medium rounded-xl border bg-transparent outline-none text-fern"
+                  style={{ borderColor: 'rgba(66,69,48,0.2)' }}
                 />
+                <button
+                  type="button"
+                  onClick={handleAddImageUrl}
+                  className="h-9 px-3.5 bg-fern font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-[#F4E6C7] transition-all hover:bg-stone-900"
+                >
+                  Add URL
+                </button>
+              </div>
 
-                <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/10" style={{ borderColor: 'rgba(66,69,48,0.15)' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleMockImageUpload}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  {imageFilePreview ? (
-                    <div className="relative w-full h-full p-2 flex items-center justify-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageFilePreview} alt="Preview" className="h-full max-w-[80px] rounded object-cover" />
-                      <span className="text-[10px] font-semibold text-fern">Image Selected</span>
-                    </div>
-                  ) : (
-                    <>
-                      <ImageIcon size={20} className="text-natural mb-1" />
-                      <span className="text-[10px] font-bold text-natural uppercase tracking-wider">Drag & Drop or Browse</span>
-                    </>
-                  )}
+              <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/10" style={{ borderColor: 'rgba(66,69,48,0.15)' }}>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleMultipleImageUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="flex flex-col items-center justify-center text-center">
+                  <ImageIcon size={20} className="text-natural mb-1" />
+                  <span className="text-[10px] font-bold text-natural uppercase tracking-wider">Upload Multiple Files</span>
                 </div>
               </div>
+
+              {/* Thumbnails Row */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 pt-2 animate-fade-in">
+                  {images.map((img, idx) => (
+                    <div key={idx} className="relative aspect-square border rounded-lg overflow-hidden bg-stone-100 group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt="Product image preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="absolute top-1 right-1 w-4.5 h-4.5 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] hover:bg-red-700 shadow-md cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                      {idx === 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-fern/90 text-[#F4E6C7] text-[8px] text-center font-bold py-0.5 tracking-wider uppercase">
+                          Primary
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Submit */}
