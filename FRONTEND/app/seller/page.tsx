@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Package, Trash2, Edit3, Image as ImageIcon, Sparkles, Check, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 
 interface Product {
   id: string;
@@ -71,16 +69,6 @@ const CATEGORIES = [
 ];
 
 export default function SellerDashboardPage() {
-  const router = useRouter();
-  const { user, isLoading } = useAuth();
-
-  // Redirect if not logged in or not a seller
-  useEffect(() => {
-    if (!isLoading && (!user || user.role !== "SELLER")) {
-      router.push("/seller/login");
-    }
-  }, [user, isLoading, router]);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [mrp, setMrp] = useState("");
@@ -327,22 +315,6 @@ export default function SellerDashboardPage() {
       alert("Error occurred while deleting product from database.");
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]" style={{ color: '#4A5568' }}>
-        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#4A5568', borderTopColor: 'transparent' }} />
-        <span className="text-sm font-semibold tracking-wider uppercase opacity-80">
-          Loading Workspace...
-        </span>
-      </div>
-    );
-  }
-
-  // Double check credentials
-  if (!user || user.role !== "SELLER") {
-    return null;
-  }
 
   return (
     <div className="flex-1 px-4 py-8 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
