@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
               type="submit"
               disabled={isSubmitting || mfaCode.length !== 6}
               className="w-full h-11 active:scale-98 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              style={{ backgroundColor: '#424530', color: '#F4E6C7' }}
+              style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}
             >
               {isSubmitting ? (
                 <div
@@ -188,14 +188,14 @@ export default function AdminLoginPage() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors duration-200 group"
-          style={{ color: '#424530' }}
+          style={{ color: '#4A5568' }}
         >
           <ShieldAlert size={14} className="transition-transform group-hover:scale-110" />
           Facile Main Shop
         </Link>
         
         <div>
-          <span className="font-serif text-2xl font-bold tracking-[0.08em]" style={{ color: '#424530' }}>
+          <span className="font-serif text-2xl font-bold tracking-[0.08em]" style={{ color: '#4A5568' }}>
             facile
           </span>
         </div>
@@ -208,13 +208,13 @@ export default function AdminLoginPage() {
           {showSuccessToast && (
             <div
               className="fixed bottom-6 right-6 z-50 py-3.5 px-5 rounded-2xl flex items-center gap-2.5 border animate-slide-in text-xs font-semibold shadow-xl"
-              style={{ backgroundColor: "#424530", color: "#F4E6C7", borderColor: "#A58E74" }}
+              style={{ backgroundColor: "#4A5568", color: "#F4E6C7", borderColor: "#A58E74" }}
             >
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: "#E09132" }}
               >
-                <Check size={12} style={{ color: "#424530" }} className="stroke-[3px]" />
+                <Check size={12} style={{ color: "#4A5568" }} className="stroke-[3px]" />
               </div>
               <span>Admin Authentication Success! Redirecting... 💼</span>
             </div>
@@ -270,9 +270,9 @@ export default function AdminLoginPage() {
               type="submit"
               disabled={isSubmitting || showSuccessToast}
               className="w-full h-11 active:scale-98 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-              style={{ backgroundColor: '#424530', color: '#F4E6C7' }}
+              style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#2c2e20'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#424530'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#4A5568'; }}
             >
               {isSubmitting ? (
                 <div
@@ -291,9 +291,10 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Footer info */}
-      <div className="text-center text-[10px] font-bold uppercase tracking-wider opacity-50" style={{ color: '#424530' }}>
+      <div className="text-center text-[10px] font-bold uppercase tracking-wider opacity-50" style={{ color: '#4A5568' }}>
         © {new Date().getFullYear()} FACILE CORP SECURITY • SECURE ACCESS CONTROL
       </div>
     </div>
   );
 }
+

@@ -27,17 +27,17 @@ export default function SellerLayout({
     return (
       <div
         className="min-h-screen flex font-sans"
-        style={{ backgroundColor: '#F4E6C7', color: '#424530' }}
+        style={{ backgroundColor: '#F4E6C7', color: '#4A5568' }}
       >
         {/* Split Pane: Left Side (Banner, Desktop only) */}
         <div className="hidden lg:flex lg:w-1/2 relative items-end p-16 overflow-hidden" style={{ backgroundColor: '#A58E74' }}>
           {/* Decorative soft shapes for visual interest */}
           <div className="absolute top-0 right-0 w-80 h-80 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#E09132' }} />
-          <div className="absolute bottom-16 left-8 w-60 h-60 rounded-full opacity-15 blur-2xl" style={{ backgroundColor: '#424530' }} />
+          <div className="absolute bottom-16 left-8 w-60 h-60 rounded-full opacity-15 blur-2xl" style={{ backgroundColor: '#4A5568' }} />
           
           {/* Gradient overlay */}
           <div
-            className="absolute inset-0 bg-gradient-to-t from-[#424530]/40 via-transparent to-[#424530]/5 pointer-events-none"
+            className="absolute inset-0 bg-gradient-to-t from-[#4A5568]/40 via-transparent to-[#4A5568]/5 pointer-events-none"
           />
 
           {/* Floating Accent Sparkles */}
@@ -79,14 +79,14 @@ export default function SellerLayout({
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors duration-200 group"
-              style={{ color: '#424530' }}
+              style={{ color: '#4A5568' }}
             >
               <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
               Back to store
             </Link>
             
             <div className="lg:hidden">
-              <span className="font-serif text-2xl font-bold tracking-[0.08em]" style={{ color: '#424530' }}>
+              <span className="font-serif text-2xl font-bold tracking-[0.08em]" style={{ color: '#4A5568' }}>
                 facile
               </span>
             </div>
@@ -98,7 +98,7 @@ export default function SellerLayout({
           </div>
 
           {/* Footer info (Mobile only) */}
-          <div className="text-center text-[10px] font-bold uppercase tracking-wider lg:hidden opacity-50" style={{ color: '#424530' }}>
+          <div className="text-center text-[10px] font-bold uppercase tracking-wider lg:hidden opacity-50" style={{ color: '#4A5568' }}>
             © {new Date().getFullYear()} FACILE PARTNER • ALL RIGHTS RESERVED
           </div>
         </div>
@@ -113,10 +113,10 @@ export default function SellerLayout({
       <header className="fixed top-0 left-0 right-0 h-16 z-30 flex items-center justify-between px-6 border-b transition-all duration-200" style={{ backgroundColor: '#F4E6C7', borderColor: 'rgba(165,142,116,0.2)' }}>
         <div className="flex items-center gap-6">
           <Link href="/seller" className="flex items-center gap-2">
-            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#424530' }}>
+            <span className="font-serif text-2xl font-bold tracking-wider" style={{ color: '#4A5568' }}>
               facile
             </span>
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded" style={{ backgroundColor: '#424530', color: '#F4E6C7' }}>
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded" style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}>
               Partner
             </span>
           </Link>
@@ -124,7 +124,7 @@ export default function SellerLayout({
 
         {user && user.role === "SELLER" && (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold" style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#424530', backgroundColor: 'rgba(250,246,238,0.5)' }}>
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold" style={{ borderColor: 'rgba(165,142,116,0.3)', color: '#4A5568', backgroundColor: 'rgba(250,246,238,0.5)' }}>
               <UserIcon size={14} className="stroke-[2.5px]" />
               <span>{user.name}</span>
             </div>
@@ -146,3 +146,4 @@ export default function SellerLayout({
     </div>
   );
 }
+

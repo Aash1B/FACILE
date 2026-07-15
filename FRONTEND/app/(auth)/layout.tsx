@@ -36,7 +36,7 @@ export default function AuthLayout({
         />
 
         {/* Floating Accent Sparkles */}
-        <div className="absolute top-12 left-12 flex items-center gap-2.5 z-10 select-none" style={{ color: '#424530' }}>
+        <div className="absolute top-12 left-12 flex items-center gap-2.5 z-10 select-none" style={{ color: '#4A5568' }}>
           <span className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a]">
             facile
           </span>
@@ -106,3 +106,4 @@ export default function AuthLayout({
     </div>
   );
 }
+
