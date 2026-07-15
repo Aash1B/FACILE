@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -37,7 +38,65 @@ const SUBCATEGORIES: Record<string, string[]> = {
 export default function Navbar() {
   const { cart, favorites, setIsCartOpen } = useCart();
   const { user, logout } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams ? searchParams.get("search") || "" : "";
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLFormElement>(null);
+  const mobileSearchContainerRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setSearchQuery(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setAllProducts(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch products for search suggestions", err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutsideSearch(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        searchContainerRef.current && !searchContainerRef.current.contains(target) &&
+        mobileSearchContainerRef.current && !mobileSearchContainerRef.current.contains(target)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutsideSearch);
+    return () => document.removeEventListener("mousedown", handleClickOutsideSearch);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowSuggestions(false);
+    if (searchQuery.trim()) {
+      router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/");
+    }
+  };
+
+  const searchSuggestions = searchQuery.trim()
+    ? allProducts.filter((product) =>
+        product.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5)
+    : [];
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -237,21 +296,46 @@ export default function Navbar() {
 
             {/* Center Search Pill */}
             <div className="flex-1 max-w-md min-w-[200px]">
-              <div className="relative">
+              <form ref={searchContainerRef} onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
                   placeholder="Search brands, ceramics, slow fashion..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
                   className="w-full h-8.5 pl-4 pr-10 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                 />
                 <button 
+                  type="submit"
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black hover:text-apricot transition-colors"
                   aria-label="Submit Search"
                 >
                   <Search size={15} />
                 </button>
-              </div>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-black/15 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto py-2 text-left">
+                    {searchSuggestions.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/product/bs${product.id}`}
+                        onClick={() => setShowSuggestions(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
+                      >
+                        <img src={product.image} alt={product.title} className="w-8 h-8 object-contain bg-neutral-50 rounded" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-[#4a556a] truncate">{product.title}</h4>
+                          <span className="text-[10px] text-black/45 font-semibold block mt-0.5">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </form>
             </div>
 
             {/* Right Pills */}
@@ -281,21 +365,46 @@ export default function Navbar() {
           {/* Mobile Layout: Stacked (Search Bar first, then horizontally scrollable Category Pills) */}
           <div className="flex flex-col md:hidden py-1.5">
             {/* Search Input (Full Width - Not Pushed/Not Scrollable) */}
-            <div className="relative w-full mb-1.5 px-1">
+            <form ref={mobileSearchContainerRef} onSubmit={handleSearchSubmit} className="relative w-full mb-1.5 px-1">
               <input
                 type="text"
                 placeholder="Search brands, ceramics, slow fashion..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
                 className="w-full h-8.5 pl-4 pr-10 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
               />
               <button 
+                type="submit"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:text-apricot transition-colors"
                 aria-label="Submit Search"
               >
                 <Search size={14} />
               </button>
-            </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className="absolute left-1 right-1 top-full mt-1.5 bg-white border border-black/15 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto py-2 text-left">
+                  {searchSuggestions.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/product/bs${product.id}`}
+                      onClick={() => setShowSuggestions(false)}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
+                    >
+                      <img src={product.image} alt={product.title} className="w-8 h-8 object-contain bg-neutral-50 rounded" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-[#4a556a] truncate">{product.title}</h4>
+                        <span className="text-[10px] text-black/45 font-semibold block mt-0.5">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </form>
 
             {/* Scrollable Category Pills (Not pushed by Search) */}
             <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth py-1 px-1">
