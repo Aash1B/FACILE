@@ -178,7 +178,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF3E3] flex items-center justify-center text-fern font-semibold">
+      <div className="min-h-screen bg-[#F4F4F0] flex items-center justify-center text-fern font-semibold">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-fern border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm">Loading product details...</p>
@@ -213,7 +213,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     : [];
 
   return (
-    <div className="bg-[#FAF3E3] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">

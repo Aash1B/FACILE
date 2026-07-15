@@ -149,7 +149,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-[#FAF3E3]/90 backdrop-blur-md border-b border-natural/25">
+      <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-[#F4F4F0]/90 backdrop-blur-md border-b border-natural/25">
         {/* Tier 1: Main Header Area */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
@@ -274,7 +274,7 @@ export default function Navbar() {
         </div>
 
         {/* Tier 2: Pills & Search */}
-        <div className="bg-[#FAF3E3]/50">
+        <div className="bg-[#F4F4F0]/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
 
             {/* Desktop Layout: Single Row */}
@@ -553,7 +553,7 @@ export default function Navbar() {
           />
 
           {/* Drawer Panel */}
-          <div className="relative w-full max-w-xs bg-[#FAF3E3] text-black flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
+          <div className="relative w-full max-w-xs bg-[#F4F4F0] text-black flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
             {/* Header */}
             <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
               <span className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a] select-none">

@@ -12,7 +12,7 @@ const { execSync, spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
-const JAVA_HOME = "C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot";
+const JAVA_HOME = "C:\\Program Files\\Java\\jdk-21.0.11";
 
 // Detect which structure exists
 const nestedPath = path.resolve("product-inventory-service", "product-inventory-service");
