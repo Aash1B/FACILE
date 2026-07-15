@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { 
   TrendingUp, DollarSign, Percent, Award, Users, UserCheck, UserPlus, 
   ShoppingBag, ShieldAlert, Activity, FileText, Check, X, Ban, AlertTriangle, 
-  Trash2, Search, Sliders, ChevronDown, CheckCircle, HelpCircle, Server
+  Trash2, Search, Sliders, ChevronDown, CheckCircle, HelpCircle, Server,
+  Plus, Package
 } from "lucide-react";
 
 interface Seller {
