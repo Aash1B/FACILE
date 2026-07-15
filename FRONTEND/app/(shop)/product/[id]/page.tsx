@@ -145,15 +145,13 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const handleAddToCart = () => {
     if (!product) return;
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        brand: "facile Store",
-        image: product.image
-      });
-    }
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      brand: "facile Store",
+      image: product.image
+    }, quantity);
     triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
   };
 

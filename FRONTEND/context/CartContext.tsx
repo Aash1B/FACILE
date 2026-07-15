@@ -14,7 +14,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -145,7 +145,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addToCart = async (item: Omit<CartItem, "quantity">) => {
+  const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
     const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
     
     if (user && user.email) {
@@ -158,17 +158,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             productId: item.id,
             productName: item.name,
             price: item.price,
-            quantity: 1,
+            quantity: quantityToAdd,
           }),
         });
 
         // Update state
         if (existingIndex > -1) {
           const newCart = [...cart];
-          newCart[existingIndex].quantity += 1;
+          newCart[existingIndex].quantity += quantityToAdd;
           saveCartState(newCart);
         } else {
-          saveCartState([...cart, { ...item, quantity: 1 }]);
+          saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
         }
       } catch (e) {
         console.error("Failed to add item to db cart:", e);
@@ -177,10 +177,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Guest: local storage
       if (existingIndex > -1) {
         const newCart = [...cart];
-        newCart[existingIndex].quantity += 1;
+        newCart[existingIndex].quantity += quantityToAdd;
         saveCartState(newCart);
       } else {
-        saveCartState([...cart, { ...item, quantity: 1 }]);
+        saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
       }
     }
   };
