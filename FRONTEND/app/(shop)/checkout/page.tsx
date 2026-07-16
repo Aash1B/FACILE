@@ -17,30 +17,31 @@ import {
   ShieldCheck,
   Plus,
   Check,
-  Truck
+  Truck,
+  Pencil,
+  Trash2,
+  Star
 } from "lucide-react";
 
-// Mock saved addresses (reused from user profile style)
-const SAVED_ADDRESSES = [
-  {
-    id: 1,
-    label: "Home (Default)",
-    name: "Aashish Bharti",
-    street: "124 Warm Ivory Lane, Sector 4",
-    city: "New Delhi, Delhi",
-    zip: "110001",
-    phone: "+91 98765 43210"
-  },
-  {
-    id: 2,
-    label: "Design Studio",
-    name: "Aashish Bharti",
-    street: "Studio 8B, Fern Creative Hub",
-    city: "Gurugram, Haryana",
-    zip: "122002",
-    phone: "+91 98765 43211"
-  }
-];
+type Address = {
+  id: number;
+  label: string;
+  name: string;
+  street: string;
+  city: string;
+  zip: string;
+  phone: string;
+  isDefault: boolean;
+};
+
+const EMPTY_ADDRESS = {
+  label: "Home",
+  name: "",
+  street: "",
+  city: "",
+  zip: "",
+  phone: ""
+};
 
 // Helper to format currency
 const formatPrice = (amount: number) => {
@@ -74,17 +75,31 @@ export default function CheckoutPage() {
   const { user } = useAuth();
 
   // Address State
-  const [selectedAddressId, setSelectedAddressId] = useState<number>(1);
-  const [addresses, setAddresses] = useState(SAVED_ADDRESSES);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [customAddress, setCustomAddress] = useState({
-    label: "Custom",
-    name: "",
-    street: "",
-    city: "",
-    zip: "",
-    phone: ""
-  });
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [addressError, setAddressError] = useState("");
+  const [customAddress, setCustomAddress] = useState(EMPTY_ADDRESS);
+
+  const addressStorageKey = `facile_addresses_${user?.email || "guest"}`;
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(addressStorageKey);
+      const loaded: Address[] = saved ? JSON.parse(saved) : [];
+      setAddresses(loaded);
+      setSelectedAddressId(loaded.find((address) => address.isDefault)?.id ?? loaded[0]?.id ?? null);
+    } catch {
+      setAddresses([]);
+      setSelectedAddressId(null);
+    }
+  }, [addressStorageKey]);
+
+  const saveAddresses = (nextAddresses: Address[]) => {
+    setAddresses(nextAddresses);
+    localStorage.setItem(addressStorageKey, JSON.stringify(nextAddresses));
+  };
 
   // Delivery slot states
   const [selectedDate, setSelectedDate] = useState("Tomorrow, Jul 14");
@@ -220,21 +235,69 @@ export default function CheckoutPage() {
 
   const handleAddCustomAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    if (customAddress.name && customAddress.street && customAddress.city && customAddress.zip) {
-      const newId = Date.now();
-      const newAddr = { id: newId, ...customAddress };
-      setAddresses([...addresses, newAddr]);
-      setSelectedAddressId(newId);
-      setIsAddingAddress(false);
-      setCustomAddress({
-        label: "Custom",
-        name: "",
-        street: "",
-        city: "",
-        zip: "",
-        phone: ""
-      });
+    const phoneDigits = customAddress.phone.replace(/\D/g, "");
+    if (!customAddress.name.trim() || !customAddress.street.trim() || !customAddress.city.trim()) {
+      setAddressError("Please complete every address field.");
+      return;
     }
+    if (!/^\d{6}$/.test(customAddress.zip.trim())) {
+      setAddressError("Enter a valid 6-digit PIN code.");
+      return;
+    }
+    if (phoneDigits.length < 10 || phoneDigits.length > 13) {
+      setAddressError("Enter a valid phone number.");
+      return;
+    }
+
+    const id = editingAddressId ?? Date.now();
+    const existing = addresses.find((address) => address.id === editingAddressId);
+    const savedAddress: Address = {
+      id,
+      ...customAddress,
+      label: customAddress.label.trim() || "Address",
+      isDefault: existing?.isDefault ?? addresses.length === 0,
+    };
+    const nextAddresses = editingAddressId
+      ? addresses.map((address) => address.id === editingAddressId ? savedAddress : address)
+      : [...addresses, savedAddress];
+
+    saveAddresses(nextAddresses);
+    setSelectedAddressId(id);
+    setEditingAddressId(null);
+    setAddressError("");
+    setIsAddingAddress(false);
+    setCustomAddress(EMPTY_ADDRESS);
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setCustomAddress({
+      label: address.label,
+      name: address.name,
+      street: address.street,
+      city: address.city,
+      zip: address.zip,
+      phone: address.phone,
+    });
+    setEditingAddressId(address.id);
+    setAddressError("");
+    setIsAddingAddress(true);
+  };
+
+  const handleDeleteAddress = (id: number) => {
+    const wasDefault = addresses.find((address) => address.id === id)?.isDefault;
+    let nextAddresses = addresses.filter((address) => address.id !== id);
+    if (wasDefault && nextAddresses.length > 0) {
+      nextAddresses = nextAddresses.map((address, index) => ({ ...address, isDefault: index === 0 }));
+    }
+    saveAddresses(nextAddresses);
+    if (selectedAddressId === id) {
+      setSelectedAddressId(nextAddresses.find((address) => address.isDefault)?.id ?? nextAddresses[0]?.id ?? null);
+    }
+  };
+
+  const handleSetDefaultAddress = (id: number) => {
+    saveAddresses(addresses.map((address) => ({ ...address, isDefault: address.id === id })));
+    setSelectedAddressId(id);
   };
 
   const handleProceedToPay = () => {
@@ -242,14 +305,33 @@ export default function CheckoutPage() {
       alert("Your cart is empty. Please add items to checkout.");
       return;
     }
+    if (!activeAddress) {
+      setAddressError("Add and select a delivery address before continuing.");
+      return;
+    }
     setShowPaymentModal(true);
   };
 
-  const handleCheckoutCompletion = () => {
-    if (localStorage.getItem("facile_buynow")) {
+  const handleCheckoutCompletion = async () => {
+    if (!activeAddress) throw new Error("Please select a delivery address.");
+    const isBuyNow = Boolean(localStorage.getItem("facile_buynow"));
+
+    if (user?.email && !isBuyNow) {
+      const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
+      const orderResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shippingAddress }),
+      });
+      if (!orderResponse.ok) {
+        throw new Error("Payment succeeded, but the order could not be registered. Please contact support.");
+      }
+    }
+
+    if (isBuyNow) {
       localStorage.removeItem("facile_buynow");
     } else {
-      clearCart();
+      await clearCart();
     }
   };
 
@@ -257,11 +339,15 @@ export default function CheckoutPage() {
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
-      // Simulate payment transaction delay
-      setTimeout(() => {
-        setIsProcessing(false);
-        setPaymentSuccess(true);
-        handleCheckoutCompletion();
+      setTimeout(async () => {
+        try {
+          await handleCheckoutCompletion();
+          setPaymentSuccess(true);
+        } catch (error) {
+          setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+        } finally {
+          setIsProcessing(false);
+        }
       }, 2000);
       return;
     }
@@ -302,11 +388,15 @@ export default function CheckoutPage() {
         description: `Payment for order of ${checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items`,
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
         order_id: orderData.id,
-        handler: function (paymentResponse: any) {
-          // Payment successful!
-          setIsProcessing(false);
-          setPaymentSuccess(true);
-          handleCheckoutCompletion();
+        handler: async function (paymentResponse: any) {
+          try {
+            await handleCheckoutCompletion();
+            setPaymentSuccess(true);
+          } catch (error) {
+            setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+          } finally {
+            setIsProcessing(false);
+          }
         },
         prefill: {
           name: activeAddress?.name || "",
@@ -426,7 +516,12 @@ export default function CheckoutPage() {
                 </h2>
                 {!isAddingAddress && (
                   <button
-                    onClick={() => setIsAddingAddress(true)}
+                    onClick={() => {
+                      setEditingAddressId(null);
+                      setCustomAddress(EMPTY_ADDRESS);
+                      setAddressError("");
+                      setIsAddingAddress(true);
+                    }}
                     className="text-[11px] font-bold text-[#4A5568] hover:text-[#3B4455] transition-colors flex items-center gap-1 uppercase tracking-wider cursor-pointer"
                   >
                     <Plus size={12} />
@@ -439,14 +534,31 @@ export default function CheckoutPage() {
               {isAddingAddress && (
                 <form onSubmit={handleAddCustomAddress} className="mb-6 p-4.5 bg-natural/15 border border-natural/20 rounded-2xl space-y-4 animate-fade-in">
                   <div className="flex justify-between items-center mb-1 border-b border-natural/10 pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-natural">Add custom shipping address</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-natural">{editingAddressId ? "Edit shipping address" : "Add shipping address"}</h3>
                     <button
                       type="button"
-                      onClick={() => setIsAddingAddress(false)}
+                      onClick={() => {
+                        setIsAddingAddress(false);
+                        setEditingAddressId(null);
+                        setAddressError("");
+                        setCustomAddress(EMPTY_ADDRESS);
+                      }}
                       className="text-[10px] font-bold text-natural/70 hover:text-apricot uppercase tracking-wider cursor-pointer"
                     >
                       Cancel
                     </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Address Label</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Home, Office, Studio..."
+                      value={customAddress.label}
+                      onChange={(e) => setCustomAddress({ ...customAddress, label: e.target.value })}
+                      className="w-full h-9 px-3 bg-warm-ivory border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-xl focus:outline-none"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -511,23 +623,34 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {addressError && <p className="text-[10px] font-bold text-red-600">{addressError}</p>}
                   <button
                     type="submit"
                     className="w-full h-9.5 bg-[#4A5568] hover:bg-[#3B4455] text-white text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-[0.98] shadow-sm"
                   >
-                    Confirm Custom Address
+                    {editingAddressId ? "Save Address Changes" : "Save Address"}
                   </button>
                 </form>
               )}
 
               {/* Address Selection Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {addresses.length === 0 && !isAddingAddress && (
+                  <div className="sm:col-span-2 rounded-2xl border border-dashed border-[#4A5568]/30 bg-[#F4F4F0]/70 p-6 text-center">
+                    <MapPin size={24} className="mx-auto mb-2 text-[#4A5568]/60" />
+                    <p className="text-xs font-bold text-[#4A5568]">No delivery address saved</p>
+                    <p className="mt-1 text-[10px] text-natural">Add an address to continue to payment.</p>
+                  </div>
+                )}
                 {addresses.map((addr) => {
                   const isSelected = selectedAddressId === addr.id;
                   return (
                     <div
                       key={addr.id}
-                      onClick={() => setSelectedAddressId(addr.id)}
+                      onClick={() => {
+                        setSelectedAddressId(addr.id);
+                        setAddressError("");
+                      }}
                       className={`border p-4.5 rounded-2xl cursor-pointer relative transition-all duration-300 flex flex-col justify-between ${isSelected
                         ? "border-[#4A5568] bg-[#F4F4F0] shadow-md text-black"
                         : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] shadow-xs text-fern/90"
@@ -537,7 +660,7 @@ export default function CheckoutPage() {
                         <div className="flex justify-between items-center">
                           <span className={`px-2.5 py-0.5 font-bold text-[9px] uppercase tracking-wider rounded-full text-black ${isSelected ? "bg-white border border-black/10 shadow-xs" : "bg-black/5 border border-black/5"
                             }`}>
-                            {addr.label}
+                            {addr.label}{addr.isDefault ? " (Default)" : ""}
                           </span>
                           {isSelected && (
                             <div className="w-4 h-4 bg-[#4A5568] rounded-full flex items-center justify-center text-white shadow-sm">
@@ -554,6 +677,19 @@ export default function CheckoutPage() {
 
                       <div className={`border-t mt-3 pt-2 text-[10px] font-bold uppercase ${isSelected ? "border-black/10 text-black" : "border-fern/10 text-fern/80"}`}>
                         Phone: {addr.phone}
+                      </div>
+                      <div className="mt-3 flex items-center gap-3 border-t border-black/10 pt-2">
+                        {!addr.isDefault && (
+                          <button type="button" onClick={(event) => { event.stopPropagation(); handleSetDefaultAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                            <Star size={11} /> Default
+                          </button>
+                        )}
+                        <button type="button" onClick={(event) => { event.stopPropagation(); handleEditAddress(addr); }} className="ml-auto flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                          <Pencil size={11} /> Edit
+                        </button>
+                        <button type="button" onClick={(event) => { event.stopPropagation(); handleDeleteAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-red-600 hover:text-red-700">
+                          <Trash2 size={11} /> Delete
+                        </button>
                       </div>
                     </div>
                   );

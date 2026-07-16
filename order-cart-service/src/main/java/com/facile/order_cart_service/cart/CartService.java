@@ -21,6 +21,9 @@ public class CartService {
         for (CartItem item : cart.getItems()) {
             if (item.getProductId().equals(newItem.getProductId())) {
                 item.setQuantity(item.getQuantity() + newItem.getQuantity());
+                if (newItem.getImage() != null && !newItem.getImage().isBlank()) {
+                    item.setImage(newItem.getImage());
+                }
                 itemExists = true;
                 break;
             }

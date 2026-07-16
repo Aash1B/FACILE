@@ -4,7 +4,9 @@ import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles } from "lucide-react";
+import { recordRecentlyViewed } from "@/lib/recentlyViewed";
+import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
+import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark } from "lucide-react";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -87,6 +89,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [isSavedForLater, setIsSavedForLater] = useState(false);
 
   const triggerToast = (message: string) => {
     setToastMessage(message);
@@ -124,6 +127,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             subCategory: dataProduct.subCategory?.name || "General"
           };
           setProduct(productDetails);
+          recordRecentlyViewed(productDetails);
           setActiveImage(dataProduct.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
           
           if (dataInventory && typeof dataInventory.stock === "number") {
@@ -135,6 +139,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         // Fallback to local mock data
         const localMock = MOCK_PRODUCTS[productId] || MOCK_PRODUCTS["bs1"];
         setProduct(localMock);
+        recordRecentlyViewed(localMock);
         setActiveImage(localMock.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
       } finally {
         setLoading(false);
@@ -145,6 +150,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const handleAddToCart = () => {
     if (!product) return;
+    recordRecentlyViewed(product);
     addToCart({
       id: product.id,
       name: product.name,
@@ -169,12 +175,30 @@ export default function ProductDetailPage({ params }: PageProps) {
     router.push("/checkout?buynow=true");
   };
 
+  const handleSaveForLater = () => {
+    if (!product) return;
+    if (isSavedForLater) {
+      removeSavedProduct(product.id);
+      setIsSavedForLater(false);
+      triggerToast(`${product.name} removed from Saved for Later.`);
+    } else {
+      saveProductForLater({ ...product, brand: "facile Store" });
+      setIsSavedForLater(true);
+      triggerToast(`${product.name} saved for later!`);
+    }
+  };
+
   const handleToggleFavorite = () => {
     if (!product) return;
     toggleFavorite(product.id);
     const isNowFav = !favorites.includes(product.id);
     triggerToast(isNowFav ? `Added ${product.name} to Wishlist! ❤️` : `Removed ${product.name} from Wishlist.`);
   };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsSavedForLater(isProductSaved(productId)), 0);
+    return () => window.clearTimeout(timer);
+  }, [productId]);
 
   if (loading) {
     return (
@@ -470,14 +494,16 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
 
               <div className="border-t border-natural/10 pt-3.5">
-                {/* Wishlist Button */}
-                <button
-                  onClick={handleToggleFavorite}
-                  className="w-full h-10 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30"
-                >
-                  <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
-                  {isFav ? "Added to Wishlist" : "Add to Wishlist"}
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={handleToggleFavorite} className="h-10 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                    <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
+                    {isFav ? "Wishlisted" : "Wishlist"}
+                  </button>
+                  <button onClick={handleSaveForLater} className="h-10 border border-natural/25 hover:border-[#E8437F] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                    <Bookmark size={14} className={isSavedForLater ? "fill-[#E8437F] text-[#E8437F]" : "text-[#4A5568]"} />
+                    {isSavedForLater ? "Saved" : "Save for Later"}
+                  </button>
+                </div>
               </div>
 
             </div>
