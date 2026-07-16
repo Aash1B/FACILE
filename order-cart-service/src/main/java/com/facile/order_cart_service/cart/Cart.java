@@ -22,5 +22,7 @@ public class Cart {
 
     private List<CartItem> items = new ArrayList<>();
 
+    private List<String> processedRequestKeys = new ArrayList<>();
+
     private double totalAmount;
 }

@@ -123,10 +123,12 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavHeartFilled, setIsNavHeartFilled] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Prevent SSR/client hydration mismatch: badge counts come from localStorage
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -196,7 +198,7 @@ export default function Navbar() {
                   className={`stroke-[2px] transition-transform group-hover:scale-110`}
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
-                {mounted && totalFavorites > 0 && (
+                {isMounted && totalFavorites > 0 && (
                   <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalFavorites}
                   </span>
@@ -210,7 +212,7 @@ export default function Navbar() {
                 aria-label="Shopping Cart"
               >
                 <ShoppingCart size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
-                {mounted && totalCartItems > 0 && (
+                {isMounted && totalCartItems > 0 && (
                   <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
                   </span>
@@ -219,7 +221,7 @@ export default function Navbar() {
 
               {/* User Profile Icon / Dropdown */}
               <div className="relative">
-                {user ? (
+                {isMounted && user ? (
                   <>
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
