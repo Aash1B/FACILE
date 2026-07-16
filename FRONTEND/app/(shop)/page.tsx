@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
@@ -114,12 +114,17 @@ const BEST_SELLERS = [
 
 // Mock Categories
 const CATEGORIES = [
-  { id: "c1", label: "Electronics", image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250", bgColor: "bg-blue-50/55 border border-blue-100/40" },
   { id: "c2", label: "Fashion", image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250", bgColor: "bg-green-50/55 border border-green-100/40" },
-  { id: "c3", label: "Home & Kitchen", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c4", label: "Beauty", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250", bgColor: "bg-purple-50/55 border border-purple-100/40" },
+  { id: "c3", label: "Home & Living", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
+  { id: "c7", label: "Jewellery & Accessories", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250", bgColor: "bg-amber-50/55 border border-amber-100/40" },
+  { id: "c8", label: "Footwear", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=250", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
+  { id: "c1", label: "Electronics", image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250", bgColor: "bg-blue-50/55 border border-blue-100/40" },
+  { id: "c9", label: "Stationery", image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=250", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
+  { id: "c6", label: "Kids & Baby", image: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" },
+  { id: "c10", label: "Health & Wellness", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=250", bgColor: "bg-lime-50/55 border border-lime-100/40" },
   { id: "c5", label: "Sports", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250", bgColor: "bg-teal-50/55 border border-teal-100/40" },
-  { id: "c6", label: "Toys & Baby", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" }
+  { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
 type ApiProduct = {
@@ -192,6 +197,18 @@ function HomeContent() {
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const scrollCategoriesLeft = () => {
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
+    }
+  };
+  const scrollCategoriesRight = () => {
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -334,7 +351,7 @@ function HomeContent() {
       </section>
 
       {/* 2. Feature Highlights Bar */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
         <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           <div className="flex items-center gap-4">
@@ -381,25 +398,51 @@ function HomeContent() {
       </section>
 
       {/* 3. Shop by Categories */}
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
-          <Link
-            href="/categories"
-            className="text-xs font-bold text-[#4a556a] hover:text-[#4a556a] hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 transform flex items-center gap-1 cursor-pointer"
-          >
-            View All Categories
-            <ArrowRight size={12} />
-          </Link>
+      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div className="space-y-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
+            <p className="text-xs text-natural/60 font-medium">Explore our curated collection of quality items.</p>
+          </div>
+          <div className="flex items-center gap-4 self-end sm:self-auto">
+            <Link
+              href="/categories"
+              className="text-xs font-bold text-[#4a556a] hover:text-apricot transition-all flex items-center gap-1.5 cursor-pointer mr-2"
+            >
+              View All Categories
+              <ArrowRight size={12} />
+            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollCategoriesLeft}
+                aria-label="Scroll categories left"
+                className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white active:scale-95 transition-all cursor-pointer"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollCategoriesRight}
+                aria-label="Scroll categories right"
+                className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white active:scale-95 transition-all cursor-pointer"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div
+          ref={categoryScrollRef}
+          className="flex overflow-x-auto gap-6 no-scrollbar pb-4 select-none scroll-smooth"
+        >
           {CATEGORIES.map((category) => {
             return (
               <Link
                 key={category.id}
                 href={`/category/${category.id.replace("c", "")}`}
-                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4]"
+                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
               >
                 <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_24px_rgba(74,85,104,0.45)] ${category.bgColor}`}>
                   <img

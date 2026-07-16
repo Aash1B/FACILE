@@ -8,10 +8,15 @@ import { ArrowLeft, ArrowRight, Boxes } from "lucide-react";
 const CATEGORY_DETAILS: Record<string, { name: string; description: string; image: string }> = {
   "1": { name: "Electronics", description: "Discover smart technology for work, home and entertainment.", image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1400" },
   "2": { name: "Fashion", description: "Refresh your wardrobe with everyday essentials and new styles.", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=1400" },
-  "3": { name: "Home & Kitchen", description: "Thoughtful pieces that make every room feel more like home.", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=1400" },
+  "3": { name: "Home & Living", description: "Thoughtful pieces that make every room feel more like home.", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=1400" },
   "4": { name: "Beauty", description: "Skincare, fragrance and beauty favourites selected for you.", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=1400" },
   "5": { name: "Sports", description: "Gear and footwear to keep you moving and performing your best.", image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1400" },
-  "6": { name: "Toys & Baby", description: "Playful, practical picks for little ones and growing families.", image: "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?q=80&w=1400" },
+  "6": { name: "Kids & Baby", description: "Playful, practical picks for little ones and growing families.", image: "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?q=80&w=1400" },
+  "7": { name: "Jewellery & Accessories", description: "Find the perfect touch of sparkle and class for every occasion.", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=1400" },
+  "8": { name: "Footwear", description: "Step out in comfort and style with our curated footwear options.", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1400" },
+  "9": { name: "Stationery", description: "Equip your workspace with notebooks, writing instruments and planners.", image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=1400" },
+  "10": { name: "Health & Wellness", description: "Nourish your body and mind with our organic health essentials.", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1400" },
+  "11": { name: "Pets", description: "Show some love to your pets with top quality supplies, food and toys.", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1400" },
 };
 
 const FALLBACK_SUBCATEGORIES: Record<string, string[]> = {
@@ -21,6 +26,11 @@ const FALLBACK_SUBCATEGORIES: Record<string, string[]> = {
   "4": ["Skincare", "Fragrance"],
   "5": ["Footwear", "Fitness Gear"],
   "6": ["Baby Toys", "Baby Care"],
+  "7": ["Jewellery", "Accessories"],
+  "8": ["Shoes", "Casual Footwear"],
+  "9": ["Office Supplies", "Notebooks & Planners"],
+  "10": ["Supplements", "Personal Care"],
+  "11": ["Pet Food", "Pet Toys"],
 };
 
 const CARD_STYLES = [

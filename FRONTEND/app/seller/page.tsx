@@ -46,10 +46,15 @@ const INITIAL_PRODUCTS: Product[] = [
 const MOCK_CATEGORIES = [
   { id: 1, name: "Electronics" },
   { id: 2, name: "Fashion" },
-  { id: 3, name: "Home & Kitchen" },
+  { id: 3, name: "Home & Living" },
   { id: 4, name: "Beauty" },
   { id: 5, name: "Sports" },
-  { id: 6, name: "Toys & Baby" }
+  { id: 6, name: "Kids & Baby" },
+  { id: 7, name: "Jewellery & Accessories" },
+  { id: 8, name: "Footwear" },
+  { id: 9, name: "Stationery" },
+  { id: 10, name: "Health & Wellness" },
+  { id: 11, name: "Pets" }
 ];
 
 const MOCK_SUBCATEGORIES: Record<number, any[]> = {
@@ -58,7 +63,12 @@ const MOCK_SUBCATEGORIES: Record<number, any[]> = {
   3: [ { id: 7, name: "Kitchenware" } ],
   4: [ { id: 5, name: "Fragrance" } ],
   5: [ { id: 4, name: "Footwear" } ],
-  6: [ { id: 3, name: "Baby Toys" } ]
+  6: [ { id: 3, name: "Baby Toys" } ],
+  7: [ { id: 8, name: "Jewellery" }, { id: 9, name: "Accessories" } ],
+  8: [ { id: 10, name: "Shoes" }, { id: 11, name: "Casual Footwear" } ],
+  9: [ { id: 12, name: "Office Supplies" }, { id: 13, name: "Notebooks & Planners" } ],
+  10: [ { id: 14, name: "Supplements" }, { id: 15, name: "Personal Care" } ],
+  11: [ { id: 16, name: "Pet Food" }, { id: 17, name: "Pet Toys" } ]
 };
 
 const CATEGORIES = [

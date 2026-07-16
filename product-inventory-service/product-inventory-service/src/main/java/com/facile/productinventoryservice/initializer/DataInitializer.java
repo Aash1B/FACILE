@@ -32,6 +32,7 @@ public class DataInitializer implements CommandLineRunner {
             // Migrate existing rows that were seeded before the new columns existed
             migrateProductAttributes();
         }
+        seedAndMigrateCategories();
     }
 
     /**
@@ -140,10 +141,10 @@ public class DataInitializer implements CommandLineRunner {
         // 1. Seed Categories
         Category electronics = categoryRepository.save(Category.builder().name("Electronics").description("Smart gadgets and electronics").image("https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250").build());
         Category fashion = categoryRepository.save(Category.builder().name("Fashion").description("Trending clothes and styles").image("https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250").build());
-        Category homeKitchen = categoryRepository.save(Category.builder().name("Home & Kitchen").description("Kitchenware and home decor").image("https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250").build());
+        Category homeKitchen = categoryRepository.save(Category.builder().name("Home & Living").description("Beautiful essentials for every room and home decor").image("https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250").build());
         Category beauty = categoryRepository.save(Category.builder().name("Beauty").description("Cosmetics and perfumes").image("https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250").build());
         Category sports = categoryRepository.save(Category.builder().name("Sports").description("Sporting goods and shoes").image("https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250").build());
-        Category toysBaby = categoryRepository.save(Category.builder().name("Toys & Baby").description("Toys and baby care products").image("https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250").build());
+        Category toysBaby = categoryRepository.save(Category.builder().name("Kids & Baby").description("Toys and baby care products").image("https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250").build());
 
         // 2. Seed SubCategories
         SubCategory wearables = subCategoryRepository.save(SubCategory.builder().name("Wearables").category(electronics).build());
@@ -385,5 +386,60 @@ public class DataInitializer implements CommandLineRunner {
                 .stock(stock)
                 .build();
         inventoryRepository.save(inventory);
+    }
+
+    private void seedAndMigrateCategories() {
+        // 1. Rename "Home & Kitchen" to "Home & Living" if present
+        categoryRepository.findByName("Home & Kitchen").ifPresent(cat -> {
+            cat.setName("Home & Living");
+            cat.setDescription("Beautiful essentials for every room and home decor");
+            cat.setImage("https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250");
+            categoryRepository.save(cat);
+        });
+
+        // 2. Rename "Toys & Baby" to "Kids & Baby" if present
+        categoryRepository.findByName("Toys & Baby").ifPresent(cat -> {
+            cat.setName("Kids & Baby");
+            cat.setDescription("Toys and baby care products");
+            cat.setImage("https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250");
+            categoryRepository.save(cat);
+        });
+
+        // 3. Seed new categories if not present
+        String[][] categoriesInfo = {
+            {"Fashion", "Trending clothes and styles", "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250"},
+            {"Beauty", "Cosmetics and perfumes", "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250"},
+            {"Home & Living", "Beautiful essentials for every room and home decor", "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250"},
+            {"Jewellery & Accessories", "Elegant jewellery and premium accessories", "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250"},
+            {"Footwear", "Stylish footwear for men, women and kids", "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=250"},
+            {"Electronics", "Smart gadgets and electronics", "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250"},
+            {"Stationery", "Notebooks, pens and office essentials", "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=250"},
+            {"Kids & Baby", "Toys and baby care products", "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250"},
+            {"Health & Wellness", "Fitness, vitamins and health care", "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=250"},
+            {"Sports", "Sporting goods and shoes", "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250"},
+            {"Pets", "Supplies and food for your lovely pets", "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250"}
+        };
+
+        for (String[] info : categoriesInfo) {
+            String name = info[0];
+            String desc = info[1];
+            String img = info[2];
+            if (categoryRepository.findByName(name).isEmpty()) {
+                Category cat = categoryRepository.save(Category.builder()
+                        .name(name)
+                        .description(desc)
+                        .image(img)
+                        .build());
+                // Seed a default subcategory
+                String subName = "General";
+                if (name.equals("Jewellery & Accessories")) subName = "Jewellery";
+                else if (name.equals("Footwear")) subName = "Shoes";
+                else if (name.equals("Stationery")) subName = "Office Supplies";
+                else if (name.equals("Health & Wellness")) subName = "Supplements";
+                else if (name.equals("Pets")) subName = "Pet Food";
+                
+                subCategoryRepository.save(SubCategory.builder().name(subName).category(cat).build());
+            }
+        }
     }
 }
