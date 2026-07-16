@@ -169,7 +169,7 @@ export default function CartDrawer() {
                           <img src={product.image} alt={product.name} className="h-14 w-14 flex-shrink-0 rounded-lg object-cover" />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-semibold">{product.name}</p>
-                            <p className="mt-1 text-xs font-bold text-[#4A5568]">â‚¹{product.price.toLocaleString("en-IN")}</p>
+                            <p className="mt-1 text-xs font-bold text-[#4A5568]">₹{product.price.toLocaleString("en-IN")}</p>
                             <div className="mt-2 flex gap-3">
                               <button onClick={() => moveToCart(product)} className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
                                 <ShoppingCart size={11} /> Move to Cart
