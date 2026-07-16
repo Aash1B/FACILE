@@ -60,4 +60,8 @@ public class Product {
     /** Estimated delivery in calendar days (1–7+) */
     @Column(name = "delivery_days")
     private Integer deliveryDays;
+
+    @Builder.Default
+    @Column(name = "max_order_quantity")
+    private Integer maxOrderQuantity = 10;
 }

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
-import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -124,7 +124,8 @@ export default function ProductDetailPage({ params }: PageProps) {
             reviews: dataProduct.reviews || 50,
             description: dataProduct.description,
             category: dataProduct.category?.name || "Uncategorized",
-            subCategory: dataProduct.subCategory?.name || "General"
+            subCategory: dataProduct.subCategory?.name || "General",
+            maxOrderQuantity: dataProduct.maxOrderQuantity || 10
           };
           setProduct(productDetails);
           recordRecentlyViewed(productDetails);
@@ -156,7 +157,8 @@ export default function ProductDetailPage({ params }: PageProps) {
       name: product.name,
       price: product.price,
       brand: "facile Store",
-      image: product.image
+      image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10
     }, quantity);
     triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
   };
@@ -169,6 +171,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       price: product.price,
       brand: "facile Store",
       image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10,
       quantity: quantity
     };
     localStorage.setItem("facile_buynow", JSON.stringify([buyNowItem]));
@@ -225,6 +228,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   }
 
   const isFav = favorites.includes(product.id);
+  const maxAllowedQuantity = Math.max(1, Math.min(stock, product.maxOrderQuantity || 10));
   const discountPercent = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   const galleryImages = product
@@ -451,16 +455,17 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <div className="space-y-3 pt-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-natural uppercase tracking-wider">Quantity:</span>
-                    <select 
-                      value={quantity} 
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      className="h-8.5 px-3 bg-white border border-natural/20 rounded-xl text-xs font-semibold text-[#4A5568] focus:outline-none focus:border-[#4A5568] cursor-pointer"
-                    >
-                      {[...Array(Math.min(10, stock))].map((_, index) => (
-                        <option key={index + 1} value={index + 1}>{index + 1}</option>
-                      ))}
-                    </select>
+                    <div className="flex items-center rounded-full border border-natural/20 bg-white p-1">
+                      <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} disabled={quantity <= 1} className="flex h-7 w-7 items-center justify-center rounded-full text-[#4A5568] hover:bg-natural/10 disabled:opacity-35" aria-label="Decrease quantity">
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-8 text-center text-xs font-bold text-[#4A5568]">{quantity}</span>
+                      <button type="button" onClick={() => setQuantity((current) => Math.min(maxAllowedQuantity, current + 1))} disabled={quantity >= maxAllowedQuantity} className="flex h-7 w-7 items-center justify-center rounded-full text-[#4A5568] hover:bg-natural/10 disabled:opacity-35" aria-label="Increase quantity">
+                        <Plus size={12} />
+                      </button>
+                    </div>
                   </div>
+                  <p className="text-right text-[10px] font-medium text-natural/70">Maximum {maxAllowedQuantity} per order</p>
                   
                   <div className="space-y-2.5">
                     <button

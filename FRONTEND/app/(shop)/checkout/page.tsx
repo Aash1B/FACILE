@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,7 @@ import {
   Info,
   ShieldCheck,
   Plus,
+  Minus,
   Check,
   Truck,
   Pencil,
@@ -71,7 +72,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, updateQuantity } = useCart();
   const { user } = useAuth();
 
   // Address State
@@ -111,6 +112,8 @@ export default function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const checkoutIdempotencyKey = useRef<string>(crypto.randomUUID());
+  const paymentRequestStarted = useRef(false);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
   const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
@@ -147,7 +150,8 @@ export default function CheckoutPage() {
         price: 8999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
-        quantity: 1
+        quantity: 1,
+        maxOrderQuantity: 5
       },
       {
         id: "bs2",
@@ -155,7 +159,8 @@ export default function CheckoutPage() {
         price: 5999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
-        quantity: 2
+        quantity: 2,
+        maxOrderQuantity: 5
       }
     ];
     setCheckoutItems(mockItems);
@@ -269,6 +274,19 @@ export default function CheckoutPage() {
     setCustomAddress(EMPTY_ADDRESS);
   };
 
+  const handleCheckoutQuantity = (item: any, nextQuantity: number) => {
+    const maxQuantity = item.maxOrderQuantity || 10;
+    const quantity = Math.max(1, Math.min(maxQuantity, nextQuantity));
+    const nextItems = checkoutItems.map((checkoutItem) => checkoutItem.id === item.id ? { ...checkoutItem, quantity } : checkoutItem);
+    setCheckoutItems(nextItems);
+
+    if (new URLSearchParams(window.location.search).get("buynow") === "true") {
+      localStorage.setItem("facile_buynow", JSON.stringify(nextItems));
+    } else {
+      updateQuantity(item.id, quantity);
+    }
+  };
+
   const handleEditAddress = (address: Address) => {
     setCustomAddress({
       label: address.label,
@@ -320,7 +338,10 @@ export default function CheckoutPage() {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
       const orderResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": checkoutIdempotencyKey.current,
+        },
         body: JSON.stringify({ shippingAddress }),
       });
       if (!orderResponse.ok) {
@@ -336,6 +357,9 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmPayment = async () => {
+    if (paymentRequestStarted.current) return;
+    paymentRequestStarted.current = true;
+
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
@@ -345,6 +369,7 @@ export default function CheckoutPage() {
           setPaymentSuccess(true);
         } catch (error) {
           setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+          paymentRequestStarted.current = false;
         } finally {
           setIsProcessing(false);
         }
@@ -394,6 +419,7 @@ export default function CheckoutPage() {
             setPaymentSuccess(true);
           } catch (error) {
             setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+            paymentRequestStarted.current = false;
           } finally {
             setIsProcessing(false);
           }
@@ -409,6 +435,7 @@ export default function CheckoutPage() {
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
+            paymentRequestStarted.current = false;
           }
         }
       };
@@ -419,6 +446,7 @@ export default function CheckoutPage() {
       razorpayInstance.on("payment.failed", function (res: any) {
         setPaymentError(res.error.description || "Payment failed. Please try again.");
         setIsProcessing(false);
+        paymentRequestStarted.current = false;
       });
 
       razorpayInstance.open();
@@ -427,6 +455,7 @@ export default function CheckoutPage() {
       console.error("Razorpay integration error:", error);
       setPaymentError(error.message || "An unexpected error occurred while processing payment.");
       setIsProcessing(false);
+      paymentRequestStarted.current = false;
     }
   };
 
@@ -801,7 +830,16 @@ export default function CheckoutPage() {
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
                           <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
-                          <span className="text-[10px] font-bold text-natural mt-1 block">Qty: {item.quantity}</span>
+                          <div className="mt-2 flex items-center gap-1 rounded-full border border-natural/20 bg-[#F4F4F0] p-0.5 w-fit">
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Decrease ${item.name} quantity`}>
+                              <Minus size={10} />
+                            </button>
+                            <span className="w-6 text-center text-[10px] font-bold text-[#4A5568]">{item.quantity}</span>
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity + 1)} disabled={item.quantity >= (item.maxOrderQuantity || 10)} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Increase ${item.name} quantity`}>
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                          <span className="mt-1 block text-[9px] text-natural/70">Max {item.maxOrderQuantity || 10}</span>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">

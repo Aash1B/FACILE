@@ -1,39 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, CheckCircle2, Bookmark, ShoppingCart } from "lucide-react";
-import { getSavedProducts, removeSavedProduct, saveProductForLater, SAVED_PRODUCTS_CHANGED, type SavedProduct } from "@/lib/savedForLater";
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function CartDrawer() {
-  const { cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
-  const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([]);
   const router = useRouter();
-
-  useEffect(() => {
-    const loadSavedProducts = () => setSavedProducts(getSavedProducts());
-    const initialLoad = window.setTimeout(loadSavedProducts, 0);
-    window.addEventListener(SAVED_PRODUCTS_CHANGED, loadSavedProducts);
-    window.addEventListener("storage", loadSavedProducts);
-    return () => {
-      window.clearTimeout(initialLoad);
-      window.removeEventListener(SAVED_PRODUCTS_CHANGED, loadSavedProducts);
-      window.removeEventListener("storage", loadSavedProducts);
-    };
-  }, []);
-
-  const moveToSaved = (item: typeof cart[number]) => {
-    saveProductForLater(item);
-    removeFromCart(item.id);
-  };
-
-  const moveToCart = (product: SavedProduct) => {
-    addToCart({ id: product.id, name: product.name, price: product.price, brand: product.brand || "facile Store", image: product.image });
-    removeSavedProduct(product.id);
-  };
 
   if (!isCartOpen) return null;
 
@@ -127,14 +103,9 @@ export default function CartDrawer() {
 
                       {/* Quantity Controls */}
                       <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => moveToSaved(item)} className="p-1 text-[#4A5568] hover:text-[#E8437F] transition-colors" aria-label="Save for later" title="Save for later">
-                            <Bookmark size={14} />
-                          </button>
-                          <button onClick={() => removeFromCart(item.id)} className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors" aria-label="Remove item">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                        <button onClick={() => removeFromCart(item.id)} className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors" aria-label="Remove item">
+                          <Trash2 size={14} />
+                        </button>
                         
                         <div className="flex items-center border border-natural/20 rounded-full bg-natural/20 p-0.5">
                           <button
@@ -158,30 +129,6 @@ export default function CartDrawer() {
                   ))
                 )}
 
-                {savedProducts.length > 0 && (
-                  <section className="border-t border-natural/20 pt-5">
-                    <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-[#4A5568]">
-                      <Bookmark size={15} className="text-[#E8437F]" /> Saved for Later ({savedProducts.length})
-                    </h3>
-                    <div className="space-y-3">
-                      {savedProducts.map((product) => (
-                        <div key={product.id} className="flex items-center gap-3 rounded-xl border border-natural/15 bg-white p-3">
-                          <img src={product.image} alt={product.name} className="h-14 w-14 flex-shrink-0 rounded-lg object-cover" />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-semibold">{product.name}</p>
-                            <p className="mt-1 text-xs font-bold text-[#4A5568]">₹{product.price.toLocaleString("en-IN")}</p>
-                            <div className="mt-2 flex gap-3">
-                              <button onClick={() => moveToCart(product)} className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
-                                <ShoppingCart size={11} /> Move to Cart
-                              </button>
-                              <button onClick={() => removeSavedProduct(product.id)} className="text-[10px] font-bold uppercase text-red-600 hover:text-red-700">Remove</button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
               </div>
 
               {/* Checkout Sticky Panel */}

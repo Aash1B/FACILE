@@ -14,6 +14,7 @@ interface Product {
   category: string;
   subcategory: string;
   stocks: number;
+  maxOrderQuantity: number;
   image: string;
   images: string[];
 }
@@ -28,6 +29,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Ceramics & Pottery",
     subcategory: "Drinkware",
     stocks: 14,
+    maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"]
   },
@@ -40,6 +42,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Home Accents",
     subcategory: "Textiles",
     stocks: 25,
+    maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop"]
   }
@@ -200,6 +203,7 @@ export default function SellerDashboardPage() {
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>(String(MOCK_SUBCATEGORIES[MOCK_CATEGORIES[0].id][0].id));
   
   const [stocks, setStocks] = useState("");
+  const [maxOrderQuantity, setMaxOrderQuantity] = useState("5");
   const [image, setImage] = useState("");
   
   // Multiple Images State
@@ -225,6 +229,7 @@ export default function SellerDashboardPage() {
           category: p.category?.name || "General",
           subcategory: p.subCategory?.name || "General",
           stocks: 50,
+          maxOrderQuantity: Number(p.maxOrderQuantity || 10),
           image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
           images: [p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"]
         }));
@@ -345,7 +350,7 @@ export default function SellerDashboardPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!title || !description || !mrp || !sellingPrice || !stocks || !selectedCategoryId || !selectedSubCategoryId) {
+    if (!title || !description || !mrp || !sellingPrice || !stocks || !maxOrderQuantity || !selectedCategoryId || !selectedSubCategoryId) {
       setFormError("Please fill out all required fields.");
       return;
     }
@@ -353,6 +358,7 @@ export default function SellerDashboardPage() {
     const mrpNum = parseFloat(mrp);
     const priceNum = parseFloat(sellingPrice);
     const stockNum = parseInt(stocks);
+    const maxOrderQuantityNum = parseInt(maxOrderQuantity);
 
     if (isNaN(mrpNum) || mrpNum <= 0) {
       setFormError("Please enter a valid MRP.");
@@ -370,6 +376,14 @@ export default function SellerDashboardPage() {
       setFormError("Stocks cannot be negative.");
       return;
     }
+    if (isNaN(maxOrderQuantityNum) || maxOrderQuantityNum < 1) {
+      setFormError("Maximum order quantity must be at least 1.");
+      return;
+    }
+    if (stockNum > 0 && maxOrderQuantityNum > stockNum) {
+      setFormError("Maximum order quantity cannot exceed available stock.");
+      return;
+    }
 
     const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
@@ -379,6 +393,7 @@ export default function SellerDashboardPage() {
       mrp: mrpNum,
       sellingPrice: priceNum,
       image: imageSource,
+      maxOrderQuantity: maxOrderQuantityNum,
       category: {
         id: Number(selectedCategoryId)
       },
@@ -403,6 +418,7 @@ export default function SellerDashboardPage() {
         setMrp("");
         setSellingPrice("");
         setStocks("");
+        setMaxOrderQuantity("5");
         setImages([]);
         setNewImageUrl("");
         
@@ -689,6 +705,24 @@ export default function SellerDashboardPage() {
                 style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 required
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                Max Quantity Per Order <span className="text-apricot">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={stocks ? Math.max(1, Number(stocks)) : undefined}
+                value={maxOrderQuantity}
+                onChange={(e) => setMaxOrderQuantity(e.target.value)}
+                placeholder="5"
+                className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
+                style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
+                required
+              />
+              <p className="text-[9px] text-natural/70">Maximum units one customer can buy in a single order.</p>
             </div>
 
             {/* Multiple Image Uploader Section */}

@@ -14,13 +14,25 @@ public class CartService {
                 .orElseGet(() -> createNewCart(userId));
     }
 
-    public Cart addItemToCart(String userId, CartItem newItem) {
+    public synchronized Cart addItemToCart(String userId, CartItem newItem, String idempotencyKey) {
         Cart cart = getCartByUserId(userId);
 
+        if (cart.getProcessedRequestKeys() == null) {
+            cart.setProcessedRequestKeys(new java.util.ArrayList<>());
+        }
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()
+                && cart.getProcessedRequestKeys().contains(idempotencyKey)) {
+            return cart;
+        }
+
         boolean itemExists = false; 
+        int maxQuantity = newItem.getMaxOrderQuantity() != null && newItem.getMaxOrderQuantity() > 0
+                ? newItem.getMaxOrderQuantity() : 10;
         for (CartItem item : cart.getItems()) {
             if (item.getProductId().equals(newItem.getProductId())) {
-                item.setQuantity(item.getQuantity() + newItem.getQuantity());
+                item.setMaxOrderQuantity(maxQuantity);
+                item.setQuantity(Math.min(maxQuantity, item.getQuantity() + newItem.getQuantity()));
                 if (newItem.getImage() != null && !newItem.getImage().isBlank()) {
                     item.setImage(newItem.getImage());
                 }
@@ -30,7 +42,16 @@ public class CartService {
         }
 
         if (!itemExists) {
+            newItem.setMaxOrderQuantity(maxQuantity);
+            newItem.setQuantity(Math.min(maxQuantity, Math.max(1, newItem.getQuantity())));
             cart.getItems().add(newItem);
+        }
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            cart.getProcessedRequestKeys().add(idempotencyKey);
+            if (cart.getProcessedRequestKeys().size() > 100) {
+                cart.getProcessedRequestKeys().remove(0);
+            }
         }
 
         recalculateTotal(cart);
