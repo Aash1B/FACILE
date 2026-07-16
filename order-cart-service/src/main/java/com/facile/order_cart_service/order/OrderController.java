@@ -14,9 +14,12 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/{userId}/checkout")
-    public Order checkout(@PathVariable String userId, @RequestBody Map<String, String> body) {
+    public Order checkout(
+            @PathVariable String userId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestBody Map<String, String> body) {
         String shippingAddress = body.get("shippingAddress");
-        return orderService.checkout(userId, shippingAddress);
+        return orderService.checkout(userId, shippingAddress, idempotencyKey);
     }
 
     @GetMapping("/{userId}")

@@ -24,8 +24,20 @@ import {
   Quote,
 } from "lucide-react";
 
+type ProductCard = {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  description?: string;
+  maxOrderQuantity?: number;
+};
+
 // Mock Database of Best Selling Products
-const BEST_SELLERS = [
+const BEST_SELLERS: ProductCard[] = [
   {
     id: "bs1",
     name: "Smart Watch Series 5",
@@ -141,6 +153,7 @@ type ApiProduct = {
   image?: string;
   rating: number;
   reviews: number;
+  maxOrderQuantity?: number;
   description?: string;
 };
 
@@ -200,7 +213,7 @@ const TESTIMONIALS = [
 function HomeContent() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+  const [products, setProducts] = useState<ProductCard[]>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
@@ -261,7 +274,8 @@ function HomeContent() {
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
               rating: p.rating,
-              reviews: p.reviews
+              reviews: p.reviews,
+              maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);
             setProductPage(0);
@@ -288,7 +302,7 @@ function HomeContent() {
     }, 3000);
   };
 
-  const handleAddToCart = (product: typeof BEST_SELLERS[0], e: React.MouseEvent) => {
+  const handleAddToCart = (product: ProductCard, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({
@@ -296,7 +310,8 @@ function HomeContent() {
       name: product.name,
       price: product.price,
       brand: "facile Store",
-      image: product.image
+      image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10
     });
     recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
@@ -305,7 +320,7 @@ function HomeContent() {
   const handleAddRecentToCart = (product: RecentProduct, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image });
+    addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image, maxOrderQuantity: product.maxOrderQuantity || 10 });
     recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag!`);
   };

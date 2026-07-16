@@ -125,6 +125,7 @@ export default function Navbar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  // Prevent SSR/client hydration mismatch: badge counts come from localStorage
   useEffect(() => {
     setIsMounted(true);
   }, []);

@@ -36,6 +36,9 @@ public class ProductService {
 
     @Transactional
     public Product createProduct(Product product, Integer initialStock) {
+        if (product.getMaxOrderQuantity() == null || product.getMaxOrderQuantity() < 1) {
+            product.setMaxOrderQuantity(10);
+        }
         Product savedProduct = productRepository.save(product);
         
         Inventory inventory = Inventory.builder()
@@ -63,6 +66,9 @@ public class ProductService {
                     }
                     if (updatedProduct.getReviews() != null) {
                         product.setReviews(updatedProduct.getReviews());
+                    }
+                    if (updatedProduct.getMaxOrderQuantity() != null && updatedProduct.getMaxOrderQuantity() > 0) {
+                        product.setMaxOrderQuantity(updatedProduct.getMaxOrderQuantity());
                     }
                     return productRepository.save(product);
                 })

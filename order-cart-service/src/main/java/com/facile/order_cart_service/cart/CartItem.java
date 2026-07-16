@@ -15,6 +15,8 @@ public class CartItem {
 
     private String image;
 
+    private Integer maxOrderQuantity;
+
     private double price;
 
     private int quantity;

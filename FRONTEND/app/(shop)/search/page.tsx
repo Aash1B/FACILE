@@ -37,6 +37,7 @@ type Product = {
   color?: string;
   size?: string;
   deliveryDays?: number;
+  maxOrderQuantity?: number;
 };
 
 // ─── Fallback Data ────────────────────────────────────────────────────────────
@@ -705,6 +706,7 @@ function SearchContent() {
               color: p.color || undefined,
               size: p.size || undefined,
               deliveryDays: p.deliveryDays || undefined,
+              maxOrderQuantity: p.maxOrderQuantity || 10,
             }));
             setProducts(mapped);
           }
@@ -730,6 +732,7 @@ function SearchContent() {
       price: product.price,
       brand: product.brand || "facile Store",
       image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10,
     });
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
   };

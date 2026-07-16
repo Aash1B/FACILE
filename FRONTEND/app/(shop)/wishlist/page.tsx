@@ -107,6 +107,7 @@ type ApiProduct = {
   image?: string;
   rating: number;
   reviews: number;
+  maxOrderQuantity?: number;
 };
 
 export default function WishlistPage() {
@@ -135,7 +136,8 @@ export default function WishlistPage() {
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
               rating: p.rating || 4.5,
-              reviews: p.reviews || 50
+              reviews: p.reviews || 50,
+              maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);
           }
@@ -159,7 +161,8 @@ export default function WishlistPage() {
       name: product.name,
       price: product.price,
       brand: "facile Store",
-      image: product.image
+      image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10
     });
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,7 @@ import {
   Info,
   ShieldCheck,
   Plus,
+  Minus,
   Check,
   Truck,
   Pencil,
@@ -71,7 +72,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, updateQuantity } = useCart();
   const { user } = useAuth();
 
   // Address State
@@ -107,10 +108,24 @@ export default function CheckoutPage() {
 
   // Payment popup & loading states
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  /**
+   * paymentStatus tracks the full payment lifecycle:
+   *   IDLE         — not yet attempted
+   *   VERIFYING    — waiting for /payments/verify response
+   *   SUCCESS      — signature verified, order confirmed
+   *   CANCELLED    — user closed Razorpay popup
+   *   FAILED       — Razorpay reported a payment failure
+   *   VERIFY_FAILED — Razorpay succeeded but our backend verification failed
+   */
+  const [paymentStatus, setPaymentStatus] = useState<
+    "IDLE" | "VERIFYING" | "SUCCESS" | "CANCELLED" | "FAILED" | "VERIFY_FAILED"
+  >("IDLE");
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const checkoutIdempotencyKey = useRef<string>(crypto.randomUUID());
+  const paymentRequestStarted = useRef(false);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
   const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
@@ -147,7 +162,8 @@ export default function CheckoutPage() {
         price: 8999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
-        quantity: 1
+        quantity: 1,
+        maxOrderQuantity: 5
       },
       {
         id: "bs2",
@@ -155,7 +171,8 @@ export default function CheckoutPage() {
         price: 5999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
-        quantity: 2
+        quantity: 2,
+        maxOrderQuantity: 5
       }
     ];
     setCheckoutItems(mockItems);
@@ -269,6 +286,19 @@ export default function CheckoutPage() {
     setCustomAddress(EMPTY_ADDRESS);
   };
 
+  const handleCheckoutQuantity = (item: any, nextQuantity: number) => {
+    const maxQuantity = item.maxOrderQuantity || 10;
+    const quantity = Math.max(1, Math.min(maxQuantity, nextQuantity));
+    const nextItems = checkoutItems.map((checkoutItem) => checkoutItem.id === item.id ? { ...checkoutItem, quantity } : checkoutItem);
+    setCheckoutItems(nextItems);
+
+    if (new URLSearchParams(window.location.search).get("buynow") === "true") {
+      localStorage.setItem("facile_buynow", JSON.stringify(nextItems));
+    } else {
+      updateQuantity(item.id, quantity);
+    }
+  };
+
   const handleEditAddress = (address: Address) => {
     setCustomAddress({
       label: address.label,
@@ -320,7 +350,10 @@ export default function CheckoutPage() {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
       const orderResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": checkoutIdempotencyKey.current,
+        },
         body: JSON.stringify({ shippingAddress }),
       });
       if (!orderResponse.ok) {
@@ -336,33 +369,44 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmPayment = async () => {
+    if (paymentRequestStarted.current) return;
+    paymentRequestStarted.current = true;
+
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
+<<<<<<< HEAD
+      // Simulate COD confirmation delay
+      setTimeout(() => {
+        setIsProcessing(false);
+        setPaymentStatus("SUCCESS");
+        handleCheckoutCompletion();
+=======
       setTimeout(async () => {
         try {
           await handleCheckoutCompletion();
           setPaymentSuccess(true);
         } catch (error) {
           setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+          paymentRequestStarted.current = false;
         } finally {
           setIsProcessing(false);
         }
+>>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
       }, 2000);
       return;
     }
 
     setIsProcessing(true);
     setPaymentError(null);
+    setPaymentStatus("IDLE");
 
     try {
-      // 1. Call Backend to create order
-      const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      // ── Step 1: Create Razorpay order on backend ─────────────────
+      const response = await fetch(
+        `${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`,
+        { method: "POST", headers: { "Content-Type": "application/json" } }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to create Razorpay order (Status: ${response.status})`);
@@ -373,52 +417,116 @@ export default function CheckoutPage() {
         throw new Error("Invalid order data received from the payment server.");
       }
 
-      // 2. Dynamically load Razorpay SDK script
+      // ── Step 2: Load Razorpay SDK ────────────────────────────────
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         throw new Error("Failed to load Razorpay SDK. Please check your internet connection.");
       }
 
-      // 3. Open Razorpay checkout popup
+      // ── Step 3: Open Razorpay checkout popup ─────────────────────
       const options = {
         key: RAZORPAY_KEY_ID,
         amount: orderData.amount, // in paise
         currency: orderData.currency || "INR",
         name: "FACILE",
-        description: `Payment for order of ${checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items`,
+        description: `Payment for order of ${checkoutItems.reduce(
+          (acc: number, item: any) => acc + item.quantity, 0
+        )} items`,
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
         order_id: orderData.id,
+<<<<<<< HEAD
+
+        // ── Step 4: On Razorpay success → verify signature on backend
+        handler: async function (paymentResponse: any) {
+          setIsProcessing(false);
+          setIsVerifying(true);
+          setPaymentStatus("VERIFYING");
+
+          try {
+            const verifyRes = await fetch(
+              `${PAYMENT_SERVICE_URL}/payments/verify`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature,
+                  userId: user?.email || null,
+                  amount: totalAmount,
+                  currency: orderData.currency || "INR",
+                }),
+              }
+            );
+
+            if (verifyRes.ok) {
+              // ✅ Verified — payment is genuine
+              setPaymentStatus("SUCCESS");
+              handleCheckoutCompletion();
+            } else {
+              // ❌ Backend rejected the signature
+              const errData = await verifyRes.json().catch(() => ({}));
+              setPaymentStatus("VERIFY_FAILED");
+              setPaymentError(
+                (errData as any).message ||
+                "Payment verification failed. Please contact support."
+              );
+            }
+          } catch (verifyErr: any) {
+            console.error("Payment verification network error:", verifyErr);
+            setPaymentStatus("VERIFY_FAILED");
+            setPaymentError(
+              "Could not reach the verification server. Please contact support."
+            );
+          } finally {
+            setIsVerifying(false);
+=======
         handler: async function (paymentResponse: any) {
           try {
             await handleCheckoutCompletion();
             setPaymentSuccess(true);
           } catch (error) {
             setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+            paymentRequestStarted.current = false;
           } finally {
             setIsProcessing(false);
+>>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
           }
         },
+
         prefill: {
           name: activeAddress?.name || "",
           contact: activeAddress?.phone || "",
           email: user?.email || "",
         },
-        theme: {
-          color: "#4A5568", // Brand green (fern)
-        },
+        theme: { color: "#4A5568" },
+
         modal: {
+          // ── Step 5: User closed the Razorpay popup ───────────────
           ondismiss: function () {
             setIsProcessing(false);
+<<<<<<< HEAD
+            setPaymentStatus("CANCELLED");
+          },
+        },
+=======
+            paymentRequestStarted.current = false;
           }
         }
+>>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
       };
 
       const razorpayInstance = new (window as any).Razorpay(options);
-      
-      // If payment fails on checkout
+
+      // ── Step 6: Handle Razorpay-reported payment failure ─────────
       razorpayInstance.on("payment.failed", function (res: any) {
-        setPaymentError(res.error.description || "Payment failed. Please try again.");
+        setPaymentStatus("FAILED");
+        setPaymentError(
+          res?.error?.description ||
+          "Payment failed. Please try a different payment method."
+        );
         setIsProcessing(false);
+        paymentRequestStarted.current = false;
       });
 
       razorpayInstance.open();
@@ -427,16 +535,33 @@ export default function CheckoutPage() {
       console.error("Razorpay integration error:", error);
       setPaymentError(error.message || "An unexpected error occurred while processing payment.");
       setIsProcessing(false);
+      paymentRequestStarted.current = false;
     }
   };
 
   // Get active address details
   const activeAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0];
 
-  if (paymentSuccess) {
+  // ── Payment status overlay screens ───────────────────────────────────
+
+  // Verifying — spinner shown while calling /payments/verify
+  if (paymentStatus === "VERIFYING") {
     return (
       <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
-        <div className="max-w-md w-full bg-warm-ivory border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-10 text-center shadow-xl animate-fade-in">
+          <div className="w-20 h-20 rounded-full border-4 border-[#4A5568] border-t-transparent animate-spin mx-auto mb-6" />
+          <h2 className="font-serif text-2xl font-extrabold text-slate-grey mb-2">Verifying Payment</h2>
+          <p className="text-xs text-natural font-medium">Please wait while we confirm your payment securely…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // SUCCESS
+  if (paymentStatus === "SUCCESS") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-apricot via-natural to-fern" />
 
           <div className="w-20 h-20 bg-[#4A5568] text-natural rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-natural">
@@ -444,13 +569,15 @@ export default function CheckoutPage() {
           </div>
 
           <span className="text-[10px] font-extrabold tracking-wider text-apricot uppercase bg-apricot/10 px-3 py-1 rounded-full">
-            Payment Completed
+            Payment Confirmed
           </span>
 
           <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Order Confirmed!</h2>
           <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-6 leading-relaxed">
-            Thank you for shopping with us! Your payment was successful, and your order has been registered under
-            <span className="text-fern font-bold block mt-1 font-mono">FC-{Math.floor(100000 + Math.random() * 900000)}</span>
+            Thank you for shopping with us! Your payment was verified successfully.
+            <span className="text-fern font-bold block mt-1 font-mono">
+              FC-{Math.floor(100000 + Math.random() * 900000)}
+            </span>
           </p>
 
           <div className="bg-natural/40 border border-natural/15 rounded-2xl p-4.5 text-left text-xs text-slate-grey space-y-3 mb-8">
@@ -469,15 +596,144 @@ export default function CheckoutPage() {
           <div className="flex gap-4">
             <button
               onClick={() => router.push("/profile")}
-              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-warm-ivory active:scale-98"
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
             >
               Order History
             </button>
             <button
               onClick={() => router.push("/")}
-              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-natural font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
             >
               Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // CANCELLED — user closed Razorpay popup
+  if (paymentStatus === "CANCELLED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-natural/30 via-natural to-natural/30" />
+
+          <div className="w-20 h-20 bg-natural/20 border-4 border-natural/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Info size={38} className="text-natural stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-natural uppercase bg-natural/10 px-3 py-1 rounded-full">
+            Payment Cancelled
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Payment Cancelled</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-8 leading-relaxed">
+            You closed the payment window. Your cart is safe — no charges were made.
+            You can try again whenever you&apos;re ready.
+          </p>
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => router.push("/cart")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Back to Cart
+            </button>
+            <button
+              onClick={() => setPaymentStatus("IDLE")}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // FAILED — Razorpay reported a payment failure
+  if (paymentStatus === "FAILED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-red-200 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-300 via-red-400 to-red-300" />
+
+          <div className="w-20 h-20 bg-red-50 border-4 border-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck size={38} className="text-red-400 stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-red-500 uppercase bg-red-50 px-3 py-1 rounded-full">
+            Payment Failed
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Payment Failed</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-3 leading-relaxed">
+            Your payment could not be processed. No amount was charged.
+          </p>
+          {paymentError && (
+            <p className="text-xs text-red-500 font-medium bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 mb-6">
+              {paymentError}
+            </p>
+          )}
+
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => router.push("/cart")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Back to Cart
+            </button>
+            <button
+              onClick={() => { setPaymentStatus("IDLE"); setPaymentError(null); }}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VERIFY_FAILED — payment went through Razorpay but our backend rejected the signature
+  if (paymentStatus === "VERIFY_FAILED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-amber-200 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300" />
+
+          <div className="w-20 h-20 bg-amber-50 border-4 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck size={38} className="text-amber-500 stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-amber-600 uppercase bg-amber-50 px-3 py-1 rounded-full">
+            Verification Failed
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Verification Failed</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-3 leading-relaxed">
+            Your payment was processed by Razorpay but our server could not verify its authenticity.
+            Please contact our support team with your payment ID.
+          </p>
+          {paymentError && (
+            <p className="text-xs text-amber-600 font-medium bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 mb-6">
+              {paymentError}
+            </p>
+          )}
+
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => router.push("/")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Go Home
+            </button>
+            <button
+              onClick={() => { setPaymentStatus("IDLE"); setPaymentError(null); }}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
             </button>
           </div>
         </div>
@@ -801,7 +1057,16 @@ export default function CheckoutPage() {
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
                           <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
-                          <span className="text-[10px] font-bold text-natural mt-1 block">Qty: {item.quantity}</span>
+                          <div className="mt-2 flex items-center gap-1 rounded-full border border-natural/20 bg-[#F4F4F0] p-0.5 w-fit">
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Decrease ${item.name} quantity`}>
+                              <Minus size={10} />
+                            </button>
+                            <span className="w-6 text-center text-[10px] font-bold text-[#4A5568]">{item.quantity}</span>
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity + 1)} disabled={item.quantity >= (item.maxOrderQuantity || 10)} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Increase ${item.name} quantity`}>
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                          <span className="mt-1 block text-[9px] text-natural/70">Max {item.maxOrderQuantity || 10}</span>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -941,9 +1206,9 @@ export default function CheckoutPage() {
             <div className="flex justify-center items-center gap-2 opacity-95 py-2 text-[10px] font-bold text-natural uppercase tracking-wider select-none">
               <span>Powered by</span>
               <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center shadow-xs">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" 
-                  alt="Razorpay" 
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg"
+                  alt="Razorpay"
                   className="h-4 object-contain"
                 />
               </div>

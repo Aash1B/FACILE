@@ -6,6 +6,7 @@ export type RecentProduct = {
   image: string;
   rating?: number;
   reviews?: number;
+  maxOrderQuantity?: number;
 };
 
 const MAX_RECENT_PRODUCTS = 10;
