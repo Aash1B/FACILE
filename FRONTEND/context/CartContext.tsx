@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -14,7 +13,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
+  addToCart: (item: Omit<CartItem, "quantity">) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -26,99 +25,72 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const USER_ID = "user123"; // TODO: replace once real auth/JWT is wired in
+const API_BASE = "http://localhost:8081";
+const IMAGE_CACHE_KEY = "facile_product_display_cache"; // productId -> {image, brand}, display-only
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [isCartLoaded, setIsCartLoaded] = useState(false);
 
-  // Sync cart from backend or local storage when user state changes
-  useEffect(() => {
-    const syncCart = async () => {
-      if (user && user.email) {
-        // Logged-in user: merge local guest cart into backend database
+  // Merge backend cart items with locally-cached image/brand (backend has no image/brand fields)
+  const mergeWithDisplayCache = (
+    backendItems: { productId: string; productName: string; price: number; quantity: number }[]
+  ): CartItem[] => {
+    let displayCache: Record<string, { image: string; brand: string }> = {};
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem(IMAGE_CACHE_KEY);
+      if (raw) {
         try {
-          // Fetch existing db cart
-          const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
-          const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
-
-          const localCartStr = localStorage.getItem("facile_cart");
-          if (localCartStr) {
-            const localCart: CartItem[] = JSON.parse(localCartStr);
-            if (localCart.length > 0) {
-              // Perform client-side merge: check and add missing/larger quantities to DB
-              for (const localItem of localCart) {
-                const dbItem = dbCart.items.find((i: any) => i.productId === localItem.id);
-                if (!dbItem) {
-                  // Add item to backend
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      productId: localItem.id,
-                      productName: localItem.name,
-                      price: localItem.price,
-                      quantity: localItem.quantity,
-                    }),
-                  });
-                } else if (localItem.quantity > dbItem.quantity) {
-                  // Add the difference
-                  const diff = localItem.quantity - dbItem.quantity;
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      productId: localItem.id,
-                      productName: localItem.name,
-                      price: localItem.price,
-                      quantity: diff,
-                    }),
-                  });
-                }
-              }
-              // Clear local guest cart
-              localStorage.removeItem("facile_cart");
-            }
-          }
-
-          // Fetch final synchronized cart
-          const finalRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
-          if (finalRes.ok) {
-            const finalCart = await finalRes.json();
-            // Map backend cart structure back to frontend CartItem
-            const mappedCart: CartItem[] = finalCart.items.map((i: any) => ({
-              id: i.productId,
-              name: i.productName,
-              price: i.price,
-              brand: "Facile",
-              image: i.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300", // mock image path
-              quantity: i.quantity,
-            }));
-            setCart(mappedCart);
-          }
+          displayCache = JSON.parse(raw);
         } catch (e) {
-          console.error("Failed to sync cart with backend:", e);
-        }
-      } else {
-        // Guest user: load from local storage
-        const savedCart = localStorage.getItem("facile_cart");
-        if (savedCart) {
-          try {
-            setCart(JSON.parse(savedCart));
-          } catch (e) {
-            console.error("Error parsing cart data", e);
-          }
-        } else {
-          setCart([]);
+          console.error("Error parsing product display cache", e);
         }
       }
-    };
+    }
+    return backendItems.map((item) => ({
+      id: item.productId,
+      name: item.productName,
+      price: item.price,
+      quantity: item.quantity,
+      brand: displayCache[item.productId]?.brand ?? "Facile Store",
+      image: displayCache[item.productId]?.image ?? "/placeholder-product.png"
+    }));
+  };
 
-    syncCart();
-  }, [user]);
+  const cacheDisplayInfo = (id: string, image: string, brand: string) => {
+    if (typeof window === "undefined") return;
+    let displayCache: Record<string, { image: string; brand: string }> = {};
+    const raw = localStorage.getItem(IMAGE_CACHE_KEY);
+    if (raw) {
+      try {
+        displayCache = JSON.parse(raw);
+      } catch (e) {
+        console.error("Error parsing product display cache", e);
+      }
+    }
+    displayCache[id] = { image, brand };
+    localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(displayCache));
+  };
 
-  // Load favorites on mount
+  const fetchCartFromBackend = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/cart/${USER_ID}`);
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      const data = await res.json();
+      setCart(mergeWithDisplayCache(data.items ?? []));
+    } catch (e) {
+      console.error("Failed to fetch cart from backend:", e);
+    } finally {
+      setIsCartLoaded(true);
+    }
+  };
+
   useEffect(() => {
+    fetchCartFromBackend();
+
     if (typeof window !== "undefined") {
       const savedFavs = localStorage.getItem("facile_favorites");
       if (savedFavs) {
@@ -131,13 +103,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const saveCartState = (newCart: CartItem[]) => {
-    setCart(newCart);
-    if (!user && typeof window !== "undefined") {
-      localStorage.setItem("facile_cart", JSON.stringify(newCart));
-    }
-  };
-
   const saveFavorites = (newFavs: string[]) => {
     setFavorites(newFavs);
     if (typeof window !== "undefined") {
@@ -145,58 +110,39 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
-    const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
-    
-    if (user && user.email) {
-      // Sync with database
-      try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId: item.id,
-            productName: item.name,
-            price: item.price,
-            quantity: quantityToAdd,
-          }),
-        });
+  const addToCart = async (item: Omit<CartItem, "quantity">) => {
+    // Cache image/brand locally immediately — backend can't store these yet
+    cacheDisplayInfo(item.id, item.image, item.brand);
 
-        // Update state
-        if (existingIndex > -1) {
-          const newCart = [...cart];
-          newCart[existingIndex].quantity += quantityToAdd;
-          saveCartState(newCart);
-        } else {
-          saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
-        }
-      } catch (e) {
-        console.error("Failed to add item to db cart:", e);
-      }
-    } else {
-      // Guest: local storage
-      if (existingIndex > -1) {
-        const newCart = [...cart];
-        newCart[existingIndex].quantity += quantityToAdd;
-        saveCartState(newCart);
-      } else {
-        saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
-      }
+    try {
+      const res = await fetch(`${API_BASE}/api/cart/${USER_ID}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: item.id,
+          productName: item.name,
+          price: item.price,
+          quantity: 1
+        })
+      });
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      const data = await res.json();
+      setCart(mergeWithDisplayCache(data.items ?? []));
+    } catch (e) {
+      console.error("Failed to add item to cart:", e);
     }
   };
 
   const removeFromCart = async (id: string) => {
-    if (user && user.email) {
-      try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
-          method: "DELETE",
-        });
-        saveCartState(cart.filter((item) => item.id !== id));
-      } catch (e) {
-        console.error("Failed to remove item from db cart:", e);
-      }
-    } else {
-      saveCartState(cart.filter((item) => item.id !== id));
+    try {
+      const res = await fetch(`${API_BASE}/api/cart/${USER_ID}/remove/${id}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      const data = await res.json();
+      setCart(mergeWithDisplayCache(data.items ?? []));
+    } catch (e) {
+      console.error("Failed to remove item from cart:", e);
     }
   };
 
@@ -206,69 +152,46 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const currentItem = cart.find((item) => item.id === id);
-    if (!currentItem) return;
+    const existing = cart.find((i) => i.id === id);
+    if (!existing) return;
 
-    if (user && user.email) {
-      try {
-        const oldQty = currentItem.quantity;
-        if (qty > oldQty) {
-          // Add the difference
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: id,
-              productName: currentItem.name,
-              price: currentItem.price,
-              quantity: qty - oldQty,
-            }),
-          });
-        } else if (qty < oldQty) {
-          // Remove from DB first and add back the smaller quantity
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
-            method: "DELETE",
-          });
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: id,
-              productName: currentItem.name,
-              price: currentItem.price,
-              quantity: qty,
-            }),
-          });
-        }
-        
-        saveCartState(cart.map((item) =>
-          item.id === id ? { ...item, quantity: qty } : item
-        ));
-      } catch (e) {
-        console.error("Failed to update item quantity in db cart:", e);
-      }
-    } else {
-      saveCartState(cart.map((item) =>
-        item.id === id ? { ...item, quantity: qty } : item
-      ));
+    try {
+      // No decrement/set-quantity endpoint exists yet — remove then re-add.
+      // Not atomic; workaround until a real PATCH endpoint exists.
+      const removeRes = await fetch(`${API_BASE}/api/cart/${USER_ID}/remove/${id}`, {
+        method: "DELETE"
+      });
+      if (!removeRes.ok) throw new Error(`Server responded with ${removeRes.status}`);
+
+      const addRes = await fetch(`${API_BASE}/api/cart/${USER_ID}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: id,
+          productName: existing.name,
+          price: existing.price,
+          quantity: qty
+        })
+      });
+      if (!addRes.ok) throw new Error(`Server responded with ${addRes.status}`);
+      const data = await addRes.json();
+      setCart(mergeWithDisplayCache(data.items ?? []));
+    } catch (e) {
+      console.error("Failed to update quantity:", e);
     }
   };
 
   const clearCart = async () => {
-    if (user && user.email) {
-      try {
-        // Clear each item in database
-        for (const item of cart) {
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
-            method: "DELETE",
-          });
-        }
-        saveCartState([]);
-      } catch (e) {
-        console.error("Failed to clear db cart:", e);
+    // No bulk-clear endpoint exists — remove items one by one
+    try {
+      for (const item of cart) {
+        await fetch(`${API_BASE}/api/cart/${USER_ID}/remove/${item.id}`, {
+          method: "DELETE"
+        });
       }
-    } else {
-      saveCartState([]);
+      setCart([]);
+    } catch (e) {
+      console.error("Failed to clear cart:", e);
     }
   };
 
@@ -291,7 +214,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         favorites,
         toggleFavorite,
         isCartOpen,
-        setIsCartOpen,
+        setIsCartOpen
       }}
     >
       {children}
