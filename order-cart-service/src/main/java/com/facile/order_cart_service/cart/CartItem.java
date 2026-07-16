@@ -13,6 +13,10 @@ public class CartItem {
 
     private String productName;
 
+    private String image;
+
+    private Integer maxOrderQuantity;
+
     private double price;
 
     private int quantity;

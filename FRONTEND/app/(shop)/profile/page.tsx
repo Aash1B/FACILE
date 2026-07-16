@@ -91,6 +91,32 @@ function ProfileContent() {
     }
   }, [searchParams]);
 
+  // Payment History state variables
+  const [paymentsHistory, setPaymentsHistory] = useState<any[]>([]);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "orders" && user?.email) {
+      fetchPaymentHistory();
+    }
+  }, [activeTab, user]);
+
+  const fetchPaymentHistory = async () => {
+    setIsLoadingPayments(true);
+    try {
+      const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
+      const res = await fetch(`${PAYMENT_SERVICE_URL}/payments/history?userId=${user.email}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentsHistory(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch payment history:", e);
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  };
+
   // Security Tab state variables
   const [sessionsList, setSessionsList] = useState<any[]>([]);
   const [auditLogsList, setAuditLogsList] = useState<any[]>([]);
@@ -573,6 +599,62 @@ function ProfileContent() {
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* Digital Transactions / Payment History section */}
+                  <div className="pt-8 border-t border-natural/15">
+                    <h3 className="font-serif text-lg font-bold text-fern">Digital Payment History</h3>
+                    <p className="text-[11px] text-natural font-medium mt-0.5">Audit log of your direct online payment transactions.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {isLoadingPayments ? (
+                      <div className="text-center py-8 text-xs text-natural font-medium">
+                        Loading transaction logs...
+                      </div>
+                    ) : paymentsHistory.length === 0 ? (
+                      <div className="text-center py-8 bg-white border border-natural/15 rounded-2xl text-xs text-natural font-medium">
+                        No online payment transactions found.
+                      </div>
+                    ) : (
+                      paymentsHistory.map((payment) => (
+                        <div key={payment.id} className="border border-natural/20 rounded-2xl overflow-hidden shadow-sm bg-white">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4.5 gap-3 sm:gap-6 bg-white">
+                            <div className="grid grid-cols-2 sm:flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Payment ID</p>
+                                <p className="text-xs font-mono font-bold text-fern mt-0.5">{payment.paymentId}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Order ID</p>
+                                <p className="text-xs font-mono font-semibold text-fern mt-0.5">{payment.orderId}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Amount</p>
+                                <p className="text-xs font-bold text-apricot mt-0.5">₹{payment.amount.toLocaleString("en-IN")}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Date</p>
+                                <p className="text-xs font-semibold text-fern mt-0.5">{new Date(payment.createdAt).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Status</p>
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold mt-1 tracking-wide uppercase ${
+                                  payment.status === "SUCCESS"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    payment.status === "SUCCESS" ? "bg-green-600" : "bg-red-600"
+                                  }`} />
+                                  {payment.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

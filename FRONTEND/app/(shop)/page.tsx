@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import {
+  getRecentlyViewed,
+  recordRecentlyViewed,
+  RECENT_PRODUCTS_CHANGED,
+  type RecentProduct,
+} from "@/lib/recentlyViewed";
 import {
   Heart,
   ShoppingCart,
@@ -18,8 +24,20 @@ import {
   Quote,
 } from "lucide-react";
 
+type ProductCard = {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  description?: string;
+  maxOrderQuantity?: number;
+};
+
 // Mock Database of Best Selling Products
-const BEST_SELLERS = [
+const BEST_SELLERS: ProductCard[] = [
   {
     id: "bs1",
     name: "Smart Watch Series 5",
@@ -135,6 +153,7 @@ type ApiProduct = {
   image?: string;
   rating: number;
   reviews: number;
+  maxOrderQuantity?: number;
   description?: string;
 };
 
@@ -194,21 +213,34 @@ const TESTIMONIALS = [
 function HomeContent() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+  const [products, setProducts] = useState<ProductCard[]>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
 
-  const categoryScrollRef = useRef<HTMLDivElement>(null);
   const scrollCategoriesLeft = () => {
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
-    }
+    setActiveCategoryIndex((current) => (current - 1 + CATEGORIES.length) % CATEGORIES.length);
   };
   const scrollCategoriesRight = () => {
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
-    }
+    setActiveCategoryIndex((current) => (current + 1) % CATEGORIES.length);
   };
+  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
+    const categoryIndex = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
+    return { category: CATEGORIES[categoryIndex], isActive: slot === 3 };
+  });
+
+  useEffect(() => {
+    const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
+    const initialLoad = window.setTimeout(loadRecentProducts, 0);
+    window.addEventListener(RECENT_PRODUCTS_CHANGED, loadRecentProducts);
+    window.addEventListener("storage", loadRecentProducts);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.removeEventListener(RECENT_PRODUCTS_CHANGED, loadRecentProducts);
+      window.removeEventListener("storage", loadRecentProducts);
+    };
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -225,7 +257,8 @@ function HomeContent() {
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
               rating: p.rating,
-              reviews: p.reviews
+              reviews: p.reviews,
+              maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);
             setProductPage(0);
@@ -252,7 +285,7 @@ function HomeContent() {
     }, 3000);
   };
 
-  const handleAddToCart = (product: typeof BEST_SELLERS[0], e: React.MouseEvent) => {
+  const handleAddToCart = (product: ProductCard, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({
@@ -260,9 +293,19 @@ function HomeContent() {
       name: product.name,
       price: product.price,
       brand: "facile Store",
-      image: product.image
+      image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10
     });
+    recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
+  };
+
+  const handleAddRecentToCart = (product: RecentProduct, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image, maxOrderQuantity: product.maxOrderQuantity || 10 });
+    recordRecentlyViewed(product);
+    triggerToast(`Added ${product.name} to your bag!`);
   };
 
   const handleToggleFavorite = (id: string, name: string, e: React.MouseEvent) => {
@@ -405,13 +448,6 @@ function HomeContent() {
             <p className="text-xs text-natural/60 font-medium">Explore our curated collection of quality items.</p>
           </div>
           <div className="flex items-center gap-4 self-end sm:self-auto">
-            <Link
-              href="/categories"
-              className="text-xs font-bold text-[#4a556a] hover:text-apricot transition-all flex items-center gap-1.5 cursor-pointer mr-2"
-            >
-              View All Categories
-              <ArrowRight size={12} />
-            </Link>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -433,30 +469,36 @@ function HomeContent() {
           </div>
         </div>
 
-        <div
-          ref={categoryScrollRef}
-          className="flex overflow-x-auto gap-6 no-scrollbar pb-4 select-none scroll-smooth"
-        >
-          {CATEGORIES.map((category) => {
+        <div className="flex items-center overflow-x-auto lg:justify-center gap-3 no-scrollbar py-3 select-none">
+          {visibleCategories.map(({ category, isActive }) => {
             return (
               <Link
                 key={category.id}
                 href={`/category/${category.id.replace("c", "")}`}
-                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
+                className="flex w-40 h-60 flex-col items-center justify-center gap-4 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
               >
-                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_24px_rgba(74,85,104,0.45)] ${category.bgColor}`}>
+                <div className={`${isActive ? "w-44 h-44 sm:w-48 sm:h-48 shadow-[0_12px_32px_rgba(74,85,104,0.3)] ring-2 ring-[#E8437F]/35" : "w-32 h-32 sm:w-36 sm:h-36 shadow-sm ring-1 ring-white/70"} aspect-square shrink-0 rounded-full overflow-hidden flex items-center justify-center ${category.bgColor}`}>
                   <img
                     src={category.image}
                     alt={category.label}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-bold text-[#4a556a] group-hover:text-[#1A202C] transition-colors text-center">
+                <span className={`text-sm font-bold text-center ${isActive ? "text-[#E8437F]" : "text-[#4a556a]"}`}>
                   {category.label}
                 </span>
               </Link>
             );
           })}
+        </div>
+        <div className="mt-5 flex justify-center">
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-2 rounded-full bg-[#E8437F] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#d93670] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8437F] focus-visible:ring-offset-2"
+          >
+            View All Categories
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
@@ -568,6 +610,45 @@ function HomeContent() {
           })}
         </div>
       </section>
+
+      {recentProducts.length > 0 && (
+        <section id="recently-viewed" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
+            <p className="mt-1 text-xs text-natural/60 font-medium">Pick up where you left off.</p>
+          </div>
+          <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
+            {recentProducts.map((product) => (
+              <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
+                <Link href={`/product/${product.id}`} className="block">
+                  <div className="aspect-square overflow-hidden bg-neutral-100/50">
+                    <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="space-y-2 p-4">
+                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{product.name}</h3>
+                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>{product.rating ?? 4.5}</span>
+                      {product.reviews != null && <span>({product.reviews})</span>}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-extrabold text-[#4a556a]">â‚¹{product.price.toLocaleString("en-IN")}</span>
+                      {product.originalPrice != null && product.originalPrice > product.price && (
+                        <span className="text-[10px] font-medium text-natural line-through">â‚¹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+                <div className="px-4 pb-4">
+                  <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#4a556a] text-[11px] font-bold text-warm-ivory shadow-sm">
+                    <ShoppingCart size={12} className="stroke-[2.5px]" /> Add to Cart
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

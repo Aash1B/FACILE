@@ -16,8 +16,11 @@ public class CartController {
     }
 
     @PostMapping("/{userId}/add")
-    public Cart addItem(@PathVariable String userId, @RequestBody CartItem item) {
-        return cartService.addItemToCart(userId, item);
+    public Cart addItem(
+            @PathVariable String userId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestBody CartItem item) {
+        return cartService.addItemToCart(userId, item, idempotencyKey);
     }
 
     @DeleteMapping("/{userId}/remove/{productId}")

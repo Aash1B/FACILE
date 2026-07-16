@@ -13,6 +13,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -26,20 +28,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (categoryRepository.count() == 0) {
-            seedCategoriesAndProducts();
-        } else {
-            // Migrate existing rows that were seeded before the new columns existed
-            migrateProductAttributes();
-        }
-        seedAndMigrateCategories();
+        // Run standard migrations on existing products to set their attributes if empty
+        migrateProductAttributes();
+
+        // Seed missing categories, subcategories, and products incrementally
+        seedMissingCategoriesAndProducts();
     }
 
-    /**
-     * Fills brand / color / size / deliveryDays for any product that still has
-     * a null brand (i.e. was seeded before these columns were added).
-     * Uses product IDs 1-60 seeded in the original order.
-     */
     private void migrateProductAttributes() {
         List<Product> all = productRepository.findAll();
         boolean changed = false;
@@ -56,8 +51,6 @@ public class DataInitializer implements CommandLineRunner {
 
     private void applyAttributes(Product p) {
         String title = p.getTitle();
-
-        // ── ELECTRONICS ───────────────────────────────────────────────────────
         if (title.equals("Smart Watch Series 5"))         { p.setBrand("Samsung");    p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Wireless Headphones"))      { p.setBrand("Sony");       p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Bluetooth Speaker"))        { p.setBrand("JBL");        p.setColor("Red");      p.setSize("One Size"); p.setDeliveryDays(3); }
@@ -68,8 +61,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Dual USB Fast Charger"))    { p.setBrand("Anker");      p.setColor("White");    p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Ergonomic Wireless Mouse")) { p.setBrand("Logitech");   p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Mechanical Gaming Keyboard")) { p.setBrand("HyperX");   p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(5); }
-
-        // ── FASHION ───────────────────────────────────────────────────────────
         else if (title.equals("Premium Cotton T-Shirt"))   { p.setBrand("H&M");        p.setColor("White");    p.setSize("M");        p.setDeliveryDays(3); }
         else if (title.equals("Slim Fit Denim Jeans"))     { p.setBrand("Levi's");     p.setColor("Blue");     p.setSize("32");       p.setDeliveryDays(4); }
         else if (title.equals("Classic Leather Jacket"))   { p.setBrand("Zara");       p.setColor("Black");    p.setSize("L");        p.setDeliveryDays(5); }
@@ -80,8 +71,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Ethnic Kurta Set"))         { p.setBrand("Fabindia");   p.setColor("Orange");   p.setSize("M");        p.setDeliveryDays(5); }
         else if (title.equals("Waterproof Windbreaker"))   { p.setBrand("Columbia");   p.setColor("Green");    p.setSize("L");        p.setDeliveryDays(4); }
         else if (title.equals("Designer Silk Scarf"))      { p.setBrand("Louis Philippe"); p.setColor("Red"); p.setSize("One Size"); p.setDeliveryDays(3); }
-
-        // ── HOME & KITCHEN ────────────────────────────────────────────────────
         else if (title.equals("Stainless Steel Cookware Set")) { p.setBrand("Prestige"); p.setColor("Silver"); p.setSize("One Size"); p.setDeliveryDays(5); }
         else if (title.equals("Handcrafted Ceramic Vase"))    { p.setBrand("Ellementry"); p.setColor("White"); p.setSize("One Size"); p.setDeliveryDays(4); }
         else if (title.equals("Premium Non-Stick Pan"))        { p.setBrand("Hawkins");  p.setColor("Black");   p.setSize("One Size"); p.setDeliveryDays(4); }
@@ -92,8 +81,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Glass Water Bottle Set"))       { p.setBrand("Borosil");  p.setColor("Clear");   p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Memory Foam Cushion"))          { p.setBrand("Sleepwell"); p.setColor("Grey");   p.setSize("One Size"); p.setDeliveryDays(4); }
         else if (title.equals("Digital Kitchen Scale"))        { p.setBrand("Pigeon");   p.setColor("White");   p.setSize("One Size"); p.setDeliveryDays(3); }
-
-        // ── BEAUTY ────────────────────────────────────────────────────────────
         else if (title.equals("Luxury Perfume"))           { p.setBrand("Fogg");       p.setColor("Gold");     p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Organic Face Serum"))       { p.setBrand("Mamaearth");  p.setColor("Orange");   p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Hydrating Lip Balm Set"))   { p.setBrand("Biotique");   p.setColor("Pink");     p.setSize("One Size"); p.setDeliveryDays(2); }
@@ -104,8 +91,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Herbal Sunscreen SPF 50"))  { p.setBrand("WOW");        p.setColor("White");    p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Makeup Brush Set"))         { p.setBrand("PAC");        p.setColor("Rose Gold"); p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Essential Lavender Oil"))   { p.setBrand("Khadi");      p.setColor("Purple");   p.setSize("One Size"); p.setDeliveryDays(3); }
-
-        // ── SPORTS ────────────────────────────────────────────────────────────
         else if (title.equals("Running Shoes"))            { p.setBrand("Nike");       p.setColor("White");    p.setSize("8 UK");     p.setDeliveryDays(3); }
         else if (title.equals("Yoga Mat with Strap"))      { p.setBrand("Boldfit");    p.setColor("Purple");   p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Gym Shaker Bottle"))        { p.setBrand("GNC");        p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(2); }
@@ -116,8 +101,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Tennis Balls Pack"))        { p.setBrand("Wilson");     p.setColor("Yellow");   p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Gym Duffel Bag"))           { p.setBrand("Adidas");     p.setColor("Black");    p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Speed Skipping Rope"))      { p.setBrand("Strauss");    p.setColor("Red");      p.setSize("One Size"); p.setDeliveryDays(2); }
-
-        // ── TOYS & BABY ───────────────────────────────────────────────────────
         else if (title.equals("Wooden Educational Blocks")) { p.setBrand("Itsy Bitsy"); p.setColor("Multicolor"); p.setSize("One Size"); p.setDeliveryDays(4); }
         else if (title.equals("Soft Plush Teddy Bear"))    { p.setBrand("Hamleys");    p.setColor("Brown");    p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Baby Teething Toy Set"))    { p.setBrand("Mee Mee");    p.setColor("Pink");     p.setSize("One Size"); p.setDeliveryDays(2); }
@@ -128,7 +111,6 @@ public class DataInitializer implements CommandLineRunner {
         else if (title.equals("Baby Feeding Bottle Set"))  { p.setBrand("Pigeon");     p.setColor("Clear");    p.setSize("One Size"); p.setDeliveryDays(2); }
         else if (title.equals("Stacking Rings Toy"))       { p.setBrand("Funskool");   p.setColor("Multicolor"); p.setSize("One Size"); p.setDeliveryDays(3); }
         else if (title.equals("Floating Bath Toys Set"))   { p.setBrand("Marcus & Marcus"); p.setColor("Multicolor"); p.setSize("One Size"); p.setDeliveryDays(4); }
-        // fallback for any unmatched product
         else {
             p.setBrand("Facile");
             p.setColor("Black");
@@ -137,233 +119,43 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void seedCategoriesAndProducts() {
-        // 1. Seed Categories
-        Category electronics = categoryRepository.save(Category.builder().name("Electronics").description("Smart gadgets and electronics").image("https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250").build());
-        Category fashion = categoryRepository.save(Category.builder().name("Fashion").description("Trending clothes and styles").image("https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250").build());
-        Category homeKitchen = categoryRepository.save(Category.builder().name("Home & Living").description("Beautiful essentials for every room and home decor").image("https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250").build());
-        Category beauty = categoryRepository.save(Category.builder().name("Beauty").description("Cosmetics and perfumes").image("https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250").build());
-        Category sports = categoryRepository.save(Category.builder().name("Sports").description("Sporting goods and shoes").image("https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250").build());
-        Category toysBaby = categoryRepository.save(Category.builder().name("Kids & Baby").description("Toys and baby care products").image("https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250").build());
+    private void seedMissingCategoriesAndProducts() {
+        List<SeedCategory> seedCategories = getSeedCategories();
 
-        // 2. Seed SubCategories
-        SubCategory wearables = subCategoryRepository.save(SubCategory.builder().name("Wearables").category(electronics).build());
-        SubCategory audio = subCategoryRepository.save(SubCategory.builder().name("Audio").category(electronics).build());
-        SubCategory gadgets = subCategoryRepository.save(SubCategory.builder().name("Gadgets").category(electronics).build());
+        for (SeedCategory seedCat : seedCategories) {
+            // Find or create Category
+            Category category = categoryRepository.findByName(seedCat.name)
+                    .orElseGet(() -> categoryRepository.save(Category.builder()
+                            .name(seedCat.name)
+                            .description(seedCat.description)
+                            .image(seedCat.image)
+                            .build()));
 
-        SubCategory apparel = subCategoryRepository.save(SubCategory.builder().name("Apparel").category(fashion).build());
-        SubCategory winterwear = subCategoryRepository.save(SubCategory.builder().name("Winterwear").category(fashion).build());
+            for (SeedSubCategory seedSub : seedCat.subcategories) {
+                // Find or create SubCategory under this Category
+                SubCategory subCategory = subCategoryRepository.findByNameAndCategoryId(seedSub.name, category.getId())
+                        .orElseGet(() -> subCategoryRepository.save(SubCategory.builder()
+                                .name(seedSub.name)
+                                .category(category)
+                                .build()));
 
-        SubCategory cookware = subCategoryRepository.save(SubCategory.builder().name("Cookware").category(homeKitchen).build());
-        SubCategory homeDecor = subCategoryRepository.save(SubCategory.builder().name("Home Decor").category(homeKitchen).build());
-
-        SubCategory skincare = subCategoryRepository.save(SubCategory.builder().name("Skincare").category(beauty).build());
-        SubCategory fragrance = subCategoryRepository.save(SubCategory.builder().name("Fragrance").category(beauty).build());
-
-        SubCategory footwear = subCategoryRepository.save(SubCategory.builder().name("Footwear").category(sports).build());
-        SubCategory fitnessGear = subCategoryRepository.save(SubCategory.builder().name("Fitness Gear").category(sports).build());
-
-        SubCategory babyToys = subCategoryRepository.save(SubCategory.builder().name("Baby Toys").category(toysBaby).build());
-        SubCategory babyCare = subCategoryRepository.save(SubCategory.builder().name("Baby Care").category(toysBaby).build());
-
-        // 3. Seed Products and Inventory (with new attributes)
-
-        // ELECTRONICS (1-10)
-        saveProduct("Smart Watch Series 5", "Smart Watch with Health Tracking, Heart Rate Monitor, and GPS", new BigDecimal("12999.00"), new BigDecimal("8999.00"),
-                "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400", electronics, wearables, 4.5, 128, 50,
-                "Samsung", "Black", "One Size", 2);
-        saveProduct("Wireless Headphones", "High fidelity wireless noise-cancelling headphones", new BigDecimal("8999.00"), new BigDecimal("5999.00"),
-                "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400", electronics, audio, 4.7, 98, 50,
-                "Sony", "Black", "One Size", 2);
-        saveProduct("Bluetooth Speaker", "Portable waterproof outdoor bluetooth speaker", new BigDecimal("4999.00"), new BigDecimal("2499.00"),
-                "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400", electronics, audio, 4.3, 142, 50,
-                "JBL", "Red", "One Size", 3);
-        saveProduct("Smart Fitness Band", "Waterproof fitness band with sleep tracker", new BigDecimal("3499.00"), new BigDecimal("1999.00"),
-                "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?q=80&w=400", electronics, wearables, 4.2, 210, 50,
-                "Mi", "Blue", "One Size", 3);
-        saveProduct("Wireless Earbuds", "True wireless stereo earbuds with active noise cancelation", new BigDecimal("5999.00"), new BigDecimal("2999.00"),
-                "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=400", electronics, audio, 4.6, 325, 50,
-                "boAt", "White", "One Size", 2);
-        saveProduct("Noise Cancelling Headphones", "Over-ear active noise cancelling headphones", new BigDecimal("19999.00"), new BigDecimal("14999.00"),
-                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400", electronics, audio, 4.8, 85, 50,
-                "Bose", "Silver", "One Size", 4);
-        saveProduct("Smart Home Speaker", "Voice controlled smart assistant home speaker", new BigDecimal("7999.00"), new BigDecimal("4499.00"),
-                "https://images.unsplash.com/photo-1543512214-318c7553f230?q=80&w=400", electronics, gadgets, 4.4, 115, 50,
-                "Amazon", "Charcoal", "One Size", 3);
-        saveProduct("Dual USB Fast Charger", "High speed wall charger with dual ports", new BigDecimal("1499.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=400", electronics, gadgets, 4.1, 95, 50,
-                "Anker", "White", "One Size", 2);
-        saveProduct("Ergonomic Wireless Mouse", "Multi-device wireless mouse with ergonomic design", new BigDecimal("2499.00"), new BigDecimal("1299.00"),
-                "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?q=80&w=400", electronics, gadgets, 4.3, 164, 50,
-                "Logitech", "Black", "One Size", 3);
-        saveProduct("Mechanical Gaming Keyboard", "Backlit mechanical keyboard with tactile blue switches", new BigDecimal("6999.00"), new BigDecimal("3999.00"),
-                "https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=400", electronics, gadgets, 4.5, 74, 50,
-                "HyperX", "Black", "One Size", 5);
-
-        // FASHION (11-20)
-        saveProduct("Premium Cotton T-Shirt", "100% organic premium combed cotton tee", new BigDecimal("1499.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=400", fashion, apparel, 4.4, 215, 50,
-                "H&M", "White", "M", 3);
-        saveProduct("Slim Fit Denim Jeans", "Classic dark wash stretchable denim jeans", new BigDecimal("3499.00"), new BigDecimal("1999.00"),
-                "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=400", fashion, apparel, 4.3, 189, 50,
-                "Levi's", "Blue", "32", 4);
-        saveProduct("Classic Leather Jacket", "Genuine vintage leather jacket with zipper pockets", new BigDecimal("7999.00"), new BigDecimal("4999.00"),
-                "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=400", fashion, apparel, 4.7, 54, 50,
-                "Zara", "Black", "L", 5);
-        saveProduct("Summer Floral Dress", "Lightweight breathable A-line summer dress", new BigDecimal("2999.00"), new BigDecimal("1499.00"),
-                "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400", fashion, apparel, 4.5, 112, 50,
-                "Mango", "Multicolor", "S", 3);
-        saveProduct("Casual Cotton Shirt", "Full sleeve button down casual cotton shirt", new BigDecimal("1999.00"), new BigDecimal("999.00"),
-                "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=400", fashion, apparel, 4.2, 147, 50,
-                "Arrow", "Blue", "M", 3);
-        saveProduct("Woolen Winter Sweater", "Warm knit woolen sweater for cold winters", new BigDecimal("3999.00"), new BigDecimal("2499.00"),
-                "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=400", fashion, winterwear, 4.6, 92, 50,
-                "Allen Solly", "Grey", "L", 4);
-        saveProduct("Linen Summer Shorts", "Relaxed fit linen casual summer shorts", new BigDecimal("1499.00"), new BigDecimal("899.00"),
-                "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=400", fashion, apparel, 4.1, 73, 50,
-                "United Colors", "Beige", "M", 3);
-        saveProduct("Ethnic Kurta Set", "Beautiful traditional cotton printed kurta set", new BigDecimal("4999.00"), new BigDecimal("2999.00"),
-                "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=400", fashion, apparel, 4.5, 134, 50,
-                "Fabindia", "Orange", "M", 5);
-        saveProduct("Waterproof Windbreaker", "Sporty lightweight outdoor windbreaker jacket", new BigDecimal("3499.00"), new BigDecimal("2199.00"),
-                "https://images.unsplash.com/photo-1548883354-7622d03aca27?q=80&w=400", fashion, winterwear, 4.3, 62, 50,
-                "Columbia", "Green", "L", 4);
-        saveProduct("Designer Silk Scarf", "Smooth luxurious printed designer silk scarf", new BigDecimal("1999.00"), new BigDecimal("999.00"),
-                "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=400", fashion, apparel, 4.4, 48, 50,
-                "Louis Philippe", "Red", "One Size", 3);
-
-        // HOME & KITCHEN (21-30)
-        saveProduct("Stainless Steel Cookware Set", "Premium 5-piece stainless steel pot and pan set", new BigDecimal("6999.00"), new BigDecimal("4499.00"),
-                "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400", homeKitchen, cookware, 4.6, 178, 50,
-                "Prestige", "Silver", "One Size", 5);
-        saveProduct("Handcrafted Ceramic Vase", "Artisanal glazed ceramic flower vase for home decor", new BigDecimal("1999.00"), new BigDecimal("1199.00"),
-                "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?q=80&w=400", homeKitchen, homeDecor, 4.7, 84, 50,
-                "Ellementry", "White", "One Size", 4);
-        saveProduct("Premium Non-Stick Pan", "Durable induction-compatible non-stick frying pan", new BigDecimal("2499.00"), new BigDecimal("1599.00"),
-                "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?q=80&w=400", homeKitchen, cookware, 4.4, 155, 50,
-                "Hawkins", "Black", "One Size", 4);
-        saveProduct("Spice Rack Organizer", "12-piece rotating glass spice jar kitchen organizer", new BigDecimal("1499.00"), new BigDecimal("899.00"),
-                "https://images.unsplash.com/photo-1595348020949-87cdfbb44174?q=80&w=400", homeKitchen, cookware, 4.3, 119, 50,
-                "Cello", "Clear", "One Size", 3);
-        saveProduct("French Press Coffee Maker", "Double-walled stainless steel french press coffee plunge", new BigDecimal("2999.00"), new BigDecimal("1799.00"),
-                "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?q=80&w=400", homeKitchen, cookware, 4.6, 210, 50,
-                "Bodum", "Black", "One Size", 5);
-        saveProduct("Cotton Cushion Covers", "Set of 4 printed geometric cotton cushion covers", new BigDecimal("999.00"), new BigDecimal("599.00"),
-                "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?q=80&w=400", homeKitchen, homeDecor, 4.2, 94, 50,
-                "Urban Ladder", "Multicolor", "One Size", 3);
-        saveProduct("LED Desk Study Lamp", "Eye-care dimmable desk study lamp with USB port", new BigDecimal("1999.00"), new BigDecimal("999.00"),
-                "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400", homeKitchen, homeDecor, 4.1, 137, 50,
-                "Syska", "White", "One Size", 3);
-        saveProduct("Glass Water Bottle Set", "Set of 6 leakproof borosilicate glass water bottles", new BigDecimal("1299.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=400", homeKitchen, cookware, 4.2, 68, 50,
-                "Borosil", "Clear", "One Size", 2);
-        saveProduct("Memory Foam Cushion", "Ergonomic memory foam seat cushion for office chairs", new BigDecimal("2499.00"), new BigDecimal("1399.00"),
-                "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?q=80&w=400", homeKitchen, homeDecor, 4.4, 122, 50,
-                "Sleepwell", "Grey", "One Size", 4);
-        saveProduct("Digital Kitchen Scale", "High precision slim digital food weighing scale", new BigDecimal("999.00"), new BigDecimal("499.00"),
-                "https://images.unsplash.com/photo-1594756297426-302fb0b25e13?q=80&w=400", homeKitchen, cookware, 4.3, 89, 50,
-                "Pigeon", "White", "One Size", 3);
-
-        // BEAUTY (31-40)
-        saveProduct("Luxury Perfume", "Exquisite long-lasting luxury signature fragrance", new BigDecimal("4999.00"), new BigDecimal("2999.00"),
-                "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400", beauty, fragrance, 4.8, 64, 50,
-                "Fogg", "Gold", "One Size", 3);
-        saveProduct("Organic Face Serum", "Vitamin C and Hyaluronic Acid organic skin serum", new BigDecimal("1999.00"), new BigDecimal("1299.00"),
-                "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=400", beauty, skincare, 4.6, 142, 50,
-                "Mamaearth", "Orange", "One Size", 2);
-        saveProduct("Hydrating Lip Balm Set", "Pack of 3 fruity organic hydrating lip balms", new BigDecimal("999.00"), new BigDecimal("599.00"),
-                "https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=400", beauty, skincare, 4.2, 85, 50,
-                "Biotique", "Pink", "One Size", 2);
-        saveProduct("Charcoal Face Mask Wash", "Deep cleansing activated charcoal face mask wash", new BigDecimal("799.00"), new BigDecimal("449.00"),
-                "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=400", beauty, skincare, 4.1, 108, 50,
-                "Plum", "Black", "One Size", 3);
-        saveProduct("Nourishing Hair Oil", "Herbal cold-pressed nourishing argan hair oil", new BigDecimal("899.00"), new BigDecimal("549.00"),
-                "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=400", beauty, skincare, 4.3, 114, 50,
-                "Kama Ayurveda", "Brown", "One Size", 3);
-        saveProduct("Matte Liquid Lipstick", "Waterproof long-wear velvet matte liquid lipstick", new BigDecimal("1199.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=400", beauty, skincare, 4.5, 96, 50,
-                "Lakme", "Red", "One Size", 2);
-        saveProduct("Vitamin C Moisturizer", "Daily skin brightening Vitamin C face moisturizer", new BigDecimal("1499.00"), new BigDecimal("899.00"),
-                "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=400", beauty, skincare, 4.4, 73, 50,
-                "Dot & Key", "Yellow", "One Size", 3);
-        saveProduct("Herbal Sunscreen SPF 50", "Non-greasy broad spectrum SPF 50 herbal sunscreen", new BigDecimal("699.00"), new BigDecimal("499.00"),
-                "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=400", beauty, skincare, 4.5, 127, 50,
-                "WOW", "White", "One Size", 2);
-        saveProduct("Makeup Brush Set", "10-piece professional synthetic hair makeup brush set", new BigDecimal("2499.00"), new BigDecimal("1499.00"),
-                "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=400", beauty, skincare, 4.3, 58, 50,
-                "PAC", "Rose Gold", "One Size", 3);
-        saveProduct("Essential Lavender Oil", "100% pure steam distilled therapeutic lavender oil", new BigDecimal("599.00"), new BigDecimal("399.00"),
-                "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=400", beauty, fragrance, 4.6, 79, 50,
-                "Khadi", "Purple", "One Size", 3);
-
-        // SPORTS (41-50)
-        saveProduct("Running Shoes", "Lightweight cushioned running shoes for athletes", new BigDecimal("7999.00"), new BigDecimal("4999.00"),
-                "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400", sports, footwear, 4.4, 78, 50,
-                "Nike", "White", "8 UK", 3);
-        saveProduct("Yoga Mat with Strap", "6mm anti-slip durable TPE yoga mat with carry strap", new BigDecimal("1999.00"), new BigDecimal("1199.00"),
-                "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400", sports, fitnessGear, 4.7, 143, 50,
-                "Boldfit", "Purple", "One Size", 3);
-        saveProduct("Gym Shaker Bottle", "Leakproof stainless steel protein gym shaker bottle", new BigDecimal("999.00"), new BigDecimal("599.00"),
-                "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=400", sports, fitnessGear, 4.2, 95, 50,
-                "GNC", "Black", "One Size", 2);
-        saveProduct("Adjustable Dumbbell Set", "10kg adjustable rubber dumbbell pair set for home workout", new BigDecimal("4999.00"), new BigDecimal("2999.00"),
-                "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?q=80&w=400", sports, fitnessGear, 4.5, 114, 50,
-                "Kore", "Black", "One Size", 7);
-        saveProduct("Sports Running Socks", "Pack of 3 breathable athletic sports compression socks", new BigDecimal("799.00"), new BigDecimal("499.00"),
-                "https://images.unsplash.com/photo-1582966772680-860e372bb558?q=80&w=400", sports, footwear, 4.3, 84, 50,
-                "Puma", "White", "Free Size", 2);
-        saveProduct("Compression Knee Sleeve", "Elastic knee support brace sleeve for running and gym", new BigDecimal("999.00"), new BigDecimal("499.00"),
-                "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=400", sports, fitnessGear, 4.1, 76, 50,
-                "Tynor", "Beige", "M", 3);
-        saveProduct("Badminton Racket Pack", "Durable twin badminton rackets pack with carrying cover", new BigDecimal("3499.00"), new BigDecimal("1999.00"),
-                "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=400", sports, fitnessGear, 4.5, 118, 50,
-                "Yonex", "Blue", "One Size", 4);
-        saveProduct("Tennis Balls Pack", "Pack of 3 heavy duty high bouncing tennis balls", new BigDecimal("499.00"), new BigDecimal("299.00"),
-                "https://images.unsplash.com/photo-1592709823125-a191f07a2a5e?q=80&w=400", sports, fitnessGear, 4.4, 59, 50,
-                "Wilson", "Yellow", "One Size", 3);
-        saveProduct("Gym Duffel Bag", "Spacious water resistant gym duffel bag with shoe pocket", new BigDecimal("2499.00"), new BigDecimal("1399.00"),
-                "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400", sports, fitnessGear, 4.6, 92, 50,
-                "Adidas", "Black", "One Size", 3);
-        saveProduct("Speed Skipping Rope", "Premium adjustable tangle-free jump fitness speed rope", new BigDecimal("599.00"), new BigDecimal("349.00"),
-                "https://images.unsplash.com/photo-1447049959918-d5743c95977c?q=80&w=400", sports, fitnessGear, 4.3, 107, 50,
-                "Strauss", "Red", "One Size", 2);
-
-        // TOYS & BABY (51-60)
-        saveProduct("Wooden Educational Blocks", "Organic wooden alphabet and geometric educational blocks", new BigDecimal("1999.00"), new BigDecimal("1299.00"),
-                "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=400", toysBaby, babyToys, 4.7, 115, 50,
-                "Itsy Bitsy", "Multicolor", "One Size", 4);
-        saveProduct("Soft Plush Teddy Bear", "Huggy hypoallergenic non-toxic brown plush teddy bear", new BigDecimal("1299.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1559251606-c623743a6d76?q=80&w=400", toysBaby, babyToys, 4.6, 143, 50,
-                "Hamleys", "Brown", "One Size", 3);
-        saveProduct("Baby Teething Toy Set", "Pack of 4 BPA-free food grade silicone baby teethers", new BigDecimal("799.00"), new BigDecimal("499.00"),
-                "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=400", toysBaby, babyToys, 4.3, 67, 50,
-                "Mee Mee", "Pink", "One Size", 2);
-        saveProduct("Baby Musical Toy", "Interactive musical drum and piano developmental baby toy", new BigDecimal("2499.00"), new BigDecimal("1599.00"),
-                "https://images.unsplash.com/photo-1587654780291-39c9404d746b?q=80&w=400", toysBaby, babyToys, 4.5, 92, 50,
-                "Fisher-Price", "Multicolor", "One Size", 4);
-        saveProduct("Organic Baby Swaddle", "Pack of 2 ultra soft organic cotton baby swaddle blankets", new BigDecimal("1499.00"), new BigDecimal("899.00"),
-                "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=400", toysBaby, babyCare, 4.4, 126, 50,
-                "SuperBottoms", "White", "One Size", 3);
-        saveProduct("Diaper Backpack Bag", "Large waterproof multi-functional baby diaper travel bag", new BigDecimal("5999.00"), new BigDecimal("3999.00"),
-                "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400", toysBaby, babyCare, 4.6, 156, 50,
-                "Luvlap", "Grey", "One Size", 4);
-        saveProduct("Baby Milestone Blanket", "Premium fleece monthly milestone photography blanket", new BigDecimal("1999.00"), new BigDecimal("1099.00"),
-                "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=400", toysBaby, babyCare, 4.5, 51, 50,
-                "Mee Mee", "Pink", "One Size", 3);
-        saveProduct("Baby Feeding Bottle Set", "Pack of 3 anti-colic baby feeding milk bottles", new BigDecimal("1199.00"), new BigDecimal("799.00"),
-                "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=400", toysBaby, babyCare, 4.4, 78, 50,
-                "Pigeon", "Clear", "One Size", 2);
-        saveProduct("Stacking Rings Toy", "Classic colorful developmental stacking rings toddler toy", new BigDecimal("599.00"), new BigDecimal("349.00"),
-                "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", toysBaby, babyToys, 4.3, 102, 50,
-                "Funskool", "Multicolor", "One Size", 3);
-        saveProduct("Floating Bath Toys Set", "Set of 6 floating animal squeeze sound baby bath toys", new BigDecimal("899.00"), new BigDecimal("549.00"),
-                "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=400", toysBaby, babyToys, 4.4, 63, 50,
-                "Marcus & Marcus", "Multicolor", "One Size", 4);
+                // Check if any product exists under this subcategory. If not, seed a sample product
+                List<Product> existingProducts = productRepository.findBySubCategoryId(subCategory.getId());
+                if (existingProducts.isEmpty()) {
+                    SeedProduct pInfo = seedSub.product;
+                    saveProduct(pInfo.title, pInfo.description, pInfo.mrp, pInfo.sellingPrice,
+                            pInfo.image, category, subCategory, 4.5, 42, 50,
+                            pInfo.brand, pInfo.color, pInfo.size, pInfo.deliveryDays);
+                    System.out.println("[DataInitializer] Seeded sample product '" + pInfo.title + 
+                            "' for subcategory '" + seedSub.name + "' under category '" + seedCat.name + "'");
+                }
+            }
+        }
     }
 
     private void saveProduct(String title, String desc, BigDecimal mrp, BigDecimal sellingPrice, String image,
-                             Category cat, SubCategory subCat, double rating, int reviews, int stock,
-                             String brand, String color, String size, int deliveryDays) {
+                              Category cat, SubCategory subCat, double rating, int reviews, int stock,
+                              String brand, String color, String size, int deliveryDays) {
         Product product = Product.builder()
                 .title(title)
                 .description(desc)
@@ -388,58 +180,222 @@ public class DataInitializer implements CommandLineRunner {
         inventoryRepository.save(inventory);
     }
 
-    private void seedAndMigrateCategories() {
-        // 1. Rename "Home & Kitchen" to "Home & Living" if present
-        categoryRepository.findByName("Home & Kitchen").ifPresent(cat -> {
-            cat.setName("Home & Living");
-            cat.setDescription("Beautiful essentials for every room and home decor");
-            cat.setImage("https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250");
-            categoryRepository.save(cat);
-        });
+    private List<SeedCategory> getSeedCategories() {
+        List<SeedCategory> categories = new ArrayList<>();
 
-        // 2. Rename "Toys & Baby" to "Kids & Baby" if present
-        categoryRepository.findByName("Toys & Baby").ifPresent(cat -> {
-            cat.setName("Kids & Baby");
-            cat.setDescription("Toys and baby care products");
-            cat.setImage("https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250");
-            categoryRepository.save(cat);
-        });
+        // 1. Fashion
+        categories.add(new SeedCategory(
+            "Fashion", "Trending clothes and styles", "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Tops & T-Shirts", new SeedProduct("Premium Cotton Tee", "Breathable 100% organic cotton t-shirt for daily comfort", 1499.00, 799.00, "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=400", "H&M", "White", "M", 3)),
+                new SeedSubCategory("Dresses", new SeedProduct("Summer Floral Dress", "Elegant floral printed summer dress with lightweight feel", 2999.00, 1499.00, "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400", "Mango", "Blue", "S", 4)),
+                new SeedSubCategory("Bottom Wear", new SeedProduct("Slim Fit Denim Jeans", "Classic dark wash stretchable slim fit denim jeans", 3499.00, 1999.00, "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=400", "Levi's", "Blue", "32", 3)),
+                new SeedSubCategory("Ethnic Wear", new SeedProduct("Traditional Kurta Set", "Beautiful traditional cotton printed kurta set for festive wear", 4999.00, 2999.00, "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=400", "Fabindia", "Orange", "M", 5)),
+                new SeedSubCategory("Winter Wear", new SeedProduct("Knit Woolen Sweater", "Cozy winter sweater made of premium insulating wool", 3999.00, 2499.00, "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=400", "Allen Solly", "Grey", "XL", 4)),
+                new SeedSubCategory("Activewear", new SeedProduct("Athletic Gym Tights", "High-waist moisture-wicking active compression tights", 2499.00, 1299.00, "https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=400", "Nike", "Black", "M", 3)),
+                new SeedSubCategory("Loungewear", new SeedProduct("Cozy Pyjama Set", "Super soft cotton pyjama and tee nightwear lounge set", 1999.00, 1199.00, "https://images.unsplash.com/photo-1562572159-4ebcd318f4dd?q=80&w=400", "Marks & Spencer", "Pink", "M", 3)),
+                new SeedSubCategory("Co-ord Sets", new SeedProduct("Linen Co-ord Set", "Stylish matching linen top and trousers set for summer", 3999.00, 2199.00, "https://images.unsplash.com/photo-1608748010899-18f300247112?q=80&w=400", "Zara", "Beige", "S", 4))
+            )
+        ));
 
-        // 3. Seed new categories if not present
-        String[][] categoriesInfo = {
-            {"Fashion", "Trending clothes and styles", "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250"},
-            {"Beauty", "Cosmetics and perfumes", "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250"},
-            {"Home & Living", "Beautiful essentials for every room and home decor", "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250"},
-            {"Jewellery & Accessories", "Elegant jewellery and premium accessories", "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250"},
-            {"Footwear", "Stylish footwear for men, women and kids", "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=250"},
-            {"Electronics", "Smart gadgets and electronics", "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250"},
-            {"Stationery", "Notebooks, pens and office essentials", "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=250"},
-            {"Kids & Baby", "Toys and baby care products", "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250"},
-            {"Health & Wellness", "Fitness, vitamins and health care", "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=250"},
-            {"Sports", "Sporting goods and shoes", "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250"},
-            {"Pets", "Supplies and food for your lovely pets", "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250"}
-        };
+        // 2. Jewellery & Accessories
+        categories.add(new SeedCategory(
+            "Jewellery & Accessories", "Elegant jewellery and premium accessories", "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Earrings", new SeedProduct("Silver Hoop Earrings", "Classic sterling silver hoop earrings for daily wear", 1999.00, 999.00, "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=400", "Giva", "Silver", "One Size", 3)),
+                new SeedSubCategory("Necklaces", new SeedProduct("Gold Plated Pendant Necklace", "Minimalist gold plated chain with circular pendant", 2999.00, 1499.00, "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=400", "Caratlane", "Gold", "One Size", 4)),
+                new SeedSubCategory("Bracelets", new SeedProduct("Beaded Charm Bracelet", "Delicate charm bracelet with crystal beads", 1499.00, 799.00, "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=400", "Pandora", "Rose Gold", "One Size", 3)),
+                new SeedSubCategory("Rings", new SeedProduct("Classic Solitaire Ring", "Elegant cubic zirconia solitaire ring in silver", 2499.00, 1199.00, "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=400", "Giva", "Silver", "7", 3)),
+                new SeedSubCategory("Watches", new SeedProduct("Minimalist Leather Watch", "Classic analog watch with brown leather strap", 5999.00, 3499.00, "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=400", "Fossil", "Brown", "One Size", 3)),
+                new SeedSubCategory("Bags", new SeedProduct("Leather Tote Bag", "Spacious genuine leather tote bag with zip closure", 4999.00, 2999.00, "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=400", "Baggit", "Tan", "One Size", 4)),
+                new SeedSubCategory("Hair Accessories", new SeedProduct("Silk Scrunchies Set", "Pack of 5 pure mulberry silk hair scrunchies", 999.00, 499.00, "https://images.unsplash.com/photo-1576243345690-4e4b79b63288?q=80&w=400", "Accessorize", "Pink", "One Size", 2)),
+                new SeedSubCategory("Sunglasses", new SeedProduct("Classic Aviator Sunglasses", "UV protected aviator sunglasses with gold frame", 3999.00, 1999.00, "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400", "Ray-Ban", "Black", "One Size", 3))
+            )
+        ));
 
-        for (String[] info : categoriesInfo) {
-            String name = info[0];
-            String desc = info[1];
-            String img = info[2];
-            if (categoryRepository.findByName(name).isEmpty()) {
-                Category cat = categoryRepository.save(Category.builder()
-                        .name(name)
-                        .description(desc)
-                        .image(img)
-                        .build());
-                // Seed a default subcategory
-                String subName = "General";
-                if (name.equals("Jewellery & Accessories")) subName = "Jewellery";
-                else if (name.equals("Footwear")) subName = "Shoes";
-                else if (name.equals("Stationery")) subName = "Office Supplies";
-                else if (name.equals("Health & Wellness")) subName = "Supplements";
-                else if (name.equals("Pets")) subName = "Pet Food";
-                
-                subCategoryRepository.save(SubCategory.builder().name(subName).category(cat).build());
-            }
+        // 3. Footwear
+        categories.add(new SeedCategory(
+            "Footwear", "Stylish footwear for men, women and kids", "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Sneakers", new SeedProduct("Classic White Sneakers", "Low-top white sneakers with comfortable cushioned sole", 4999.00, 2999.00, "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400", "Puma", "White", "8 UK", 3)),
+                new SeedSubCategory("Flats", new SeedProduct("Comfortable Ballet Flats", "Soft slip-on ballet flats perfect for daily office wear", 1999.00, 999.00, "https://images.unsplash.com/photo-1596702994230-a8859ad8db29?q=80&w=400", "Bata", "Black", "6 UK", 3)),
+                new SeedSubCategory("Heels", new SeedProduct("Elegant Stiletto Heels", "Pointed toe stiletto heels for parties and evening wear", 3999.00, 2299.00, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=400", "Carlton London", "Nude", "7 UK", 4)),
+                new SeedSubCategory("Sandals", new SeedProduct("Strappy Casual Sandals", "Comfortable everyday wear strappy flat sandals", 1499.00, 799.00, "https://images.unsplash.com/photo-1603487265291-7493b8f68224?q=80&w=400", "Crocs", "Tan", "8 UK", 2)),
+                new SeedSubCategory("Boots", new SeedProduct("Ankle Length Leather Boots", "Stylish chelsea ankle boots with block heel", 5999.00, 3499.00, "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?q=80&w=400", "Woodland", "Brown", "9 UK", 5)),
+                new SeedSubCategory("Loafers", new SeedProduct("Classic Suede Loafers", "Slip-on suede leather loafers for a smart-casual look", 3499.00, 1999.00, "https://images.unsplash.com/photo-1533867617858-e7b97e060509?q=80&w=400", "Clarks", "Blue", "8 UK", 4)),
+                new SeedSubCategory("Slippers", new SeedProduct("Orthopedic Soft Slippers", "Orthopedic cushion slippers for active home use", 999.00, 499.00, "https://images.unsplash.com/photo-1603487265291-7493b8f68224?q=80&w=400", "Doctor Extra Soft", "Blue", "7 UK", 3)),
+                new SeedSubCategory("Sports Shoes", new SeedProduct("Pro Running Shoes", "Comfortable and durable sports shoes for active running", 5999.00, 3499.00, "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400", "Nike", "Grey", "8 UK", 3))
+            )
+        ));
+
+        // 4. Electronics
+        categories.add(new SeedCategory(
+            "Electronics", "Smart gadgets and electronics", "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Mobile Accessories", new SeedProduct("Magnetic Phone Mount", "Universal air vent magnetic car phone mount holder", 999.00, 499.00, "https://images.unsplash.com/photo-1586105251261-72a756497a11?q=80&w=400", "Portronics", "Black", "One Size", 2)),
+                new SeedSubCategory("Audio Devices", new SeedProduct("Wireless Bluetooth Earbuds", "Bluetooth 5.3 wireless earbuds with active noise cancelation", 3999.00, 1799.00, "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=400", "boAt", "White", "One Size", 2)),
+                new SeedSubCategory("Smart Watches", new SeedProduct("Smart Fitness Watch", "Smart watch with AMOLED display & bluetooth calling", 7999.00, 3999.00, "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400", "Noise", "Black", "One Size", 3)),
+                new SeedSubCategory("Laptop Accessories", new SeedProduct("Multi-port USB-C Hub", "6-in-1 USB C hub with HDMI port and SD card slot", 2499.00, 1299.00, "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=400", "Anker", "Grey", "One Size", 2)),
+                new SeedSubCategory("Gaming Accessories", new SeedProduct("RGB Gaming Mouse", "Wired gaming mouse with 12000 DPI adjustable sensor", 1999.00, 999.00, "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?q=80&w=400", "Logitech", "Black", "One Size", 3)),
+                new SeedSubCategory("Smart Home Devices", new SeedProduct("Smart Wi-Fi Plug", "16A smart plug with energy monitoring, Alexa compatible", 1999.00, 899.00, "https://images.unsplash.com/photo-1543512214-318c7553f230?q=80&w=400", "Wipro", "White", "One Size", 3)),
+                new SeedSubCategory("Power Banks", new SeedProduct("20000mAh Power Bank", "20W fast charging power bank with triple output ports", 2499.00, 1499.00, "https://images.unsplash.com/photo-1609592424083-d922a91a92e9?q=80&w=400", "Mi", "Blue", "One Size", 2)),
+                new SeedSubCategory("Cables & Chargers", new SeedProduct("Braided USB-C Cable", "Type C to Type C 6ft fast charging braided nylon cable", 699.00, 349.00, "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=400", "Anker", "Black", "6ft", 2))
+            )
+        ));
+
+        // 5. Stationery
+        categories.add(new SeedCategory(
+            "Stationery", "Notebooks, pens and office essentials", "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Notebooks", new SeedProduct("Hardcover Journal", "Premium 120 GSM dotted journal notebook with pocket", 899.00, 499.00, "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=400", "Matrikas", "Black", "A5", 3)),
+                new SeedSubCategory("Pens & Pencils", new SeedProduct("Fine Tip Gel Pens Set", "Pack of 12 black fine tip gel ink pens", 599.00, 299.00, "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?q=80&w=400", "Pilot", "Black", "Pack of 12", 2)),
+                new SeedSubCategory("Art Supplies", new SeedProduct("Water Color Paints Set", "24 vibrant colors watercolor tubes with mixing palette", 1499.00, 899.00, "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=400", "Camel", "Multicolor", "24 Colors", 3)),
+                new SeedSubCategory("Desk Organizers", new SeedProduct("Mesh Desk Organizer", "Multi-functional metal desk pen holder and storage tidy", 999.00, 499.00, "https://images.unsplash.com/photo-1595348020949-87cdfbb44174?q=80&w=400", "Deli", "Black", "One Size", 3)),
+                new SeedSubCategory("Journals", new SeedProduct("Leather Bound Diary", "Vintage handmade leather pocket journal diary book", 1299.00, 699.00, "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=400", "Craftsmen", "Brown", "A6", 4)),
+                new SeedSubCategory("Planners", new SeedProduct("Dated Daily Planner", "A5 size dated daily and weekly goal-setting planner book", 1199.00, 699.00, "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=400", "Neorah", "Teal", "A5", 3)),
+                new SeedSubCategory("Sticky Notes", new SeedProduct("Sticky Notes Pad Set", "Self-adhesive multi-color neon sticky notes pack", 399.00, 199.00, "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=400", "3M Post-it", "Multicolor", "3x3 in", 2)),
+                new SeedSubCategory("Office Supplies", new SeedProduct("Heavy Duty Stapler", "25 sheets capacity desk stapler with staples pack", 499.00, 249.00, "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=400", "Kangaroo", "Grey", "Medium", 3))
+            )
+        ));
+
+        // 6. Kids & Baby
+        categories.add(new SeedCategory(
+            "Kids & Baby", "Toys and baby care products", "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Baby Clothing", new SeedProduct("Cotton Rompers", "Pack of 3 super soft organic cotton snap button rompers", 1499.00, 799.00, "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=400", "Luvlap", "Pastel Prints", "0-3 Months", 3)),
+                new SeedSubCategory("Kids Clothing", new SeedProduct("Casual Tee & Shorts", "Unisex casual cotton printed tee and comfortable denim shorts", 1999.00, 999.00, "https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=400", "FirstCry", "Blue", "4-5 Years", 3)),
+                new SeedSubCategory("Toys", new SeedProduct("Wooden Stacking Blocks", "Safe non-toxic wooden stacking blocks for toddler learning", 1299.00, 699.00, "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=400", "Funskool", "Multicolor", "One Size", 4)),
+                new SeedSubCategory("Baby Care", new SeedProduct("Gentle Baby Wipes", "Pack of 3 gentle water-based unscented baby wipes", 599.00, 349.00, "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=400", "Himalaya", "White", "Pack of 3", 2)),
+                new SeedSubCategory("School Essentials", new SeedProduct("School Backpack", "Lightweight water resistant school bag with multiple compartments", 1999.00, 999.00, "https://images.unsplash.com/photo-1587654780291-39c9404d746b?q=80&w=400", "Skybags", "Red", "Standard", 3)),
+                new SeedSubCategory("Feeding Essentials", new SeedProduct("Silicone Feeding Bottle", "Premium quality silicone nipple feeding bottle 240ml", 799.00, 449.00, "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=400", "Pigeon", "Clear", "240ml", 2)),
+                new SeedSubCategory("Baby Bedding", new SeedProduct("Baby Mosquito Net Bed", "Comfortable soft padded mattress with protective mosquito net", 1499.00, 799.00, "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=400", "Mee Mee", "Pink", "One Size", 3)),
+                new SeedSubCategory("Kids Footwear", new SeedProduct("Kids Light-Up Sneakers", "Slip-resistant velcro closure sneakers with LED lights", 1799.00, 899.00, "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=400", "Liberty", "Red", "10 Kids", 3))
+            )
+        ));
+
+        // 7. Health & Wellness
+        categories.add(new SeedCategory(
+            "Health & Wellness", "Fitness, vitamins and health care", "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Vitamins & Supplements", new SeedProduct("Multivitamin Capsules", "Daily multivitamin with zinc, vitamin C & D3 (60 capsules)", 999.00, 499.00, "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=400", "MuscleBlaze", "Amber", "60 Tablets", 3)),
+                new SeedSubCategory("Fitness Equipment", new SeedProduct("Resistance Bands Set", "Stackable loop exercise bands with handles and door anchor", 1499.00, 799.00, "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=400", "Boldfit", "Multicolor", "5-Piece Set", 3)),
+                new SeedSubCategory("Personal Care", new SeedProduct("Charcoal Hand Wash", "Anti-bacterial organic activated charcoal hand wash liquid", 499.00, 299.00, "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=400", "Dettol", "Black", "500ml", 2)),
+                new SeedSubCategory("Yoga Essentials", new SeedProduct("TPE Yoga Mat", "6mm thick high-density anti-slip yoga mat with carry strap", 1999.00, 1199.00, "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400", "Boldfit", "Purple", "One Size", 3)),
+                new SeedSubCategory("Healthy Snacks", new SeedProduct("Almonds & Berries Mix", "Gluten-free nutrient-dense trail mix dry fruits pack", 799.00, 499.00, "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=400", "True Elements", "Brown", "250g", 2)),
+                new SeedSubCategory("Massagers", new SeedProduct("Handheld Body Massager", "Deep tissue percussion massager with multiple speed settings", 2999.00, 1799.00, "https://images.unsplash.com/photo-1519823551276-6452893fea23?q=80&w=400", "Dr. Trust", "Grey", "One Size", 4)),
+                new SeedSubCategory("Health Monitors", new SeedProduct("Digital BP Monitor", "Fully automatic upper arm BP monitor with large display", 2499.00, 1499.00, "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=400", "Omron", "Grey", "One Size", 3)),
+                new SeedSubCategory("Wellness Kits", new SeedProduct("Immunity Booster Box", "Assorted collection of green teas, organic honey & supplements", 1999.00, 1199.00, "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=400", "Organic India", "Gold", "Standard", 4))
+            )
+        ));
+
+        // 8. Sports
+        categories.add(new SeedCategory(
+            "Sports", "Sporting goods and shoes", "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Cricket", new SeedProduct("Willow Cricket Bat", "Grade-A english willow cricket bat with dynamic rubber grip", 9999.00, 5999.00, "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=400", "SG", "Wood", "Short Handle", 5)),
+                new SeedSubCategory("Football", new SeedProduct("Soccer Football Size 5", "Professional machine-stitched training football size 5", 1499.00, 799.00, "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=400", "Nivia", "Black/White", "5", 3)),
+                new SeedSubCategory("Badminton", new SeedProduct("Graphite Rackets Pair", "High-tension lightweight graphite rackets with 6 shuttles", 3999.00, 2199.00, "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=400", "Yonex", "Blue", "One Size", 3)),
+                new SeedSubCategory("Gym Equipment", new SeedProduct("Dumbbells 20kg Set", "PVC plate dumbbells set with steel rods and locks", 3999.00, 1999.00, "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?q=80&w=400", "Kore", "Black", "20kg Set", 6)),
+                new SeedSubCategory("Cycling", new SeedProduct("Mountain Bicycle 27.5T", "27.5-inch wheel alloy frame mountain bike with suspension", 18999.00, 12999.00, "https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=400", "Hero", "Black", "27.5 T", 7)),
+                new SeedSubCategory("Running Gear", new SeedProduct("Running Waist Pouch", "Waterproof running waist pouch with dual bottle holders", 1299.00, 599.00, "https://images.unsplash.com/photo-1447049959918-d5743c95977c?q=80&w=400", "Decathlon", "Grey", "Adjustable", 3)),
+                new SeedSubCategory("Outdoor Games", new SeedProduct("Wooden Carrom Board", "32-inch carrom board with coins, striker & powder set", 2999.00, 1799.00, "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=80&w=400", "Precise", "Brown", "32-Inch", 5)),
+                new SeedSubCategory("Sports Accessories", new SeedProduct("Tension Resistance Band", "Heavy resistance pull-up assist band for workouts", 899.00, 449.00, "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=400", "Strauss", "Red", "Heavy", 2))
+            )
+        ));
+
+        // 9. Pets
+        categories.add(new SeedCategory(
+            "Pets", "Supplies and food for your lovely pets", "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Dog Supplies", new SeedProduct("Padded Dog Harness", "No-pull outdoor reflective oxford fabric chest harness", 1499.00, 799.00, "https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=400", "Heads Up For Tails", "Red", "L", 3)),
+                new SeedSubCategory("Cat Supplies", new SeedProduct("Hemp Cat Scratching Post", "Durable cat scratching tree post with hanging play ball", 1999.00, 999.00, "https://images.unsplash.com/photo-1545249390-6bdfa286032f?q=80&w=400", "Trixie", "Beige", "Medium", 4)),
+                new SeedSubCategory("Pet Food", new SeedProduct("Dry Dog Kibble", "Chicken and vegetables formula dry food for adult dogs 3kg", 1299.00, 999.00, "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?q=80&w=400", "Royal Canin", "Brown", "3kg", 3)),
+                new SeedSubCategory("Treats", new SeedProduct("Chicken Dog Treats", "Grain-free natural calcium rich dog chew bones", 599.00, 399.00, "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?q=80&w=400", "Pedigree", "Yellow", "150g", 2)),
+                new SeedSubCategory("Toys", new SeedProduct("Squeaky Dog Ball", "Indestructible non-toxic natural rubber treat dispenser ball", 499.00, 299.00, "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?q=80&w=400", "Kong", "Red", "M", 2)),
+                new SeedSubCategory("Grooming", new SeedProduct("Pet Deshedding Tool", "Stainless steel dual-sided undercoat rake for dogs and cats", 999.00, 499.00, "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=400", "Wahl", "Green", "Standard", 3)),
+                new SeedSubCategory("Beds & Mats", new SeedProduct("Memory Foam Pet Bed", "Ultra-soft bolster orthopaedic sleeping bed for large pets", 3999.00, 2299.00, "https://images.unsplash.com/photo-1541599540903-216a46ca1ad0?q=80&w=400", "HUFT", "Grey", "L", 4)),
+                new SeedSubCategory("Bowls & Feeders", new SeedProduct("Double Pet Bowl Set", "Non-spill silicone mat double bowls for food and water", 1199.00, 599.00, "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?q=80&w=400", "SuperDog", "Black", "Medium", 3))
+            )
+        ));
+
+        // 10. Home & Living
+        categories.add(new SeedCategory(
+            "Home & Living", "Beautiful essentials for every room and home decor", "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Home Decor", new SeedProduct("Handcrafted Ceramic Vase", "Minimalist white glazed ceramic flower pot vase", 1999.00, 1199.00, "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?q=80&w=400", "Ellementry", "White", "One Size", 4)),
+                new SeedSubCategory("Kitchen Essentials", new SeedProduct("Knife Set 5-Piece", "5-piece high-carbon stainless steel knife set with wooden block", 2999.00, 1699.00, "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400", "Pigeon", "Silver", "5-Piece Set", 3)),
+                new SeedSubCategory("Dining", new SeedProduct("Porcelain Dinner Set", "18-piece fine ceramic dining plate and bowl collection", 5999.00, 3499.00, "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400", "Clay Craft", "White", "18-Piece", 4)),
+                new SeedSubCategory("Bedding", new SeedProduct("Double Cotton Bedsheet", "Breathable 210 TC floral printed cotton bedsheet with 2 pillowcases", 2499.00, 1299.00, "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?q=80&w=400", "Portico New York", "Blue", "King Size", 3)),
+                new SeedSubCategory("Storage & Organization", new SeedProduct("Wardrobe Organizers 3-Pack", "Set of 3 non-woven fabric underwear and sock dividers", 999.00, 499.00, "https://images.unsplash.com/photo-1595348020949-87cdfbb44174?q=80&w=400", "Kuber Industries", "Grey", "3-Pack", 2)),
+                new SeedSubCategory("Lighting", new SeedProduct("Hanging Pendant Light", "Vintage industrial metallic cage ceiling pendant lamp", 1999.00, 999.00, "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400", "Philips", "Black", "Medium", 3)),
+                new SeedSubCategory("Furniture", new SeedProduct("Wood End Table", "Compact modern bedside lamp table with storage shelf", 7999.00, 4499.00, "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=400", "Urban Ladder", "Brown", "Standard", 6)),
+                new SeedSubCategory("Bath Essentials", new SeedProduct("Bath Towels 2-Pack", "Set of 2 ultra absorbent 600 GSM combed cotton bath towels", 1999.00, 999.00, "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?q=80&w=400", "Spaces", "Blue", "70x140 cm", 3))
+            )
+        ));
+
+        // 11. Beauty
+        categories.add(new SeedCategory(
+            "Beauty", "Cosmetics and perfumes", "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250",
+            Arrays.asList(
+                new SeedSubCategory("Skincare", new SeedProduct("Organic Vitamin C Serum", "Anti-aging glowing skin serum with vitamin C, E & hyaluronic acid", 1499.00, 799.00, "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=400", "Mamaearth", "Orange", "30ml", 2)),
+                new SeedSubCategory("Makeup", new SeedProduct("Matte Liquid Lipstick", "Longwear transfer-proof intense red liquid lipstick", 999.00, 599.00, "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=400", "Lakme", "Red", "One Size", 2)),
+                new SeedSubCategory("Hair Care", new SeedProduct("Argan Oil Hair Mask", "Deep conditioning hair repair mask for dry and damaged hair", 1199.00, 699.00, "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=400", "L'Oreal Professional", "Gold", "200ml", 3)),
+                new SeedSubCategory("Fragrances", new SeedProduct("Luxury Eau De Parfum", "Warm woody and citrusy signature long-lasting fragrance", 4999.00, 2999.00, "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400", "Fogg", "Gold", "100ml", 3)),
+                new SeedSubCategory("Bath & Body", new SeedProduct("Cocoa Body Butter", "Deeply moisturizing cocoa butter cream for dry skin", 899.00, 499.00, "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=400", "The Body Shop", "Brown", "200ml", 3)),
+                new SeedSubCategory("Nail Care", new SeedProduct("Gel Nail Lacquer Set", "Set of 3 long-lasting high shine gel nail polishes", 699.00, 399.00, "https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=400", "Nykaa", "Pink", "Pack of 3", 2)),
+                new SeedSubCategory("Beauty Tools", new SeedProduct("Sonic Facial Cleansing Brush", "Waterproof sonic face massager and pore exfoliator tool", 2499.00, 1499.00, "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=400", "Foreo", "Pink", "One Size", 3)),
+                new SeedSubCategory("Men's Grooming", new SeedProduct("Beard Growth Oil", "Natural oil for beard growth, nourishment, and softness", 599.00, 349.00, "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=400", "The Man Company", "Amber", "50ml", 2))
+            )
+        ));
+
+        return categories;
+    }
+
+    private static class SeedCategory {
+        String name;
+        String description;
+        String image;
+        List<SeedSubCategory> subcategories;
+
+        public SeedCategory(String name, String description, String image, List<SeedSubCategory> subcategories) {
+            this.name = name;
+            this.description = description;
+            this.image = image;
+            this.subcategories = subcategories;
+        }
+    }
+
+    private static class SeedSubCategory {
+        String name;
+        SeedProduct product;
+
+        public SeedSubCategory(String name, SeedProduct product) {
+            this.name = name;
+            this.product = product;
+        }
+    }
+
+    private static class SeedProduct {
+        String title;
+        String description;
+        BigDecimal mrp;
+        BigDecimal sellingPrice;
+        String image;
+        String brand;
+        String color;
+        String size;
+        int deliveryDays;
+
+        public SeedProduct(String title, String description, double mrp, double sellingPrice, String image, String brand, String color, String size, int deliveryDays) {
+            this.title = title;
+            this.description = description;
+            this.mrp = BigDecimal.valueOf(mrp);
+            this.sellingPrice = BigDecimal.valueOf(sellingPrice);
+            this.image = image;
+            this.brand = brand;
+            this.color = color;
+            this.size = size;
+            this.deliveryDays = deliveryDays;
         }
     }
 }

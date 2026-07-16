@@ -20,7 +20,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartService cartService;
 
-    public Order checkout(String userId, String shippingAddress) {
+    public synchronized Order checkout(String userId, String shippingAddress, String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            throw new IllegalArgumentException("Idempotency-Key header is required");
+        }
+        Order existingOrder = orderRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+        if (existingOrder != null) {
+            return existingOrder;
+        }
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            throw new IllegalArgumentException("Shipping address is required");
+        }
+
         Cart cart = cartService.getCartByUserId(userId);
 
         if (cart.getItems().isEmpty()) {
@@ -59,6 +70,7 @@ public class OrderService {
             OrderItem orderItem = new OrderItem(
                     cartItem.getProductId(),
                     cartItem.getProductName(),
+                    cartItem.getImage(),
                     cartItem.getPrice(),
                     cartItem.getQuantity()
             );
@@ -66,6 +78,7 @@ public class OrderService {
         }
 
         Order order = new Order();
+        order.setIdempotencyKey(idempotencyKey);
         order.setUserId(userId);
         order.setItems(orderItems);
         order.setTotalAmount(cart.getTotalAmount());

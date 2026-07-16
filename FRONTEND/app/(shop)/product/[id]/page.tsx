@@ -4,7 +4,9 @@ import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles } from "lucide-react";
+import { recordRecentlyViewed } from "@/lib/recentlyViewed";
+import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
+import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -87,6 +89,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [isSavedForLater, setIsSavedForLater] = useState(false);
 
   const triggerToast = (message: string) => {
     setToastMessage(message);
@@ -121,9 +124,11 @@ export default function ProductDetailPage({ params }: PageProps) {
             reviews: dataProduct.reviews || 50,
             description: dataProduct.description,
             category: dataProduct.category?.name || "Uncategorized",
-            subCategory: dataProduct.subCategory?.name || "General"
+            subCategory: dataProduct.subCategory?.name || "General",
+            maxOrderQuantity: dataProduct.maxOrderQuantity || 10
           };
           setProduct(productDetails);
+          recordRecentlyViewed(productDetails);
           setActiveImage(dataProduct.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
           
           if (dataInventory && typeof dataInventory.stock === "number") {
@@ -135,6 +140,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         // Fallback to local mock data
         const localMock = MOCK_PRODUCTS[productId] || MOCK_PRODUCTS["bs1"];
         setProduct(localMock);
+        recordRecentlyViewed(localMock);
         setActiveImage(localMock.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
       } finally {
         setLoading(false);
@@ -145,12 +151,14 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const handleAddToCart = () => {
     if (!product) return;
+    recordRecentlyViewed(product);
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       brand: "facile Store",
-      image: product.image
+      image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10
     }, quantity);
     triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
   };
@@ -163,10 +171,24 @@ export default function ProductDetailPage({ params }: PageProps) {
       price: product.price,
       brand: "facile Store",
       image: product.image,
+      maxOrderQuantity: product.maxOrderQuantity || 10,
       quantity: quantity
     };
     localStorage.setItem("facile_buynow", JSON.stringify([buyNowItem]));
     router.push("/checkout?buynow=true");
+  };
+
+  const handleSaveForLater = () => {
+    if (!product) return;
+    if (isSavedForLater) {
+      removeSavedProduct(product.id);
+      setIsSavedForLater(false);
+      triggerToast(`${product.name} removed from Saved for Later.`);
+    } else {
+      saveProductForLater({ ...product, brand: "facile Store" });
+      setIsSavedForLater(true);
+      triggerToast(`${product.name} saved for later!`);
+    }
   };
 
   const handleToggleFavorite = () => {
@@ -175,6 +197,11 @@ export default function ProductDetailPage({ params }: PageProps) {
     const isNowFav = !favorites.includes(product.id);
     triggerToast(isNowFav ? `Added ${product.name} to Wishlist! ❤️` : `Removed ${product.name} from Wishlist.`);
   };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsSavedForLater(isProductSaved(productId)), 0);
+    return () => window.clearTimeout(timer);
+  }, [productId]);
 
   if (loading) {
     return (
@@ -201,6 +228,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   }
 
   const isFav = favorites.includes(product.id);
+  const maxAllowedQuantity = Math.max(1, Math.min(stock, product.maxOrderQuantity || 10));
   const discountPercent = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   const galleryImages = product
@@ -427,16 +455,17 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <div className="space-y-3 pt-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-natural uppercase tracking-wider">Quantity:</span>
-                    <select 
-                      value={quantity} 
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      className="h-8.5 px-3 bg-white border border-natural/20 rounded-xl text-xs font-semibold text-[#4A5568] focus:outline-none focus:border-[#4A5568] cursor-pointer"
-                    >
-                      {[...Array(Math.min(10, stock))].map((_, index) => (
-                        <option key={index + 1} value={index + 1}>{index + 1}</option>
-                      ))}
-                    </select>
+                    <div className="flex items-center rounded-full border border-natural/20 bg-white p-1">
+                      <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} disabled={quantity <= 1} className="flex h-7 w-7 items-center justify-center rounded-full text-[#4A5568] hover:bg-natural/10 disabled:opacity-35" aria-label="Decrease quantity">
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-8 text-center text-xs font-bold text-[#4A5568]">{quantity}</span>
+                      <button type="button" onClick={() => setQuantity((current) => Math.min(maxAllowedQuantity, current + 1))} disabled={quantity >= maxAllowedQuantity} className="flex h-7 w-7 items-center justify-center rounded-full text-[#4A5568] hover:bg-natural/10 disabled:opacity-35" aria-label="Increase quantity">
+                        <Plus size={12} />
+                      </button>
+                    </div>
                   </div>
+                  <p className="text-right text-[10px] font-medium text-natural/70">Maximum {maxAllowedQuantity} per order</p>
                   
                   <div className="space-y-2.5">
                     <button
@@ -470,14 +499,16 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
 
               <div className="border-t border-natural/10 pt-3.5">
-                {/* Wishlist Button */}
-                <button
-                  onClick={handleToggleFavorite}
-                  className="w-full h-10 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30"
-                >
-                  <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
-                  {isFav ? "Added to Wishlist" : "Add to Wishlist"}
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={handleToggleFavorite} className="h-10 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                    <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
+                    {isFav ? "Wishlisted" : "Wishlist"}
+                  </button>
+                  <button onClick={handleSaveForLater} className="h-10 border border-natural/25 hover:border-[#E8437F] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                    <Bookmark size={14} className={isSavedForLater ? "fill-[#E8437F] text-[#E8437F]" : "text-[#4A5568]"} />
+                    {isSavedForLater ? "Saved" : "Save for Later"}
+                  </button>
+                </div>
               </div>
 
             </div>

@@ -14,6 +14,7 @@ interface Product {
   category: string;
   subcategory: string;
   stocks: number;
+  maxOrderQuantity: number;
   image: string;
   images: string[];
 }
@@ -28,6 +29,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Ceramics & Pottery",
     subcategory: "Drinkware",
     stocks: 14,
+    maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"]
   },
@@ -40,6 +42,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Home Accents",
     subcategory: "Textiles",
     stocks: 25,
+    maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop"]
   }
@@ -60,17 +63,116 @@ const MOCK_CATEGORIES = [
 ];
 
 const MOCK_SUBCATEGORIES: Record<number, any[]> = {
-  1: [ { id: 1, name: "Wearables" }, { id: 2, name: "Audio" } ],
-  2: [ { id: 6, name: "Apparel" } ],
-  3: [ { id: 7, name: "Kitchenware" } ],
-  4: [ { id: 5, name: "Fragrance" } ],
-  5: [ { id: 4, name: "Footwear" } ],
-  6: [ { id: 3, name: "Baby Toys" } ],
-  7: [ { id: 8, name: "Jewellery" }, { id: 9, name: "Accessories" } ],
-  8: [ { id: 10, name: "Shoes" }, { id: 11, name: "Casual Footwear" } ],
-  9: [ { id: 12, name: "Office Supplies" }, { id: 13, name: "Notebooks & Planners" } ],
-  10: [ { id: 14, name: "Supplements" }, { id: 15, name: "Personal Care" } ],
-  11: [ { id: 16, name: "Pet Food" }, { id: 17, name: "Pet Toys" } ]
+  1: [
+    { id: 101, name: "Mobile Accessories" },
+    { id: 102, name: "Audio Devices" },
+    { id: 103, name: "Smart Watches" },
+    { id: 104, name: "Laptop Accessories" },
+    { id: 105, name: "Gaming Accessories" },
+    { id: 106, name: "Smart Home Devices" },
+    { id: 107, name: "Power Banks" },
+    { id: 108, name: "Cables & Chargers" }
+  ],
+  2: [
+    { id: 201, name: "Tops & T-Shirts" },
+    { id: 202, name: "Dresses" },
+    { id: 203, name: "Bottom Wear" },
+    { id: 204, name: "Ethnic Wear" },
+    { id: 205, name: "Winter Wear" },
+    { id: 206, name: "Activewear" },
+    { id: 207, name: "Loungewear" },
+    { id: 208, name: "Co-ord Sets" }
+  ],
+  3: [
+    { id: 301, name: "Home Decor" },
+    { id: 302, name: "Kitchen Essentials" },
+    { id: 303, name: "Dining" },
+    { id: 304, name: "Bedding" },
+    { id: 305, name: "Storage & Organization" },
+    { id: 306, name: "Lighting" },
+    { id: 307, name: "Furniture" },
+    { id: 308, name: "Bath Essentials" }
+  ],
+  4: [
+    { id: 401, name: "Skincare" },
+    { id: 402, name: "Makeup" },
+    { id: 403, name: "Hair Care" },
+    { id: 404, name: "Fragrances" },
+    { id: 405, name: "Bath & Body" },
+    { id: 406, name: "Nail Care" },
+    { id: 407, name: "Beauty Tools" },
+    { id: 408, name: "Men's Grooming" }
+  ],
+  5: [
+    { id: 501, name: "Cricket" },
+    { id: 502, name: "Football" },
+    { id: 503, name: "Badminton" },
+    { id: 504, name: "Gym Equipment" },
+    { id: 505, name: "Cycling" },
+    { id: 506, name: "Running Gear" },
+    { id: 507, name: "Outdoor Games" },
+    { id: 508, name: "Sports Accessories" }
+  ],
+  6: [
+    { id: 601, name: "Baby Clothing" },
+    { id: 602, name: "Kids Clothing" },
+    { id: 603, name: "Toys" },
+    { id: 604, name: "Baby Care" },
+    { id: 605, name: "School Essentials" },
+    { id: 606, name: "Feeding Essentials" },
+    { id: 607, name: "Baby Bedding" },
+    { id: 608, name: "Kids Footwear" }
+  ],
+  7: [
+    { id: 701, name: "Earrings" },
+    { id: 702, name: "Necklaces" },
+    { id: 703, name: "Bracelets" },
+    { id: 704, name: "Rings" },
+    { id: 705, name: "Watches" },
+    { id: 706, name: "Bags" },
+    { id: 707, name: "Hair Accessories" },
+    { id: 708, name: "Sunglasses" }
+  ],
+  8: [
+    { id: 801, name: "Sneakers" },
+    { id: 802, name: "Flats" },
+    { id: 803, name: "Heels" },
+    { id: 804, name: "Sandals" },
+    { id: 805, name: "Boots" },
+    { id: 806, name: "Loafers" },
+    { id: 807, name: "Slippers" },
+    { id: 808, name: "Sports Shoes" }
+  ],
+  9: [
+    { id: 901, name: "Notebooks" },
+    { id: 902, name: "Pens & Pencils" },
+    { id: 903, name: "Art Supplies" },
+    { id: 904, name: "Desk Organizers" },
+    { id: 905, name: "Journals" },
+    { id: 906, name: "Planners" },
+    { id: 907, name: "Sticky Notes" },
+    { id: 908, name: "Office Supplies" }
+  ],
+  10: [
+    { id: 1001, name: "Vitamins & Supplements" },
+    { id: 1002, name: "Fitness Equipment" },
+    { id: 1003, name: "Personal Care" },
+    { id: 1004, name: "Yoga Essentials" },
+    { id: 1005, name: "Healthy Snacks" },
+    { id: 1006, name: "Massagers" },
+    { id: 1007, name: "Health Monitors" },
+    { id: 1008, name: "Wellness Kits" }
+  ],
+  11: [
+    { id: 1101, name: "Dog Supplies" },
+    { id: 1102, name: "Cat Supplies" },
+    { id: 1103, name: "Pet Food" },
+    { id: 1104, name: "Treats" },
+    { id: 1105, name: "Toys" },
+    { id: 1106, name: "Grooming" },
+    { id: 1107, name: "Beds & Mats" },
+    { id: 1108, name: "Bowls & Feeders" }
+  ]
 };
 
 const CATEGORIES = [
@@ -101,6 +203,7 @@ export default function SellerDashboardPage() {
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>(String(MOCK_SUBCATEGORIES[MOCK_CATEGORIES[0].id][0].id));
   
   const [stocks, setStocks] = useState("");
+  const [maxOrderQuantity, setMaxOrderQuantity] = useState("5");
   const [image, setImage] = useState("");
   
   // Multiple Images State
@@ -126,6 +229,7 @@ export default function SellerDashboardPage() {
           category: p.category?.name || "General",
           subcategory: p.subCategory?.name || "General",
           stocks: 50,
+          maxOrderQuantity: Number(p.maxOrderQuantity || 10),
           image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
           images: [p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"]
         }));
@@ -246,7 +350,7 @@ export default function SellerDashboardPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!title || !description || !mrp || !sellingPrice || !stocks || !selectedCategoryId || !selectedSubCategoryId) {
+    if (!title || !description || !mrp || !sellingPrice || !stocks || !maxOrderQuantity || !selectedCategoryId || !selectedSubCategoryId) {
       setFormError("Please fill out all required fields.");
       return;
     }
@@ -254,6 +358,7 @@ export default function SellerDashboardPage() {
     const mrpNum = parseFloat(mrp);
     const priceNum = parseFloat(sellingPrice);
     const stockNum = parseInt(stocks);
+    const maxOrderQuantityNum = parseInt(maxOrderQuantity);
 
     if (isNaN(mrpNum) || mrpNum <= 0) {
       setFormError("Please enter a valid MRP.");
@@ -271,6 +376,14 @@ export default function SellerDashboardPage() {
       setFormError("Stocks cannot be negative.");
       return;
     }
+    if (isNaN(maxOrderQuantityNum) || maxOrderQuantityNum < 1) {
+      setFormError("Maximum order quantity must be at least 1.");
+      return;
+    }
+    if (stockNum > 0 && maxOrderQuantityNum > stockNum) {
+      setFormError("Maximum order quantity cannot exceed available stock.");
+      return;
+    }
 
     const imageSource = images[0] || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300&auto=format&fit=crop";
 
@@ -280,6 +393,7 @@ export default function SellerDashboardPage() {
       mrp: mrpNum,
       sellingPrice: priceNum,
       image: imageSource,
+      maxOrderQuantity: maxOrderQuantityNum,
       category: {
         id: Number(selectedCategoryId)
       },
@@ -304,6 +418,7 @@ export default function SellerDashboardPage() {
         setMrp("");
         setSellingPrice("");
         setStocks("");
+        setMaxOrderQuantity("5");
         setImages([]);
         setNewImageUrl("");
         
@@ -590,6 +705,24 @@ export default function SellerDashboardPage() {
                 style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                 required
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
+                Max Quantity Per Order <span className="text-apricot">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={stocks ? Math.max(1, Number(stocks)) : undefined}
+                value={maxOrderQuantity}
+                onChange={(e) => setMaxOrderQuantity(e.target.value)}
+                placeholder="5"
+                className="w-full h-10 px-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
+                style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
+                required
+              />
+              <p className="text-[9px] text-natural/70">Maximum units one customer can buy in a single order.</p>
             </div>
 
             {/* Multiple Image Uploader Section */}

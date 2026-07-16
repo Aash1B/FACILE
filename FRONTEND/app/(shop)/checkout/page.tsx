@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -16,31 +16,33 @@ import {
   Info,
   ShieldCheck,
   Plus,
+  Minus,
   Check,
-  Truck
+  Truck,
+  Pencil,
+  Trash2,
+  Star
 } from "lucide-react";
 
-// Mock saved addresses (reused from user profile style)
-const SAVED_ADDRESSES = [
-  {
-    id: 1,
-    label: "Home (Default)",
-    name: "Aashish Bharti",
-    street: "124 Warm Ivory Lane, Sector 4",
-    city: "New Delhi, Delhi",
-    zip: "110001",
-    phone: "+91 98765 43210"
-  },
-  {
-    id: 2,
-    label: "Design Studio",
-    name: "Aashish Bharti",
-    street: "Studio 8B, Fern Creative Hub",
-    city: "Gurugram, Haryana",
-    zip: "122002",
-    phone: "+91 98765 43211"
-  }
-];
+type Address = {
+  id: number;
+  label: string;
+  name: string;
+  street: string;
+  city: string;
+  zip: string;
+  phone: string;
+  isDefault: boolean;
+};
+
+const EMPTY_ADDRESS = {
+  label: "Home",
+  name: "",
+  street: "",
+  city: "",
+  zip: "",
+  phone: ""
+};
 
 // Helper to format currency
 const formatPrice = (amount: number) => {
@@ -70,21 +72,35 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, updateQuantity } = useCart();
   const { user } = useAuth();
 
   // Address State
-  const [selectedAddressId, setSelectedAddressId] = useState<number>(1);
-  const [addresses, setAddresses] = useState(SAVED_ADDRESSES);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [customAddress, setCustomAddress] = useState({
-    label: "Custom",
-    name: "",
-    street: "",
-    city: "",
-    zip: "",
-    phone: ""
-  });
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [addressError, setAddressError] = useState("");
+  const [customAddress, setCustomAddress] = useState(EMPTY_ADDRESS);
+
+  const addressStorageKey = `facile_addresses_${user?.email || "guest"}`;
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(addressStorageKey);
+      const loaded: Address[] = saved ? JSON.parse(saved) : [];
+      setAddresses(loaded);
+      setSelectedAddressId(loaded.find((address) => address.isDefault)?.id ?? loaded[0]?.id ?? null);
+    } catch {
+      setAddresses([]);
+      setSelectedAddressId(null);
+    }
+  }, [addressStorageKey]);
+
+  const saveAddresses = (nextAddresses: Address[]) => {
+    setAddresses(nextAddresses);
+    localStorage.setItem(addressStorageKey, JSON.stringify(nextAddresses));
+  };
 
   // Delivery slot states
   const [selectedDate, setSelectedDate] = useState("Tomorrow, Jul 14");
@@ -92,10 +108,24 @@ export default function CheckoutPage() {
 
   // Payment popup & loading states
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  /**
+   * paymentStatus tracks the full payment lifecycle:
+   *   IDLE         — not yet attempted
+   *   VERIFYING    — waiting for /payments/verify response
+   *   SUCCESS      — signature verified, order confirmed
+   *   CANCELLED    — user closed Razorpay popup
+   *   FAILED       — Razorpay reported a payment failure
+   *   VERIFY_FAILED — Razorpay succeeded but our backend verification failed
+   */
+  const [paymentStatus, setPaymentStatus] = useState<
+    "IDLE" | "VERIFYING" | "SUCCESS" | "CANCELLED" | "FAILED" | "VERIFY_FAILED"
+  >("IDLE");
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const checkoutIdempotencyKey = useRef<string>(crypto.randomUUID());
+  const paymentRequestStarted = useRef(false);
 
   // Mock checkout cart items if empty (so page can be demoed easily)
   const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
@@ -132,7 +162,8 @@ export default function CheckoutPage() {
         price: 8999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
-        quantity: 1
+        quantity: 1,
+        maxOrderQuantity: 5
       },
       {
         id: "bs2",
@@ -140,7 +171,8 @@ export default function CheckoutPage() {
         price: 5999,
         brand: "facile Store",
         image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
-        quantity: 2
+        quantity: 2,
+        maxOrderQuantity: 5
       }
     ];
     setCheckoutItems(mockItems);
@@ -220,21 +252,82 @@ export default function CheckoutPage() {
 
   const handleAddCustomAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    if (customAddress.name && customAddress.street && customAddress.city && customAddress.zip) {
-      const newId = Date.now();
-      const newAddr = { id: newId, ...customAddress };
-      setAddresses([...addresses, newAddr]);
-      setSelectedAddressId(newId);
-      setIsAddingAddress(false);
-      setCustomAddress({
-        label: "Custom",
-        name: "",
-        street: "",
-        city: "",
-        zip: "",
-        phone: ""
-      });
+    const phoneDigits = customAddress.phone.replace(/\D/g, "");
+    if (!customAddress.name.trim() || !customAddress.street.trim() || !customAddress.city.trim()) {
+      setAddressError("Please complete every address field.");
+      return;
     }
+    if (!/^\d{6}$/.test(customAddress.zip.trim())) {
+      setAddressError("Enter a valid 6-digit PIN code.");
+      return;
+    }
+    if (phoneDigits.length < 10 || phoneDigits.length > 13) {
+      setAddressError("Enter a valid phone number.");
+      return;
+    }
+
+    const id = editingAddressId ?? Date.now();
+    const existing = addresses.find((address) => address.id === editingAddressId);
+    const savedAddress: Address = {
+      id,
+      ...customAddress,
+      label: customAddress.label.trim() || "Address",
+      isDefault: existing?.isDefault ?? addresses.length === 0,
+    };
+    const nextAddresses = editingAddressId
+      ? addresses.map((address) => address.id === editingAddressId ? savedAddress : address)
+      : [...addresses, savedAddress];
+
+    saveAddresses(nextAddresses);
+    setSelectedAddressId(id);
+    setEditingAddressId(null);
+    setAddressError("");
+    setIsAddingAddress(false);
+    setCustomAddress(EMPTY_ADDRESS);
+  };
+
+  const handleCheckoutQuantity = (item: any, nextQuantity: number) => {
+    const maxQuantity = item.maxOrderQuantity || 10;
+    const quantity = Math.max(1, Math.min(maxQuantity, nextQuantity));
+    const nextItems = checkoutItems.map((checkoutItem) => checkoutItem.id === item.id ? { ...checkoutItem, quantity } : checkoutItem);
+    setCheckoutItems(nextItems);
+
+    if (new URLSearchParams(window.location.search).get("buynow") === "true") {
+      localStorage.setItem("facile_buynow", JSON.stringify(nextItems));
+    } else {
+      updateQuantity(item.id, quantity);
+    }
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setCustomAddress({
+      label: address.label,
+      name: address.name,
+      street: address.street,
+      city: address.city,
+      zip: address.zip,
+      phone: address.phone,
+    });
+    setEditingAddressId(address.id);
+    setAddressError("");
+    setIsAddingAddress(true);
+  };
+
+  const handleDeleteAddress = (id: number) => {
+    const wasDefault = addresses.find((address) => address.id === id)?.isDefault;
+    let nextAddresses = addresses.filter((address) => address.id !== id);
+    if (wasDefault && nextAddresses.length > 0) {
+      nextAddresses = nextAddresses.map((address, index) => ({ ...address, isDefault: index === 0 }));
+    }
+    saveAddresses(nextAddresses);
+    if (selectedAddressId === id) {
+      setSelectedAddressId(nextAddresses.find((address) => address.isDefault)?.id ?? nextAddresses[0]?.id ?? null);
+    }
+  };
+
+  const handleSetDefaultAddress = (id: number) => {
+    saveAddresses(addresses.map((address) => ({ ...address, isDefault: address.id === id })));
+    setSelectedAddressId(id);
   };
 
   const handleProceedToPay = () => {
@@ -242,25 +335,50 @@ export default function CheckoutPage() {
       alert("Your cart is empty. Please add items to checkout.");
       return;
     }
+    if (!activeAddress) {
+      setAddressError("Add and select a delivery address before continuing.");
+      return;
+    }
     setShowPaymentModal(true);
   };
 
-  const handleCheckoutCompletion = () => {
-    if (localStorage.getItem("facile_buynow")) {
+  const handleCheckoutCompletion = async () => {
+    if (!activeAddress) throw new Error("Please select a delivery address.");
+    const isBuyNow = Boolean(localStorage.getItem("facile_buynow"));
+
+    if (user?.email && !isBuyNow) {
+      const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
+      const orderResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": checkoutIdempotencyKey.current,
+        },
+        body: JSON.stringify({ shippingAddress }),
+      });
+      if (!orderResponse.ok) {
+        throw new Error("Payment succeeded, but the order could not be registered. Please contact support.");
+      }
+    }
+
+    if (isBuyNow) {
       localStorage.removeItem("facile_buynow");
     } else {
-      clearCart();
+      await clearCart();
     }
   };
 
   const handleConfirmPayment = async () => {
+    if (paymentRequestStarted.current) return;
+    paymentRequestStarted.current = true;
+
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
-      // Simulate payment transaction delay
+      // Simulate COD confirmation delay
       setTimeout(() => {
         setIsProcessing(false);
-        setPaymentSuccess(true);
+        setPaymentStatus("SUCCESS");
         handleCheckoutCompletion();
       }, 2000);
       return;
@@ -268,15 +386,14 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     setPaymentError(null);
+    setPaymentStatus("IDLE");
 
     try {
-      // 1. Call Backend to create order
-      const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      // ── Step 1: Create Razorpay order on backend ─────────────────
+      const response = await fetch(
+        `${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`,
+        { method: "POST", headers: { "Content-Type": "application/json" } }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to create Razorpay order (Status: ${response.status})`);
@@ -287,48 +404,98 @@ export default function CheckoutPage() {
         throw new Error("Invalid order data received from the payment server.");
       }
 
-      // 2. Dynamically load Razorpay SDK script
+      // ── Step 2: Load Razorpay SDK ────────────────────────────────
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         throw new Error("Failed to load Razorpay SDK. Please check your internet connection.");
       }
 
-      // 3. Open Razorpay checkout popup
+      // ── Step 3: Open Razorpay checkout popup ─────────────────────
       const options = {
         key: RAZORPAY_KEY_ID,
         amount: orderData.amount, // in paise
         currency: orderData.currency || "INR",
         name: "FACILE",
-        description: `Payment for order of ${checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items`,
+        description: `Payment for order of ${checkoutItems.reduce(
+          (acc: number, item: any) => acc + item.quantity, 0
+        )} items`,
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
         order_id: orderData.id,
-        handler: function (paymentResponse: any) {
-          // Payment successful!
+
+        // ── Step 4: On Razorpay success → verify signature on backend
+        handler: async function (paymentResponse: any) {
           setIsProcessing(false);
-          setPaymentSuccess(true);
-          handleCheckoutCompletion();
+          setIsVerifying(true);
+          setPaymentStatus("VERIFYING");
+
+          try {
+            const verifyRes = await fetch(
+              `${PAYMENT_SERVICE_URL}/payments/verify`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature,
+                  userId: user?.email || null,
+                  amount: totalAmount,
+                  currency: orderData.currency || "INR",
+                }),
+              }
+            );
+
+            if (verifyRes.ok) {
+              // ✅ Verified — payment is genuine
+              setPaymentStatus("SUCCESS");
+              handleCheckoutCompletion();
+            } else {
+              // ❌ Backend rejected the signature
+              const errData = await verifyRes.json().catch(() => ({}));
+              setPaymentStatus("VERIFY_FAILED");
+              setPaymentError(
+                (errData as any).message ||
+                "Payment verification failed. Please contact support."
+              );
+            }
+          } catch (verifyErr: any) {
+            console.error("Payment verification network error:", verifyErr);
+            setPaymentStatus("VERIFY_FAILED");
+            setPaymentError(
+              "Could not reach the verification server. Please contact support."
+            );
+          } finally {
+            setIsVerifying(false);
+          }
         },
+
         prefill: {
           name: activeAddress?.name || "",
           contact: activeAddress?.phone || "",
           email: user?.email || "",
         },
-        theme: {
-          color: "#4A5568", // Brand green (fern)
-        },
+        theme: { color: "#4A5568" },
+
         modal: {
+          // ── Step 5: User closed the Razorpay popup ───────────────
           ondismiss: function () {
             setIsProcessing(false);
-          }
-        }
+            setPaymentStatus("CANCELLED");
+          },
+        },
       };
 
       const razorpayInstance = new (window as any).Razorpay(options);
-      
-      // If payment fails on checkout
+
+      // ── Step 6: Handle Razorpay-reported payment failure ─────────
       razorpayInstance.on("payment.failed", function (res: any) {
-        setPaymentError(res.error.description || "Payment failed. Please try again.");
+        setPaymentStatus("FAILED");
+        setPaymentError(
+          res?.error?.description ||
+          "Payment failed. Please try a different payment method."
+        );
         setIsProcessing(false);
+        paymentRequestStarted.current = false;
       });
 
       razorpayInstance.open();
@@ -337,16 +504,33 @@ export default function CheckoutPage() {
       console.error("Razorpay integration error:", error);
       setPaymentError(error.message || "An unexpected error occurred while processing payment.");
       setIsProcessing(false);
+      paymentRequestStarted.current = false;
     }
   };
 
   // Get active address details
   const activeAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0];
 
-  if (paymentSuccess) {
+  // ── Payment status overlay screens ───────────────────────────────────
+
+  // Verifying — spinner shown while calling /payments/verify
+  if (paymentStatus === "VERIFYING") {
     return (
       <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
-        <div className="max-w-md w-full bg-warm-ivory border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-10 text-center shadow-xl animate-fade-in">
+          <div className="w-20 h-20 rounded-full border-4 border-[#4A5568] border-t-transparent animate-spin mx-auto mb-6" />
+          <h2 className="font-serif text-2xl font-extrabold text-slate-grey mb-2">Verifying Payment</h2>
+          <p className="text-xs text-natural font-medium">Please wait while we confirm your payment securely…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // SUCCESS
+  if (paymentStatus === "SUCCESS") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-apricot via-natural to-fern" />
 
           <div className="w-20 h-20 bg-[#4A5568] text-natural rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-natural">
@@ -354,13 +538,15 @@ export default function CheckoutPage() {
           </div>
 
           <span className="text-[10px] font-extrabold tracking-wider text-apricot uppercase bg-apricot/10 px-3 py-1 rounded-full">
-            Payment Completed
+            Payment Confirmed
           </span>
 
           <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Order Confirmed!</h2>
           <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-6 leading-relaxed">
-            Thank you for shopping with us! Your payment was successful, and your order has been registered under
-            <span className="text-fern font-bold block mt-1 font-mono">FC-{Math.floor(100000 + Math.random() * 900000)}</span>
+            Thank you for shopping with us! Your payment was verified successfully.
+            <span className="text-fern font-bold block mt-1 font-mono">
+              FC-{Math.floor(100000 + Math.random() * 900000)}
+            </span>
           </p>
 
           <div className="bg-natural/40 border border-natural/15 rounded-2xl p-4.5 text-left text-xs text-slate-grey space-y-3 mb-8">
@@ -379,15 +565,144 @@ export default function CheckoutPage() {
           <div className="flex gap-4">
             <button
               onClick={() => router.push("/profile")}
-              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-warm-ivory active:scale-98"
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
             >
               Order History
             </button>
             <button
               onClick={() => router.push("/")}
-              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-natural font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
             >
               Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // CANCELLED — user closed Razorpay popup
+  if (paymentStatus === "CANCELLED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-natural/20 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-natural/30 via-natural to-natural/30" />
+
+          <div className="w-20 h-20 bg-natural/20 border-4 border-natural/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Info size={38} className="text-natural stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-natural uppercase bg-natural/10 px-3 py-1 rounded-full">
+            Payment Cancelled
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Payment Cancelled</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-8 leading-relaxed">
+            You closed the payment window. Your cart is safe — no charges were made.
+            You can try again whenever you&apos;re ready.
+          </p>
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => router.push("/cart")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Back to Cart
+            </button>
+            <button
+              onClick={() => setPaymentStatus("IDLE")}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // FAILED — Razorpay reported a payment failure
+  if (paymentStatus === "FAILED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-red-200 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-300 via-red-400 to-red-300" />
+
+          <div className="w-20 h-20 bg-red-50 border-4 border-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck size={38} className="text-red-400 stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-red-500 uppercase bg-red-50 px-3 py-1 rounded-full">
+            Payment Failed
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Payment Failed</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-3 leading-relaxed">
+            Your payment could not be processed. No amount was charged.
+          </p>
+          {paymentError && (
+            <p className="text-xs text-red-500 font-medium bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 mb-6">
+              {paymentError}
+            </p>
+          )}
+
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => router.push("/cart")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Back to Cart
+            </button>
+            <button
+              onClick={() => { setPaymentStatus("IDLE"); setPaymentError(null); }}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VERIFY_FAILED — payment went through Razorpay but our backend rejected the signature
+  if (paymentStatus === "VERIFY_FAILED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center bg-sand px-4 py-16">
+        <div className="max-w-md w-full bg-[#F4F4F0] border border-amber-200 rounded-[32px] p-8 text-center shadow-xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300" />
+
+          <div className="w-20 h-20 bg-amber-50 border-4 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck size={38} className="text-amber-500 stroke-[2px]" />
+          </div>
+
+          <span className="text-[10px] font-extrabold tracking-wider text-amber-600 uppercase bg-amber-50 px-3 py-1 rounded-full">
+            Verification Failed
+          </span>
+
+          <h2 className="font-serif text-3xl font-extrabold text-slate-grey mt-4 mb-2">Verification Failed</h2>
+          <p className="text-xs text-natural font-medium max-w-sm mx-auto mb-3 leading-relaxed">
+            Your payment was processed by Razorpay but our server could not verify its authenticity.
+            Please contact our support team with your payment ID.
+          </p>
+          {paymentError && (
+            <p className="text-xs text-amber-600 font-medium bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 mb-6">
+              {paymentError}
+            </p>
+          )}
+
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => router.push("/")}
+              className="flex-1 h-11 border border-natural/35 text-slate-grey font-bold text-xs rounded-xl hover:border-[#4A5568] transition-all cursor-pointer bg-[#F4F4F0] active:scale-98"
+            >
+              Go Home
+            </button>
+            <button
+              onClick={() => { setPaymentStatus("IDLE"); setPaymentError(null); }}
+              className="flex-1 h-11 bg-[#4A5568] hover:bg-[#3B4455] text-[#F4F4F0] font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-98 shadow"
+            >
+              Try Again
             </button>
           </div>
         </div>
@@ -426,7 +741,12 @@ export default function CheckoutPage() {
                 </h2>
                 {!isAddingAddress && (
                   <button
-                    onClick={() => setIsAddingAddress(true)}
+                    onClick={() => {
+                      setEditingAddressId(null);
+                      setCustomAddress(EMPTY_ADDRESS);
+                      setAddressError("");
+                      setIsAddingAddress(true);
+                    }}
                     className="text-[11px] font-bold text-[#4A5568] hover:text-[#3B4455] transition-colors flex items-center gap-1 uppercase tracking-wider cursor-pointer"
                   >
                     <Plus size={12} />
@@ -439,14 +759,31 @@ export default function CheckoutPage() {
               {isAddingAddress && (
                 <form onSubmit={handleAddCustomAddress} className="mb-6 p-4.5 bg-natural/15 border border-natural/20 rounded-2xl space-y-4 animate-fade-in">
                   <div className="flex justify-between items-center mb-1 border-b border-natural/10 pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-natural">Add custom shipping address</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-natural">{editingAddressId ? "Edit shipping address" : "Add shipping address"}</h3>
                     <button
                       type="button"
-                      onClick={() => setIsAddingAddress(false)}
+                      onClick={() => {
+                        setIsAddingAddress(false);
+                        setEditingAddressId(null);
+                        setAddressError("");
+                        setCustomAddress(EMPTY_ADDRESS);
+                      }}
                       className="text-[10px] font-bold text-natural/70 hover:text-apricot uppercase tracking-wider cursor-pointer"
                     >
                       Cancel
                     </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-natural">Address Label</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Home, Office, Studio..."
+                      value={customAddress.label}
+                      onChange={(e) => setCustomAddress({ ...customAddress, label: e.target.value })}
+                      className="w-full h-9 px-3 bg-warm-ivory border border-natural/25 focus:border-fern text-xs font-medium text-fern rounded-xl focus:outline-none"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -511,23 +848,34 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {addressError && <p className="text-[10px] font-bold text-red-600">{addressError}</p>}
                   <button
                     type="submit"
                     className="w-full h-9.5 bg-[#4A5568] hover:bg-[#3B4455] text-white text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-[0.98] shadow-sm"
                   >
-                    Confirm Custom Address
+                    {editingAddressId ? "Save Address Changes" : "Save Address"}
                   </button>
                 </form>
               )}
 
               {/* Address Selection Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {addresses.length === 0 && !isAddingAddress && (
+                  <div className="sm:col-span-2 rounded-2xl border border-dashed border-[#4A5568]/30 bg-[#F4F4F0]/70 p-6 text-center">
+                    <MapPin size={24} className="mx-auto mb-2 text-[#4A5568]/60" />
+                    <p className="text-xs font-bold text-[#4A5568]">No delivery address saved</p>
+                    <p className="mt-1 text-[10px] text-natural">Add an address to continue to payment.</p>
+                  </div>
+                )}
                 {addresses.map((addr) => {
                   const isSelected = selectedAddressId === addr.id;
                   return (
                     <div
                       key={addr.id}
-                      onClick={() => setSelectedAddressId(addr.id)}
+                      onClick={() => {
+                        setSelectedAddressId(addr.id);
+                        setAddressError("");
+                      }}
                       className={`border p-4.5 rounded-2xl cursor-pointer relative transition-all duration-300 flex flex-col justify-between ${isSelected
                         ? "border-[#4A5568] bg-[#F4F4F0] shadow-md text-black"
                         : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] shadow-xs text-fern/90"
@@ -537,7 +885,7 @@ export default function CheckoutPage() {
                         <div className="flex justify-between items-center">
                           <span className={`px-2.5 py-0.5 font-bold text-[9px] uppercase tracking-wider rounded-full text-black ${isSelected ? "bg-white border border-black/10 shadow-xs" : "bg-black/5 border border-black/5"
                             }`}>
-                            {addr.label}
+                            {addr.label}{addr.isDefault ? " (Default)" : ""}
                           </span>
                           {isSelected && (
                             <div className="w-4 h-4 bg-[#4A5568] rounded-full flex items-center justify-center text-white shadow-sm">
@@ -554,6 +902,19 @@ export default function CheckoutPage() {
 
                       <div className={`border-t mt-3 pt-2 text-[10px] font-bold uppercase ${isSelected ? "border-black/10 text-black" : "border-fern/10 text-fern/80"}`}>
                         Phone: {addr.phone}
+                      </div>
+                      <div className="mt-3 flex items-center gap-3 border-t border-black/10 pt-2">
+                        {!addr.isDefault && (
+                          <button type="button" onClick={(event) => { event.stopPropagation(); handleSetDefaultAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                            <Star size={11} /> Default
+                          </button>
+                        )}
+                        <button type="button" onClick={(event) => { event.stopPropagation(); handleEditAddress(addr); }} className="ml-auto flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                          <Pencil size={11} /> Edit
+                        </button>
+                        <button type="button" onClick={(event) => { event.stopPropagation(); handleDeleteAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-red-600 hover:text-red-700">
+                          <Trash2 size={11} /> Delete
+                        </button>
                       </div>
                     </div>
                   );
@@ -665,7 +1026,16 @@ export default function CheckoutPage() {
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
                           <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
-                          <span className="text-[10px] font-bold text-natural mt-1 block">Qty: {item.quantity}</span>
+                          <div className="mt-2 flex items-center gap-1 rounded-full border border-natural/20 bg-[#F4F4F0] p-0.5 w-fit">
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Decrease ${item.name} quantity`}>
+                              <Minus size={10} />
+                            </button>
+                            <span className="w-6 text-center text-[10px] font-bold text-[#4A5568]">{item.quantity}</span>
+                            <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity + 1)} disabled={item.quantity >= (item.maxOrderQuantity || 10)} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Increase ${item.name} quantity`}>
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                          <span className="mt-1 block text-[9px] text-natural/70">Max {item.maxOrderQuantity || 10}</span>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -805,9 +1175,9 @@ export default function CheckoutPage() {
             <div className="flex justify-center items-center gap-2 opacity-95 py-2 text-[10px] font-bold text-natural uppercase tracking-wider select-none">
               <span>Powered by</span>
               <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center shadow-xs">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" 
-                  alt="Razorpay" 
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg"
+                  alt="Razorpay"
                   className="h-4 object-contain"
                 />
               </div>

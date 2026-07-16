@@ -67,7 +67,7 @@ export default function CartDrawer() {
               {/* Cart Items List */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="py-10 flex flex-col items-center justify-center text-center space-y-4">
                     <div className="p-4 bg-[#4A5568]/10 rounded-full text-[#4A5568]/70">
                       <ShoppingBag size={32} />
                     </div>
@@ -103,11 +103,7 @@ export default function CartDrawer() {
 
                       {/* Quantity Controls */}
                       <div className="flex flex-col items-end gap-2">
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors"
-                          aria-label="Remove item"
-                        >
+                        <button onClick={() => removeFromCart(item.id)} className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors" aria-label="Remove item">
                           <Trash2 size={14} />
                         </button>
                         
@@ -132,6 +128,7 @@ export default function CartDrawer() {
                     </div>
                   ))
                 )}
+
               </div>
 
               {/* Checkout Sticky Panel */}
