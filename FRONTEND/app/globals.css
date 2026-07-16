@@ -11,9 +11,9 @@
   --color-warm-ivory: #FAF3E3;   /* Warm Ivory: Primary background, light surfaces */
   --color-apricot:    #E8437F;   /* Apricot: Accents, highlights, call-to-actions */
   --color-natural:    #4A5568;   /* Natural: Secondary text, borders, neutral elements */
-  --color-sand:       #FAF3E3;
+  --color-sand:       #F4F4F0;
   --color-azul:       #DDE0F0;   /* Azul: Very light blue-grey alternative */
-  --color-custom-bg:  #FAF3E3;   /* Custom Background: Global page background */
+  --color-custom-bg:  #F4F4F0;   /* Custom Background: Global page background */
 
   /* Background / Foreground */
   --color-background: var(--color-custom-bg);
@@ -75,13 +75,13 @@ body {
    CSS-variable overrides don't affect generated utility classes.
    We use explicit CSS rules here to force the correct colors. */
 .auth-palette {
-  background-color: #faf3e3 !important;
+  background-color: #F4F4F0 !important;
   --color-apricot: #4A5568 !important;
 }
 
 /* Right-side form panel background */
 .auth-palette > div:last-child {
-  background-color: #faf3e3;
+  background-color: #F4F4F0;
 }
 
 /* Input, textarea, & select boxes — override backgrounds and focus behaviors */
@@ -148,7 +148,7 @@ body {
 
 /* Divider "or continue with" span bg */
 .auth-palette span[class*="bg-warm"] {
-  background-color: #faf3e3 !important;
+  background-color: #F4F4F0 !important;
 }
 
 /* Explicit utility classes for the auth palette extra colors */

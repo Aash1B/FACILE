@@ -15,7 +15,7 @@ export default function AuthLayout({
   return (
     <div
       className="auth-palette min-h-screen flex font-sans"
-      style={{ backgroundColor: '#faf3e3', color: '#4a5568' }}
+      style={{ backgroundColor: '#F4F4F0', color: '#4a5568' }}
     >
       {/* Split Pane: Left Side (Banner, Desktop only) */}
       <div className="hidden lg:flex lg:w-1/2 relative items-end p-16 overflow-hidden" style={{ backgroundColor: '#ced2ee' }}>
@@ -69,7 +69,7 @@ export default function AuthLayout({
       {/* Split Pane: Right Side (Form Container) */}
       <div
         className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 md:p-16 relative"
-        style={{ backgroundColor: '#faf3e3' }}
+        style={{ backgroundColor: '#F4F4F0' }}
       >
         {/* Top bar with back-to-store link */}
         <div className="flex items-center justify-between">

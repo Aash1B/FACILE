@@ -529,8 +529,8 @@ export default function CheckoutPage() {
                       key={addr.id}
                       onClick={() => setSelectedAddressId(addr.id)}
                       className={`border p-4.5 rounded-2xl cursor-pointer relative transition-all duration-300 flex flex-col justify-between ${isSelected
-                        ? "border-[#4A5568] bg-warm-ivory shadow-md text-black"
-                        : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory shadow-xs text-fern/90"
+                        ? "border-[#4A5568] bg-[#F4F4F0] shadow-md text-black"
+                        : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] shadow-xs text-fern/90"
                         }`}
                     >
                       <div className="space-y-2">
@@ -585,8 +585,8 @@ export default function CheckoutPage() {
                           key={d.value}
                           onClick={() => setSelectedDate(d.value)}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all ${isSelected
-                            ? "border-[#4A5568] bg-warm-ivory font-bold shadow-xs text-black"
-                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-fern/80"
+                            ? "border-[#4A5568] bg-[#F4F4F0] font-bold shadow-xs text-black"
+                            : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] text-fern/80"
                             }`}
                         >
                           <p className="text-[10px] font-bold uppercase tracking-wider opacity-85 leading-none">{d.label}</p>
@@ -616,8 +616,8 @@ export default function CheckoutPage() {
                           key={slot}
                           onClick={() => setSelectedTimeSlot(slot)}
                           className={`p-3 border rounded-xl text-center text-xs cursor-pointer transition-all font-semibold ${isSelected
-                            ? "border-[#4A5568] bg-warm-ivory font-bold shadow-xs text-black"
-                            : "border-natural/20 hover:border-natural/40 bg-warm-ivory/80 hover:bg-warm-ivory text-fern/80"
+                            ? "border-[#4A5568] bg-[#F4F4F0] font-bold shadow-xs text-black"
+                            : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] text-fern/80"
                             }`}
                         >
                           {slot}
@@ -758,7 +758,7 @@ export default function CheckoutPage() {
                             if (voucherSuccess) setVoucherSuccess("");
                           }}
                           placeholder="e.g. WELCOME10"
-                          className="flex-1 h-9 px-3 text-xs font-medium rounded-xl border bg-warm-ivory outline-none focus:border-fern text-black placeholder-stone-400"
+                          className="flex-1 h-9 px-3 text-xs font-medium rounded-xl border bg-[#F4F4F0] outline-none focus:border-fern text-black placeholder-stone-400"
                           style={{ borderColor: 'rgba(74,85,104,0.2)' }}
                         />
                         <button

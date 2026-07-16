@@ -112,8 +112,16 @@ const BADGES = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   return (
+<<<<<<< HEAD
+    <main className="min-h-screen bg-[#F4F4F0] text-[#4a556a] pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-8">
+          <ArrowLeft size={15} /> Back to home
+        </Link>
+=======
     <main className="min-h-screen bg-[#FAF3E3] text-[#4a556a] pb-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+>>>>>>> 5665a108df49036c6781996a9e07342e5ef3980d
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-[11px] text-[#4a556a]/50 font-medium mb-6">

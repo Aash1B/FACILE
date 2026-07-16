@@ -274,7 +274,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="bg-[#FAF3E3] text-fern font-sans min-h-screen relative pb-16">
+    <div className="bg-[#F4F4F0] text-fern font-sans min-h-screen relative pb-16">
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -296,11 +296,11 @@ function HomeContent() {
           />
 
           {/* Mobile Overlay: Blend image with #FAF3E3 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF3E3] via-[#FAF3E3] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
           {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
           <div
             className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
-            style={{ background: 'linear-gradient(to right, #FAF3E3 0%, #FAF3E3 42%, transparent 52%)' }}
+            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
           />
 
           {/* Hero Content Area */}
@@ -502,12 +502,12 @@ function HomeContent() {
             return (
               <div
                 key={product.id}
-                className="group bg-warm-ivory hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-[#F4F4F0] hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Wishlist Button */}
                 <button
                   onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-warm-ivory/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
                   aria-label="Add to wishlist"
                 >
                   <Heart
@@ -571,7 +571,7 @@ function HomeContent() {
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="group bg-[#FAF3E3] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
+        <div className="group bg-[#F4F4F0] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
 
           {/* Shimmer overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-[-100%] group-hover:translate-x-[100%] ease-in-out" style={{ transition: 'opacity 0.4s ease, transform 0.8s ease' }} />

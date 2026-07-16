@@ -765,7 +765,7 @@ function SearchContent() {
   };
 
   return (
-    <div className="bg-[#FAF3E3] min-h-screen relative pb-16">
+    <div className="bg-[#F4F4F0] min-h-screen relative pb-16">
 
       {/* Toast */}
       {toastMessage && (

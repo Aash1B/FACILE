@@ -172,7 +172,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="bg-[#FAF3E3] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24">
+    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#4a556a] text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">

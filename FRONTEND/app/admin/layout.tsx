@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, BarChart3, Users, Settings, LogOut, Activity, Wifi } from "lucide-react";
+import { ArrowLeft, BarChart3, Users, Settings, LogOut, ShieldAlert, Activity, Wifi } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminLayout({
@@ -13,8 +13,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
-  const displayName = user?.name || "Guest Admin";
+  const { user, isLoading, logout } = useAuth();
   
   const isLoginPage = pathname === "/admin/login";
 
@@ -23,9 +22,40 @@ export default function AdminLayout({
     router.push("/admin/login");
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#FAF6EE', color: '#4A5568' }}>
+        <div className="w-10 h-10 border-4 rounded-full animate-spin mb-4" style={{ borderColor: '#4A5568', borderTopColor: 'transparent' }} />
+        <span className="text-xs font-bold tracking-widest uppercase opacity-75">Verifying admin credentials...</span>
+      </div>
+    );
+  }
+
   // Admin login page has its own layout wrapped by the parent
   if (isLoginPage) {
     return <>{children}</>;
+  }
+
+  if (!user || user.role !== "ADMIN") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: '#FAF6EE', color: '#4A5568' }}>
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-red-500/10 text-red-600">
+          <ShieldAlert size={32} />
+        </div>
+        <h1 className="font-serif text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-xs text-natural max-w-sm mb-6 leading-relaxed">
+          The page you are trying to view is restricted to company administrators. Please sign in with an administrator account.
+        </p>
+        <div className="flex gap-4">
+          <Link href="/admin/login" className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm" style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}>
+            Go to Admin Login
+          </Link>
+          <Link href="/" className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl border transition-all flex items-center justify-center cursor-pointer" style={{ borderColor: 'rgba(74,85,104,0.3)', color: '#4A5568' }}>
+            Back to Shop
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   // Dashboard sidebar layout
@@ -88,10 +118,10 @@ export default function AdminLayout({
         <div className="space-y-4">
           <div className="flex items-center gap-3 px-3 py-2 rounded-2xl border bg-white/40" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase text-[#F4E6C7]" style={{ backgroundColor: '#4A5568' }}>
-              {displayName.charAt(0)}
+              {user.name.charAt(0)}
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-fern truncate leading-none mb-0.5">{displayName}</p>
+              <p className="text-xs font-bold text-fern truncate leading-none mb-0.5">{user.name}</p>
               <span className="text-[9px] font-semibold text-natural uppercase tracking-wider">Super Admin</span>
             </div>
           </div>

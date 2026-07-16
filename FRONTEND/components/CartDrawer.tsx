@@ -31,7 +31,7 @@ export default function CartDrawer() {
 
       <div className="absolute inset-y-0 right-0 pl-0 sm:pl-10 max-w-full flex">
         {/* Drawer Panel */}
-        <div className="w-screen max-w-md bg-[#FAF3E3] text-fern flex flex-col shadow-2xl border-l border-natural/20 animate-slide-in relative">
+        <div className="w-screen max-w-md bg-[#F4F4F0] text-fern flex flex-col shadow-2xl border-l border-natural/20 animate-slide-in relative">
           
           {/* Header */}
           <div className="px-6 py-5 border-b border-natural/20 flex items-center justify-between">
@@ -50,7 +50,7 @@ export default function CartDrawer() {
 
           {/* Checkout Success Screen overlay */}
           {checkoutSuccess ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#FAF3E3] animate-fade-in z-20">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F4F4F0] animate-fade-in z-20">
               <div className="w-16 h-16 bg-fern text-warm-ivory rounded-full flex items-center justify-center mb-6 shadow-md">
                 <CheckCircle2 size={36} className="text-apricot stroke-[2px]" />
               </div>
