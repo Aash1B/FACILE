@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
+  getRecentlyViewed,
+  recordRecentlyViewed,
+  RECENT_PRODUCTS_CHANGED,
+  type RecentProduct,
+} from "@/lib/recentlyViewed";
+import {
   Heart,
   ShoppingCart,
   Star,
@@ -197,6 +203,7 @@ function HomeContent() {
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
 
   const scrollCategoriesLeft = () => {
@@ -209,6 +216,18 @@ function HomeContent() {
     const categoryIndex = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
     return { category: CATEGORIES[categoryIndex], isActive: slot === 3 };
   });
+
+  useEffect(() => {
+    const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
+    const initialLoad = window.setTimeout(loadRecentProducts, 0);
+    window.addEventListener(RECENT_PRODUCTS_CHANGED, loadRecentProducts);
+    window.addEventListener("storage", loadRecentProducts);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.removeEventListener(RECENT_PRODUCTS_CHANGED, loadRecentProducts);
+      window.removeEventListener("storage", loadRecentProducts);
+    };
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -262,7 +281,16 @@ function HomeContent() {
       brand: "facile Store",
       image: product.image
     });
+    recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
+  };
+
+  const handleAddRecentToCart = (product: RecentProduct, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image });
+    recordRecentlyViewed(product);
+    triggerToast(`Added ${product.name} to your bag!`);
   };
 
   const handleToggleFavorite = (id: string, name: string, e: React.MouseEvent) => {
@@ -567,6 +595,45 @@ function HomeContent() {
           })}
         </div>
       </section>
+
+      {recentProducts.length > 0 && (
+        <section id="recently-viewed" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
+            <p className="mt-1 text-xs text-natural/60 font-medium">Pick up where you left off.</p>
+          </div>
+          <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
+            {recentProducts.map((product) => (
+              <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
+                <Link href={`/product/${product.id}`} className="block">
+                  <div className="aspect-square overflow-hidden bg-neutral-100/50">
+                    <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="space-y-2 p-4">
+                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{product.name}</h3>
+                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>{product.rating ?? 4.5}</span>
+                      {product.reviews != null && <span>({product.reviews})</span>}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-extrabold text-[#4a556a]">â‚¹{product.price.toLocaleString("en-IN")}</span>
+                      {product.originalPrice != null && product.originalPrice > product.price && (
+                        <span className="text-[10px] font-medium text-natural line-through">â‚¹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+                <div className="px-4 pb-4">
+                  <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#4a556a] text-[11px] font-bold text-warm-ivory shadow-sm">
+                    <ShoppingCart size={12} className="stroke-[2.5px]" /> Add to Cart
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 5. Special Offer Banner */}
       <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

@@ -21,6 +21,10 @@ public class OrderService {
     private final CartService cartService;
 
     public Order checkout(String userId, String shippingAddress) {
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            throw new IllegalArgumentException("Shipping address is required");
+        }
+
         Cart cart = cartService.getCartByUserId(userId);
 
         if (cart.getItems().isEmpty()) {
