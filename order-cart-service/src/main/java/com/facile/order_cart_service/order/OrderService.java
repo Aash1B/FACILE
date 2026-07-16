@@ -59,6 +59,7 @@ public class OrderService {
             OrderItem orderItem = new OrderItem(
                     cartItem.getProductId(),
                     cartItem.getProductName(),
+                    cartItem.getImage(),
                     cartItem.getPrice(),
                     cartItem.getQuantity()
             );

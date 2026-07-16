@@ -13,6 +13,8 @@ public class OrderItem {
 
     private String productName;
 
+    private String image;
+
     private double price;
 
     private int quantity;

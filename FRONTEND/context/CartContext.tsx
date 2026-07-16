@@ -57,6 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     body: JSON.stringify({
                       productId: localItem.id,
                       productName: localItem.name,
+                      image: localItem.image,
                       price: localItem.price,
                       quantity: localItem.quantity,
                     }),
@@ -70,6 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     body: JSON.stringify({
                       productId: localItem.id,
                       productName: localItem.name,
+                      image: localItem.image,
                       price: localItem.price,
                       quantity: diff,
                     }),
@@ -86,13 +88,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           if (finalRes.ok) {
             const finalCart = await finalRes.json();
             // Map backend cart structure back to frontend CartItem
-            const mappedCart: CartItem[] = finalCart.items.map((i: any) => ({
-              id: i.productId,
-              name: i.productName,
-              price: i.price,
-              brand: "Facile",
-              image: i.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300", // mock image path
-              quantity: i.quantity,
+            const mappedCart: CartItem[] = await Promise.all(finalCart.items.map(async (i: any) => {
+              let image = i.image;
+              if (!image) {
+                const numericProductId = String(i.productId).replace(/\D+/g, "");
+                if (numericProductId) {
+                  try {
+                    const productRes = await fetch(`/api/products/${numericProductId}`);
+                    if (productRes.ok) image = (await productRes.json()).image;
+                  } catch {
+                    // Use the fallback below only when product lookup fails.
+                  }
+                }
+              }
+
+              return {
+                id: i.productId,
+                name: i.productName,
+                price: i.price,
+                brand: "Facile",
+                image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
+                quantity: i.quantity,
+              };
             }));
             setCart(mappedCart);
           }
@@ -157,6 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({
             productId: item.id,
             productName: item.name,
+            image: item.image,
             price: item.price,
             quantity: quantityToAdd,
           }),
@@ -220,6 +238,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               productId: id,
               productName: currentItem.name,
+              image: currentItem.image,
               price: currentItem.price,
               quantity: qty - oldQty,
             }),
@@ -235,6 +254,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               productId: id,
               productName: currentItem.name,
+              image: currentItem.image,
               price: currentItem.price,
               quantity: qty,
             }),

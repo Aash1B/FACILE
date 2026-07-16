@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
@@ -197,18 +197,18 @@ function HomeContent() {
   const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
 
-  const categoryScrollRef = useRef<HTMLDivElement>(null);
   const scrollCategoriesLeft = () => {
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
-    }
+    setActiveCategoryIndex((current) => (current - 1 + CATEGORIES.length) % CATEGORIES.length);
   };
   const scrollCategoriesRight = () => {
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
-    }
+    setActiveCategoryIndex((current) => (current + 1) % CATEGORIES.length);
   };
+  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
+    const categoryIndex = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
+    return { category: CATEGORIES[categoryIndex], isActive: slot === 3 };
+  });
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -405,13 +405,6 @@ function HomeContent() {
             <p className="text-xs text-natural/60 font-medium">Explore our curated collection of quality items.</p>
           </div>
           <div className="flex items-center gap-4 self-end sm:self-auto">
-            <Link
-              href="/categories"
-              className="text-xs font-bold text-[#4a556a] hover:text-apricot transition-all flex items-center gap-1.5 cursor-pointer mr-2"
-            >
-              View All Categories
-              <ArrowRight size={12} />
-            </Link>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -433,30 +426,36 @@ function HomeContent() {
           </div>
         </div>
 
-        <div
-          ref={categoryScrollRef}
-          className="flex overflow-x-auto gap-6 no-scrollbar pb-4 select-none scroll-smooth"
-        >
-          {CATEGORIES.map((category) => {
+        <div className="flex items-center overflow-x-auto lg:justify-center gap-3 no-scrollbar py-3 select-none">
+          {visibleCategories.map(({ category, isActive }) => {
             return (
               <Link
                 key={category.id}
                 href={`/category/${category.id.replace("c", "")}`}
-                className="flex flex-col items-center gap-4 group rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
+                className="flex w-40 h-60 flex-col items-center justify-center gap-4 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
               >
-                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_24px_rgba(74,85,104,0.45)] ${category.bgColor}`}>
+                <div className={`${isActive ? "w-44 h-44 sm:w-48 sm:h-48 shadow-[0_12px_32px_rgba(74,85,104,0.3)] ring-2 ring-[#E8437F]/35" : "w-32 h-32 sm:w-36 sm:h-36 shadow-sm ring-1 ring-white/70"} aspect-square shrink-0 rounded-full overflow-hidden flex items-center justify-center ${category.bgColor}`}>
                   <img
                     src={category.image}
                     alt={category.label}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-bold text-[#4a556a] group-hover:text-[#1A202C] transition-colors text-center">
+                <span className={`text-sm font-bold text-center ${isActive ? "text-[#E8437F]" : "text-[#4a556a]"}`}>
                   {category.label}
                 </span>
               </Link>
             );
           })}
+        </div>
+        <div className="mt-5 flex justify-center">
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-2 rounded-full bg-[#E8437F] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#d93670] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8437F] focus-visible:ring-offset-2"
+          >
+            View All Categories
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 

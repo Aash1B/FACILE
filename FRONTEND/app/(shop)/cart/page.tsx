@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface CartItem {
   productId: string;
   productName: string;
+  image?: string;
   price: number;
   quantity: number;
 }
@@ -43,7 +44,12 @@ export default function CartPage() {
               key={item.productId}
               className="flex justify-between border-b pb-2"
             >
-              <span>
+              <img
+                src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
+                alt={item.productName}
+                className="mr-3 h-14 w-14 flex-shrink-0 rounded-xl object-cover"
+              />
+              <span className="mr-auto">
                 {item.productName} × {item.quantity}
               </span>
               <span>₹{item.price * item.quantity}</span>
