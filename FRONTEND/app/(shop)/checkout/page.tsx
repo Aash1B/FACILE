@@ -375,24 +375,16 @@ export default function CheckoutPage() {
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
-<<<<<<< HEAD
-      // Simulate COD confirmation delay
-      setTimeout(() => {
-        setIsProcessing(false);
-        setPaymentStatus("SUCCESS");
-        handleCheckoutCompletion();
-=======
       setTimeout(async () => {
         try {
           await handleCheckoutCompletion();
-          setPaymentSuccess(true);
+          setPaymentStatus("SUCCESS");
         } catch (error) {
           setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
           paymentRequestStarted.current = false;
         } finally {
           setIsProcessing(false);
         }
->>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
       }, 2000);
       return;
     }
@@ -434,7 +426,6 @@ export default function CheckoutPage() {
         )} items`,
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
         order_id: orderData.id,
-<<<<<<< HEAD
 
         // ── Step 4: On Razorpay success → verify signature on backend
         handler: async function (paymentResponse: any) {
@@ -461,8 +452,8 @@ export default function CheckoutPage() {
 
             if (verifyRes.ok) {
               // ✅ Verified — payment is genuine
+              await handleCheckoutCompletion();
               setPaymentStatus("SUCCESS");
-              handleCheckoutCompletion();
             } else {
               // ❌ Backend rejected the signature
               const errData = await verifyRes.json().catch(() => ({}));
@@ -478,19 +469,9 @@ export default function CheckoutPage() {
             setPaymentError(
               "Could not reach the verification server. Please contact support."
             );
-          } finally {
-            setIsVerifying(false);
-=======
-        handler: async function (paymentResponse: any) {
-          try {
-            await handleCheckoutCompletion();
-            setPaymentSuccess(true);
-          } catch (error) {
-            setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
             paymentRequestStarted.current = false;
           } finally {
-            setIsProcessing(false);
->>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
+            setIsVerifying(false);
           }
         },
 
@@ -505,15 +486,10 @@ export default function CheckoutPage() {
           // ── Step 5: User closed the Razorpay popup ───────────────
           ondismiss: function () {
             setIsProcessing(false);
-<<<<<<< HEAD
             setPaymentStatus("CANCELLED");
+            paymentRequestStarted.current = false;
           },
         },
-=======
-            paymentRequestStarted.current = false;
-          }
-        }
->>>>>>> 4dade1f1e757f8486a051fc44bf0caa2cc382454
       };
 
       const razorpayInstance = new (window as any).Razorpay(options);

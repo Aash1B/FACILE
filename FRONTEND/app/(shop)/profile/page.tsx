@@ -102,6 +102,7 @@ function ProfileContent() {
   }, [activeTab, user]);
 
   const fetchPaymentHistory = async () => {
+    if (!user?.email) return;
     setIsLoadingPayments(true);
     try {
       const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";

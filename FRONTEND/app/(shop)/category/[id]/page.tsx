@@ -65,7 +65,7 @@ const CARD_STYLES = [
   { surface: "from-[#eadfcf] to-[#fff8ec]", icon: "bg-[#A58E74]", accent: "bg-[#d9c3a6]" },
 ];
 
-export const FALLBACK_PRODUCTS_MAP: Record<string, Record<string, any>> = {
+const FALLBACK_PRODUCTS_MAP: Record<string, Record<string, any>> = {
   "1": {
     "Mobile Accessories": { id: 101, title: "Magnetic Phone Mount", brand: "Portronics", sellingPrice: 499, mrp: 999, rating: 4.2, reviews: 35, image: "https://images.unsplash.com/photo-1586105251261-72a756497a11?q=80&w=400", description: "Universal air vent magnetic car phone mount holder", color: "Black", deliveryDays: 2 },
     "Audio Devices": { id: 102, title: "Wireless Bluetooth Earbuds", brand: "boAt", sellingPrice: 1799, mrp: 3999, rating: 4.6, reviews: 142, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=400", description: "Bluetooth 5.3 wireless earbuds with active noise cancelation", color: "White", deliveryDays: 3 },

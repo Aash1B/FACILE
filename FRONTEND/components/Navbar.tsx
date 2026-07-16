@@ -27,13 +27,23 @@ import {
   HelpCircle
 } from "lucide-react";
 
-const SUBCATEGORIES: Record<string, string[]> = {
-  "Jewelry & Accessories": ["Necklaces", "Earrings", "Rings", "Bracelets", "Watches"],
-  "Home Decor": ["Candles", "Wall Art", "Cushions", "Rugs", "Planters"],
-  "Ceramics & Pottery": ["Mugs", "Bowls", "Vases", "Plates", "Figurines"],
-  "Beauty & Skincare": ["Face Care", "Body Care", "Hair Care", "Serums", "Natural Oils"],
-  "Bags & Wallets": ["Tote Bags", "Clutches", "Backpacks", "Wallets", "Sling Bags"],
+type StoreCategory = {
+  id: number | string;
+  name: string;
 };
+
+type StoreSubcategory = {
+  id: number | string;
+  name: string;
+};
+
+// Shown while the category service is unavailable, keeping navigation useful locally.
+const FALLBACK_CATEGORIES: StoreCategory[] = [
+  { id: 2, name: "Fashion" }, { id: 4, name: "Beauty" }, { id: 3, name: "Home & Living" },
+  { id: 7, name: "Jewellery & Accessories" }, { id: 8, name: "Footwear" }, { id: 1, name: "Electronics" },
+  { id: 9, name: "Stationery" }, { id: 6, name: "Kids & Baby" }, { id: 10, name: "Health & Wellness" },
+  { id: 5, name: "Sports" }, { id: 11, name: "Pets" },
+];
 
 // Fallback products for search suggestions when backend is unavailable
 const FALLBACK_PRODUCTS = [
@@ -84,6 +94,21 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (!response.ok) return;
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) setCategories(data);
+      } catch {
+        // Keep the local fallback when the category service is offline.
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     function handleClickOutsideSearch(event: MouseEvent) {
       const target = event.target as Node;
       if (
@@ -122,7 +147,10 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavHeartFilled, setIsNavHeartFilled] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<StoreCategory[]>(FALLBACK_CATEGORIES);
+  const [activeCategory, setActiveCategory] = useState<StoreCategory | null>(null);
+  const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, StoreSubcategory[]>>({});
+  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   // Prevent SSR/client hydration mismatch: badge counts come from localStorage
@@ -142,6 +170,7 @@ export default function Navbar() {
         mobileButtonRef.current && !mobileButtonRef.current.contains(target)
       ) {
         setIsDropdownOpen(false);
+        setActiveCategory(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -149,6 +178,35 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const openCategory = async (category: StoreCategory) => {
+    if (activeCategory?.id === category.id) {
+      return;
+    }
+
+    setActiveCategory(category);
+    const categoryKey = String(category.id);
+    if (subcategoriesByCategory[categoryKey]) return;
+
+    setIsLoadingSubcategories(true);
+    try {
+      const response = await fetch(`/api/categories/${category.id}/subcategories`);
+      const data = response.ok ? await response.json() : [];
+      setSubcategoriesByCategory((current) => ({
+        ...current,
+        [categoryKey]: Array.isArray(data) ? data : [],
+      }));
+    } catch {
+      setSubcategoriesByCategory((current) => ({ ...current, [categoryKey]: [] }));
+    } finally {
+      setIsLoadingSubcategories(false);
+    }
+  };
+
+  const closeCategoryMenu = () => {
+    setIsDropdownOpen(false);
+    setActiveCategory(null);
+  };
 
   const totalCartItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalFavorites = favorites.length;
@@ -292,7 +350,12 @@ export default function Navbar() {
                 <div className="relative">
                   <button
                     ref={buttonRef}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    onClick={() => {
+                      setIsDropdownOpen((open) => {
+                        if (open) setActiveCategory(null);
+                        return !open;
+                      });
+                    }}
                     className="flex items-center gap-1 px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
@@ -439,7 +502,12 @@ export default function Navbar() {
                 <div className="relative flex-shrink-0">
                   <button
                     ref={mobileButtonRef}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    onClick={() => {
+                      setIsDropdownOpen((open) => {
+                        if (open) setActiveCategory(null);
+                        return !open;
+                      });
+                    }}
                     className="flex items-center gap-1 px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
@@ -496,48 +564,56 @@ export default function Navbar() {
             {/* Dropdown Overlay — main list + wide sub-panel */}
             <div
               ref={dropdownRef}
-              className={`absolute left-4 sm:left-6 lg:left-8 top-full mt-1 flex transition-all duration-200 z-50 ${isDropdownOpen
+              className={`absolute left-4 sm:left-6 lg:left-8 top-full mt-1 flex flex-col md:flex-row transition-all duration-200 z-50 ${isDropdownOpen
                 ? "opacity-100 visible translate-y-0"
                 : "opacity-0 invisible -translate-y-2 pointer-events-none"
                 }`}
               onMouseLeave={() => setActiveCategory(null)}
             >
               {/* Left — Main Categories (narrow, original style) */}
-              <div className="w-52 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-black font-medium flex-shrink-0">
-                {Object.keys(SUBCATEGORIES).map((cat) => (
+              <div className="w-[calc(100vw-2rem)] max-w-72 md:w-56 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-black font-medium flex-shrink-0 max-h-[calc(100vh-10rem)] overflow-y-auto">
+                {categories.map((category) => (
                   <button
-                    key={cat}
-                    onMouseEnter={() => setActiveCategory(cat)}
-                    onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors text-left ${activeCategory === cat
+                    key={category.id}
+                    onMouseEnter={() => openCategory(category)}
+                    onFocus={() => openCategory(category)}
+                    onClick={() => openCategory(category)}
+                    aria-expanded={activeCategory?.id === category.id}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors text-left ${activeCategory?.id === category.id
                       ? "bg-warm-ivory text-apricot"
                       : "hover:bg-warm-ivory hover:text-apricot"
                       }`}
                   >
-                    <span>{cat}</span>
+                    <span>{category.name}</span>
                     <ChevronRight size={13} className="opacity-50 flex-shrink-0" />
                   </button>
                 ))}
               </div>
 
               {/* Right — Sub-categories (wider panel) */}
-              {activeCategory && SUBCATEGORIES[activeCategory] && (
-                <div className="w-72 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-black font-medium ml-1">
+              {activeCategory && (
+                <div className="w-[calc(100vw-2rem)] max-w-80 md:w-72 bg-white border border-natural/20 rounded-xl shadow-lg py-1 text-xs text-black font-medium mt-1 md:mt-0 md:ml-1 max-h-[calc(100vh-10rem)] overflow-y-auto">
                   <p className="px-4 py-2 text-[10px] font-bold text-apricot uppercase tracking-wider border-b border-natural/10">
-                    {activeCategory}
+                    {activeCategory.name}
                   </p>
-                  <div className="grid grid-cols-2 gap-x-2 px-3 py-2">
-                    {SUBCATEGORIES[activeCategory].map((sub) => (
-                      <a
-                        key={sub}
-                        href="#categories"
-                        onClick={() => { setIsDropdownOpen(false); setActiveCategory(null); }}
-                        className="block px-2 py-2 hover:bg-warm-ivory hover:text-apricot rounded-lg transition-colors"
-                      >
-                        {sub}
-                      </a>
-                    ))}
-                  </div>
+                  {isLoadingSubcategories ? (
+                    <p className="px-4 py-4 text-natural/60">Loading subcategories...</p>
+                  ) : (subcategoriesByCategory[String(activeCategory.id)]?.length ?? 0) > 0 ? (
+                    <div className="grid grid-cols-2 gap-x-2 px-3 py-2">
+                      {subcategoriesByCategory[String(activeCategory.id)].map((subcategory) => (
+                        <Link
+                          key={subcategory.id}
+                          href={`/category/${activeCategory.id}?subcategory=${subcategory.id}`}
+                          onClick={closeCategoryMenu}
+                          className="block px-2 py-2 hover:bg-warm-ivory hover:text-apricot rounded-lg transition-colors"
+                        >
+                          {subcategory.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="px-4 py-4 text-natural/60">No subcategories available.</p>
+                  )}
                 </div>
               )}
             </div>

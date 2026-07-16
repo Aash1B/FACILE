@@ -5,14 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
-import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
-<<<<<<< HEAD
-import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark } from "lucide-react";
-import { FALLBACK_PRODUCTS_MAP } from "../../category/[id]/page";
-import { FALLBACK_PRODUCTS } from "../../search/page";
-=======
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
->>>>>>> 9c8e89dca303217a2b74a9ecf9ba937c8caa52ba
+import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
+import { FALLBACK_PRODUCTS } from "../../search/page";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -117,33 +112,6 @@ export default function ProductDetailPage({ params }: PageProps) {
             category: p.category,
             subCategory: p.brand || ""
           };
-        }
-      });
-    }
-
-    // Add from category page fallback products map
-    if (FALLBACK_PRODUCTS_MAP) {
-      Object.keys(FALLBACK_PRODUCTS_MAP).forEach((catId) => {
-        const subMap = FALLBACK_PRODUCTS_MAP[catId];
-        if (subMap) {
-          Object.keys(subMap).forEach((subName) => {
-            const p = subMap[subName];
-            if (p && p.id) {
-              const key = "bs" + p.id;
-              map[key] = {
-                id: key,
-                name: p.title,
-                price: p.sellingPrice,
-                originalPrice: p.mrp,
-                image: p.image,
-                rating: p.rating,
-                reviews: p.reviews,
-                description: p.description,
-                category: catId === "1" ? "Electronics" : catId === "2" ? "Fashion" : catId === "3" ? "Home & Living" : catId === "4" ? "Beauty" : catId === "5" ? "Sports" : catId === "6" ? "Kids & Baby" : catId === "7" ? "Jewellery & Accessories" : catId === "8" ? "Footwear" : catId === "9" ? "Stationery" : catId === "10" ? "Health & Wellness" : "Pets",
-                subCategory: subName
-              };
-            }
-          });
         }
       });
     }
