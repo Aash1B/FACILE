@@ -8,11 +8,16 @@
  * This happens when someone extracts a zip that creates a folder inside itself.
  */
 
-const { execSync, spawn } = require("child_process");
+const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
-const JAVA_HOME = process.env.JAVA_HOME || "C:\\Program Files\\Java\\jdk-21.0.11";
+const javaHome = process.env.JAVA_HOME;
+if (!javaHome || !fs.existsSync(path.join(javaHome, "bin", "java.exe"))) {
+  console.error("[inventory] JAVA_HOME must point to an installed JDK.");
+  console.error("[inventory] Current value:", javaHome || "(not set)");
+  process.exit(1);
+}
 
 // Detect which structure exists
 const nestedPath = path.resolve("product-inventory-service", "product-inventory-service");
@@ -37,7 +42,7 @@ const mvn = spawn("mvnw.cmd", ["spring-boot:run"], {
   cwd: serviceDir,
   stdio: "inherit",
   shell: true,
-  env: { ...process.env, JAVA_HOME },
+  env: process.env,
 });
 
 mvn.on("close", (code) => {
