@@ -1,12 +1,14 @@
 "use client";
 
-import React, { use, useState, useEffect } from "react";
+import React, { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark } from "lucide-react";
+import { FALLBACK_PRODUCTS_MAP } from "../../category/[id]/page";
+import { FALLBACK_PRODUCTS } from "../../search/page";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -91,6 +93,60 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [quantity, setQuantity] = useState<number>(1);
   const [isSavedForLater, setIsSavedForLater] = useState(false);
 
+  // Dynamically compile all mock products across the app to support detail pages for all categories
+  const allMockProducts = useMemo(() => {
+    const map: Record<string, any> = { ...MOCK_PRODUCTS };
+    
+    // Add from search page fallback products
+    if (Array.isArray(FALLBACK_PRODUCTS)) {
+      FALLBACK_PRODUCTS.forEach((p) => {
+        if (p.id) {
+          map[p.id] = {
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            image: p.image,
+            rating: p.rating,
+            reviews: p.reviews,
+            description: p.description,
+            category: p.category,
+            subCategory: p.brand || ""
+          };
+        }
+      });
+    }
+
+    // Add from category page fallback products map
+    if (FALLBACK_PRODUCTS_MAP) {
+      Object.keys(FALLBACK_PRODUCTS_MAP).forEach((catId) => {
+        const subMap = FALLBACK_PRODUCTS_MAP[catId];
+        if (subMap) {
+          Object.keys(subMap).forEach((subName) => {
+            const p = subMap[subName];
+            if (p && p.id) {
+              const key = "bs" + p.id;
+              map[key] = {
+                id: key,
+                name: p.title,
+                price: p.sellingPrice,
+                originalPrice: p.mrp,
+                image: p.image,
+                rating: p.rating,
+                reviews: p.reviews,
+                description: p.description,
+                category: catId === "1" ? "Electronics" : catId === "2" ? "Fashion" : catId === "3" ? "Home & Living" : catId === "4" ? "Beauty" : catId === "5" ? "Sports" : catId === "6" ? "Kids & Baby" : catId === "7" ? "Jewellery & Accessories" : catId === "8" ? "Footwear" : catId === "9" ? "Stationery" : catId === "10" ? "Health & Wellness" : "Pets",
+                subCategory: subName
+              };
+            }
+          });
+        }
+      });
+    }
+
+    return map;
+  }, []);
+
   const triggerToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
@@ -137,10 +193,10 @@ export default function ProductDetailPage({ params }: PageProps) {
       } catch (err) {
         console.warn("Using fallback local data due to error: ", err);
         // Fallback to local mock data
-        const localMock = MOCK_PRODUCTS[productId] || MOCK_PRODUCTS["bs1"];
+        const localMock = allMockProducts[productId] || allMockProducts["bs1"];
         setProduct(localMock);
         recordRecentlyViewed(localMock);
-        setActiveImage(localMock.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
+        setActiveImage(localMock?.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300");
       } finally {
         setLoading(false);
       }

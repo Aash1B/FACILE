@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
@@ -205,17 +205,34 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const scrollCategoriesLeft = () => {
-    setActiveCategoryIndex((current) => (current - 1 + CATEGORIES.length) % CATEGORIES.length);
+    setActiveCategoryIndex((current) => Math.max(0, current - 1));
   };
   const scrollCategoriesRight = () => {
-    setActiveCategoryIndex((current) => (current + 1) % CATEGORIES.length);
+    setActiveCategoryIndex((current) => Math.min(CATEGORIES.length - 1, current + 1));
   };
-  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
-    const categoryIndex = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
-    return { category: CATEGORIES[categoryIndex], isActive: slot === 3 };
-  });
+
+  useEffect(() => {
+    if (carouselRef.current) {
+      const activeEl = carouselRef.current.querySelector(".active-category") as HTMLElement;
+      if (activeEl) {
+        const container = carouselRef.current;
+        const containerWidth = container.clientWidth;
+        const activeWidth = activeEl.clientWidth;
+        const activeLeft = activeEl.offsetLeft;
+
+        // Calculate target scrollLeft to center the active category item
+        const targetScrollLeft = activeLeft - (containerWidth / 2) + (activeWidth / 2);
+
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [activeCategoryIndex]);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -425,70 +442,79 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* 3. Shop by Categories */}
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Shop by Categories</h2>
-            <p className="text-xs text-natural/60 font-medium">Explore our curated collection of quality items.</p>
-          </div>
-          <div className="flex items-center gap-4 self-end sm:self-auto">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={scrollCategoriesLeft}
-                aria-label="Scroll categories left"
-                className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white active:scale-95 transition-all cursor-pointer"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={scrollCategoriesRight}
-                aria-label="Scroll categories right"
-                className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white active:scale-95 transition-all cursor-pointer"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
           </div>
         </div>
 
-        <div className="flex items-center overflow-x-auto lg:justify-center gap-3 no-scrollbar py-3 select-none">
-          {visibleCategories.map(({ category, isActive }) => {
-            return (
-              <Link
-                key={category.id}
-                href={`/category/${category.id.replace("c", "")}`}
-                className="flex w-40 h-60 flex-col items-center justify-center gap-4 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0"
-              >
-                <div className={`${isActive ? "w-44 h-44 sm:w-48 sm:h-48 shadow-[0_12px_32px_rgba(74,85,104,0.3)] ring-2 ring-[#E8437F]/35" : "w-32 h-32 sm:w-36 sm:h-36 shadow-sm ring-1 ring-white/70"} aspect-square shrink-0 rounded-full overflow-hidden flex items-center justify-center ${category.bgColor}`}>
-                  <img
-                    src={category.image}
-                    alt={category.label}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className={`text-sm font-bold text-center ${isActive ? "text-[#E8437F]" : "text-[#4a556a]"}`}>
-                  {category.label}
-                </span>
-              </Link>
-            );
-          })}
+        <div className="relative">
+          {/* Left Arrow Button */}
+          {activeCategoryIndex > 0 && (
+            <button
+              type="button"
+              onClick={scrollCategoriesLeft}
+              aria-label="Scroll categories left"
+              className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+
+          {/* Categories Carousel */}
+          <div
+            ref={carouselRef}
+            className="flex items-center overflow-x-auto justify-start gap-2 sm:gap-3 no-scrollbar pt-3 pb-5 px-12 sm:px-16 select-none"
+          >
+            {CATEGORIES.map((category, index) => {
+              const isActive = index === activeCategoryIndex;
+              return (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.id.replace("c", "")}`}
+                  className={`flex w-52 sm:w-56 flex-col items-center justify-start pt-1 gap-3 rounded-[36px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0 ${isActive ? "active-category" : ""}`}
+                >
+                  <div className={`${isActive ? "w-56 h-56 sm:w-60 sm:h-60 shadow-[0_16px_40px_rgba(74,85,104,0.35)] ring-4 ring-[#E8437F]/30 scale-105" : "w-48 h-48 sm:w-52 sm:h-52 shadow-sm ring-1 ring-white/70 hover:scale-[1.02]"} aspect-square shrink-0 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 ${category.bgColor}`}>
+                    <img
+                      src={category.image}
+                      alt={category.label}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className={`text-sm sm:text-base font-extrabold text-center transition-colors duration-300 ${isActive ? "text-[#E8437F]" : "text-[#4a556a] hover:text-[#1A202C]"}`}>
+                    {category.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Right Arrow Button */}
+          {activeCategoryIndex < CATEGORIES.length - 1 && (
+            <button
+              type="button"
+              onClick={scrollCategoriesRight}
+              aria-label="Scroll categories right"
+              className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
+            >
+              <ChevronRight size={20} />
+            </button>
+          )}
         </div>
-        <div className="mt-5 flex justify-center">
+
+        <div className="mt-2 flex justify-center">
           <Link
             href="/categories"
             className="inline-flex items-center gap-2 rounded-full bg-[#E8437F] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#d93670] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8437F] focus-visible:ring-offset-2"
           >
             View All Categories
-            <ArrowRight size={14} />
           </Link>
         </div>
       </section>
 
       {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
             Best Selling Products
@@ -526,6 +552,7 @@ function HomeContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {visibleProducts.map((product) => {
             const isFav = favorites.includes(product.id);
+            const discount = product.originalPrice > product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
             return (
               <div
                 key={product.id}
@@ -547,6 +574,11 @@ function HomeContent() {
                 <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
                   {/* Product Image */}
                   <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
+                    {discount > 0 && (
+                      <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
+                        -{discount}%
+                      </div>
+                    )}
                     <img
                       src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                       alt={product.name}

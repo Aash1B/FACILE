@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useMemo } from "react";
+import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -40,7 +40,7 @@ type Product = {
 };
 
 // ─── Fallback Data ────────────────────────────────────────────────────────────
-const FALLBACK_PRODUCTS: Product[] = [
+export const FALLBACK_PRODUCTS: Product[] = [
   { id: "bs1", name: "Smart Watch Series 5", description: "Stay connected with premium Smart Watch. Features heart rate monitoring, fitness tracking, GPS, and always-on display.", price: 8999, originalPrice: 12999, image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400", rating: 4.5, reviews: 128, category: "Electronics", brand: "Samsung", color: "Black", size: "One Size", deliveryDays: 2 },
   { id: "bs2", name: "Wireless Headphones", description: "Premium sound with hybrid Active Noise Cancelling. 40 hours playtime, memory-foam earcups, crystal-clear calls.", price: 5999, originalPrice: 8999, image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400", rating: 4.7, reviews: 98, category: "Electronics", brand: "Sony", color: "Black", size: "One Size", deliveryDays: 2 },
   { id: "bs3", name: "Travel Backpack", description: "Water-resistant backpack with laptop compartment, hidden pockets, USB port, and ergonomic straps.", price: 3999, originalPrice: 5999, image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400", rating: 4.6, reviews: 156, category: "Fashion", brand: "Adidas", color: "Black", size: "One Size", deliveryDays: 3 },
@@ -220,8 +220,9 @@ interface FilterPanelProps {
   selectedSizes: string[];
   toggleSize: (s: string) => void;
   // price
-  selectedPriceRanges: number[];
-  togglePriceRange: (i: number) => void;
+  priceLimit: number | null;
+  setPriceLimit: (p: number | null) => void;
+  priceLimits: { min: number; max: number };
   // discount
   selectedDiscounts: number[];
   toggleDiscount: (i: number) => void;
@@ -234,6 +235,62 @@ interface FilterPanelProps {
   // clear
   hasActiveFilters: boolean;
   clearAllFilters: () => void;
+  query?: string;
+}
+
+function PriceSlider({
+  priceLimit,
+  setPriceLimit,
+  min,
+  max,
+}: {
+  priceLimit: number | null;
+  setPriceLimit: (p: number | null) => void;
+  min: number;
+  max: number;
+}) {
+  const [localVal, setLocalVal] = useState(priceLimit !== null ? priceLimit : max);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setLocalVal(priceLimit !== null ? priceLimit : max);
+  }, [priceLimit, max]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const handleChange = (val: number) => {
+    setLocalVal(val);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      setPriceLimit(val);
+    }, 150);
+  };
+
+  return (
+    <div className="pt-2 pb-1 px-1 space-y-2">
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={localVal}
+        onChange={(e) => handleChange(Number(e.target.value))}
+        onMouseUp={() => setPriceLimit(localVal)}
+        onTouchEnd={() => setPriceLimit(localVal)}
+        className="w-full h-1 bg-[#4a556a]/10 rounded-lg appearance-none cursor-pointer accent-apricot"
+      />
+      <div className="flex items-center justify-between text-[10px] font-semibold text-[#4a556a]/60">
+        <span>₹{min}</span>
+        <span className="text-apricot font-bold text-xs bg-apricot/5 px-2.5 py-0.5 rounded-full border border-apricot/15">
+          Up to ₹{localVal.toLocaleString("en-IN")}
+        </span>
+        <span>₹{max}</span>
+      </div>
+    </div>
+  );
 }
 
 function FilterPanel({
@@ -241,11 +298,12 @@ function FilterPanel({
   selectedBrands, toggleBrand,
   selectedColors, toggleColor,
   selectedSizes, toggleSize,
-  selectedPriceRanges, togglePriceRange,
+  priceLimit, setPriceLimit, priceLimits,
   selectedDiscounts, toggleDiscount,
   selectedRating, setSelectedRating,
   selectedDelivery, setSelectedDelivery,
   hasActiveFilters, clearAllFilters,
+  query = "",
 }: FilterPanelProps) {
 
   // Accordion open state — multiple sections can be open at once
@@ -257,9 +315,17 @@ function FilterPanel({
 
   // Derive unique values from product data
   const brands = useMemo(() => {
+    const lq = query.toLowerCase();
+    const isFootwearQuery = lq.includes("shoe") || lq.includes("sneaker") || lq.includes("footwear");
+    const hasFootwearProducts = products.some((p) => (p.category || "").toLowerCase() === "footwear");
+    
+    if (isFootwearQuery || hasFootwearProducts) {
+      return ["Adidas", "Nike", "FILA", "HRX", "Puma", "Superdry"];
+    }
+
     const s = new Set(products.map((p) => p.brand).filter(Boolean) as string[]);
     return Array.from(s).sort();
-  }, [products]);
+  }, [products, query]);
 
   const colors = useMemo(() => {
     const s = new Set(products.map((p) => p.color).filter(Boolean) as string[]);
@@ -267,7 +333,7 @@ function FilterPanel({
   }, [products]);
 
   const sizes = useMemo(() => {
-    const ORDER = ["XS","S","M","L","XL","XXL","Free Size","One Size"];
+    const ORDER = ["XS", "S", "M", "L", "XL", "XXL", "Free Size", "One Size", "UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11"];
     const s = new Set(products.map((p) => p.size).filter(Boolean) as string[]);
     const arr = Array.from(s);
     return arr.sort((a, b) => {
@@ -278,6 +344,28 @@ function FilterPanel({
       return a.localeCompare(b);
     });
   }, [products]);
+
+  // Determine if we should show the size filter (fashion or footwear searches/products)
+  const showSizeFilter = useMemo(() => {
+    const lq = query.toLowerCase();
+    const isFashionOrFootwearQuery =
+      lq.includes("shoe") ||
+      lq.includes("sneaker") ||
+      lq.includes("footwear") ||
+      lq.includes("clothing") ||
+      lq.includes("dress") ||
+      lq.includes("wear") ||
+      lq.includes("shirt") ||
+      lq.includes("jeans") ||
+      lq.includes("fashion");
+      
+    const hasFashionOrFootwearProducts = products.some((p) => {
+      const cat = (p.category || "").toLowerCase();
+      return cat === "fashion" || cat === "footwear" || cat === "clothing" || cat === "shoes";
+    });
+
+    return isFashionOrFootwearQuery || hasFashionOrFootwearProducts;
+  }, [products, query]);
 
   // Reusable accordion section
   const Section = ({
@@ -293,6 +381,7 @@ function FilterPanel({
     return (
       <div className="border-b border-natural/10 last:border-b-0">
         <button
+          type="button"
           onClick={() => toggleSection(id)}
           className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-bold text-[#4a556a] hover:bg-warm-ivory/60 transition-colors cursor-pointer group"
         >
@@ -363,22 +452,26 @@ function FilterPanel({
       </Section>
 
       {/* Size */}
-      <Section id="size" icon={<Ruler size={12} />} label="Size" badge={selectedSizes.length}>
-        {sizes.map((s) => (
-          <FilterCheckbox key={s} checked={selectedSizes.includes(s)} onToggle={() => toggleSize(s)}>
-            {s}
-          </FilterCheckbox>
-        ))}
-      </Section>
+      {showSizeFilter && sizes.length > 0 && (
+        <Section id="size" icon={<Ruler size={12} />} label="Size" badge={selectedSizes.length}>
+          {sizes.map((s) => (
+            <FilterCheckbox key={s} checked={selectedSizes.includes(s)} onToggle={() => toggleSize(s)}>
+              {s}
+            </FilterCheckbox>
+          ))}
+        </Section>
+      )}
 
       {/* Price Range */}
-      <Section id="price" icon={<Tag size={12} />} label="Price Range" badge={selectedPriceRanges.length}>
-        {PRICE_RANGES.map((r, i) => (
-          <FilterCheckbox key={i} checked={selectedPriceRanges.includes(i)} onToggle={() => togglePriceRange(i)}>
-            {r.label}
-          </FilterCheckbox>
-        ))}
+      <Section id="price" icon={<Tag size={12} />} label="Price Range" badge={0}>
+        <PriceSlider
+          priceLimit={priceLimit}
+          setPriceLimit={setPriceLimit}
+          min={priceLimits.min}
+          max={priceLimits.max}
+        />
       </Section>
+
 
       {/* Discount */}
       <Section id="discount" icon={<Zap size={12} />} label="Discount" badge={selectedDiscounts.length}>
@@ -482,7 +575,7 @@ function ProductCard({
   return (
     <div className="group bg-white hover:bg-[#4A5568] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
       {discount > 0 && (
-        <div className="absolute top-3 left-3 z-10 px-1.5 py-0.5 bg-apricot text-white text-[9px] font-bold rounded-full shadow-sm">
+        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
           -{discount}%
         </div>
       )}
@@ -584,7 +677,7 @@ function SearchContent() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedPriceRanges, setSelectedPriceRanges] = useState<number[]>([]);
+  const [priceLimit, setPriceLimit] = useState<number | null>(null);
   const [selectedDiscounts, setSelectedDiscounts] = useState<number[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<number | null>(null);
@@ -659,8 +752,7 @@ function SearchContent() {
   const toggleSize = (s: string) =>
     setSelectedSizes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
 
-  const togglePriceRange = (idx: number) =>
-    setSelectedPriceRanges((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+  const togglePriceRange = (idx: number) => {}; // unused now
 
   const toggleDiscount = (idx: number) =>
     setSelectedDiscounts((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
@@ -669,7 +761,7 @@ function SearchContent() {
     setSelectedBrands([]);
     setSelectedColors([]);
     setSelectedSizes([]);
-    setSelectedPriceRanges([]);
+    setPriceLimit(null);
     setSelectedDiscounts([]);
     setSelectedRating(null);
     setSelectedDelivery(null);
@@ -688,6 +780,15 @@ function SearchContent() {
     );
   });
 
+  // Derive min and max price limits dynamically from queryFiltered products
+  const priceLimits = useMemo(() => {
+    if (!queryFiltered || queryFiltered.length === 0) return { min: 0, max: 10000 };
+    const prices = queryFiltered.map((p) => Number(p.price));
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return { min, max };
+  }, [queryFiltered]);
+
   const brandFiltered =
     selectedBrands.length === 0
       ? queryFiltered
@@ -704,14 +805,9 @@ function SearchContent() {
       : colorFiltered.filter((p) => p.size && selectedSizes.includes(p.size));
 
   const priceFiltered =
-    selectedPriceRanges.length === 0
+    priceLimit === null
       ? sizeFiltered
-      : sizeFiltered.filter((p) =>
-          selectedPriceRanges.some((idx) => {
-            const r = PRICE_RANGES[idx];
-            return p.price >= r.min && p.price < r.max;
-          })
-        );
+      : sizeFiltered.filter((p) => p.price <= priceLimit);
 
   const discountFiltered =
     selectedDiscounts.length === 0
@@ -745,7 +841,7 @@ function SearchContent() {
     selectedBrands.length +
     selectedColors.length +
     selectedSizes.length +
-    selectedPriceRanges.length +
+    (priceLimit !== null ? 1 : 0) +
     selectedDiscounts.length +
     (selectedRating ? 1 : 0) +
     (selectedDelivery != null ? 1 : 0);
@@ -753,15 +849,16 @@ function SearchContent() {
   const hasActiveFilters = totalActiveFilters > 0;
 
   const filterPanelProps: FilterPanelProps = {
-    products,
+    products: queryFiltered,
     selectedBrands, toggleBrand,
     selectedColors, toggleColor,
     selectedSizes, toggleSize,
-    selectedPriceRanges, togglePriceRange,
+    priceLimit, setPriceLimit, priceLimits,
     selectedDiscounts, toggleDiscount,
     selectedRating, setSelectedRating,
     selectedDelivery, setSelectedDelivery,
     hasActiveFilters, clearAllFilters,
+    query,
   };
 
   return (
@@ -875,11 +972,11 @@ function SearchContent() {
                 <Ruler size={8} />{s}<X size={9} />
               </button>
             ))}
-            {selectedPriceRanges.map((idx) => (
-              <button key={idx} onClick={() => togglePriceRange(idx)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
-                {PRICE_RANGES[idx].label}<X size={9} />
+            {priceLimit !== null && (
+              <button type="button" onClick={() => setPriceLimit(null)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
+                Up to ₹{priceLimit.toLocaleString("en-IN")}<X size={9} />
               </button>
-            ))}
+            )}
             {selectedDiscounts.map((idx) => (
               <button key={idx} onClick={() => toggleDiscount(idx)} className="flex items-center gap-1 px-2.5 py-1 bg-[#dde0f0] text-[#4a556a] rounded-full text-[10px] font-bold hover:bg-apricot/10 hover:text-apricot transition-all cursor-pointer">
                 <Zap size={8} />{DISCOUNT_RANGES[idx].label}<X size={9} />
