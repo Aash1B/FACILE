@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import com.facile.auth_user_service.model.User;
 
 @Service
 public class JwtService {
@@ -62,7 +63,13 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        if (!username.equals(userDetails.getUsername()) || isTokenExpired(token)) return false;
+        if (userDetails instanceof User user && user.getPasswordChangedAt() != null) {
+            Date issuedAt = extractClaim(token, Claims::getIssuedAt);
+            return !issuedAt.toInstant().isBefore(user.getPasswordChangedAt()
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        return true;
     }
 
     private boolean isTokenExpired(String token) {

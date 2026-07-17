@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import {
@@ -218,8 +218,6 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
-  const [isPaused, setIsPaused] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   const scrollCategoriesLeft = () => {
     setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
@@ -228,33 +226,10 @@ function HomeContent() {
     setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
   };
 
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isPaused]);
-
-  useEffect(() => {
-    if (carouselRef.current) {
-      const activeEl = carouselRef.current.querySelector(".active-category") as HTMLElement;
-      if (activeEl) {
-        const container = carouselRef.current;
-        const containerWidth = container.clientWidth;
-        const activeWidth = activeEl.clientWidth;
-        const activeLeft = activeEl.offsetLeft;
-
-        // Calculate target scrollLeft to center the active category item
-        const targetScrollLeft = activeLeft - (containerWidth / 2) + (activeWidth / 2);
-
-        container.scrollTo({
-          left: targetScrollLeft,
-          behavior: "smooth"
-        });
-      }
-    }
-  }, [activeCategoryIndex]);
+  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
+    const index = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
+    return { category: CATEGORIES[index], isActive: slot === 3, slot };
+  });
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -473,7 +448,7 @@ function HomeContent() {
           </div>
         </div>
 
-        <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+        <div className="relative">
           {/* Left Arrow Button */}
           <button
             type="button"
@@ -485,15 +460,11 @@ function HomeContent() {
           </button>
 
           {/* Categories Carousel */}
-          <div
-            ref={carouselRef}
-            className="flex items-center overflow-x-auto justify-start gap-2 sm:gap-3 no-scrollbar pt-3 pb-5 px-12 sm:px-16 select-none"
-          >
-            {CATEGORIES.map((category, index) => {
-              const isActive = index === activeCategoryIndex;
+          <div className="flex items-center overflow-hidden justify-center gap-2 sm:gap-3 pt-3 pb-5 px-12 sm:px-16 select-none">
+            {visibleCategories.map(({ category, isActive, slot }) => {
               return (
                 <Link
-                  key={category.id}
+                  key={slot}
                   href={`/category/${category.id.replace("c", "")}`}
                   className={`flex w-52 sm:w-56 flex-col items-center justify-start pt-1 gap-3 rounded-[36px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0 ${isActive ? "active-category" : ""}`}
                 >
