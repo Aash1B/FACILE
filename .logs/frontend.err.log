@@ -1,0 +1,504 @@
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+[browser] Failed to sync cart with backend: TypeError: Failed to fetch
+    at CartProvider.useEffect.syncCart (context\CartContext.tsx:42:31)
+    at CartProvider.useEffect (context\CartContext.tsx:117:5)
+  40 |         try {
+  41 |           // Fetch existing db cart
+> 42 |           const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+     |                               ^
+  43 |           const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
+  44 |
+  45 |           const localCartStr = localStorage.getItem("facile_cart"); (context\CartContext.tsx:100:19)
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+[browser] Failed to sync cart with backend: TypeError: Failed to fetch
+    at CartProvider.useEffect.syncCart (context\CartContext.tsx:42:31)
+    at CartProvider.useEffect (context\CartContext.tsx:117:5)
+  40 |         try {
+  41 |           // Fetch existing db cart
+> 42 |           const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+     |                               ^
+  43 |           const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
+  44 |
+  45 |           const localCartStr = localStorage.getItem("facile_cart"); (context\CartContext.tsx:100:19)
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+Failed to proxy http://localhost:8083/api/products AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8083
+        at <unknown> (Error: connect ECONNREFUSED ::1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8083
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8083
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8083) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8083
+    }
+  ]
+}

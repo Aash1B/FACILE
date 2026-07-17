@@ -553,6 +553,15 @@ public class AuthService {
         userSessionRepository.deleteByRefreshToken(refreshToken);
     }
 
+    public void deleteAccount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        userSessionRepository.deleteByUserId(userId);
+        auditLogRepository.deleteByUserId(userId);
+        userRepository.delete(user);
+    }
+
     public List<UserResponse> getSellers() {
         return userRepository.findByRole(Role.SELLER).stream()
                 .map(user -> UserResponse.builder()
