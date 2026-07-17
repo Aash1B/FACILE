@@ -27,6 +27,13 @@ public class OrderController {
         return orderService.getOrderHistory(userId);
     }
 
+    @GetMapping("/review-eligibility")
+    public Map<String, Boolean> getReviewEligibility(
+            @RequestParam String userId,
+            @RequestParam String productId) {
+        return Map.of("eligible", orderService.hasPurchasedProduct(userId, productId));
+    }
+
     @GetMapping("/detail/{orderId}")
     public Order getOrderById(@PathVariable String orderId) {
         return orderService.getOrderById(orderId);

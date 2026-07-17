@@ -322,34 +322,9 @@ export default function CategoryPage() {
           }
         }
 
-        // If no products were returned from the API, try to load from the fallback map
-        if (loadedProducts.length === 0) {
-          const selectedSubObj = subcategories.find(s => String(s.id) === String(subcategoryId));
-          let lookupName = selectedSubObj ? selectedSubObj.name : "";
-          if (!lookupName && String(subcategoryId).startsWith("fallback-")) {
-            const fallbackList = FALLBACK_SUBCATEGORIES[categoryId] ?? [];
-            const index = parseInt(String(subcategoryId).replace("fallback-", ""), 10);
-            lookupName = fallbackList[index] || "";
-          }
-          const fallbackProduct = FALLBACK_PRODUCTS_MAP[categoryId]?.[lookupName];
-          if (fallbackProduct) {
-            loadedProducts = [fallbackProduct];
-          }
-        }
-
         setProducts(loadedProducts);
       })
-      .catch(() => {
-        const selectedSubObj = subcategories.find(s => String(s.id) === String(subcategoryId));
-        let lookupName = selectedSubObj ? selectedSubObj.name : "";
-        if (!lookupName && String(subcategoryId).startsWith("fallback-")) {
-          const fallbackList = FALLBACK_SUBCATEGORIES[categoryId] ?? [];
-          const index = parseInt(String(subcategoryId).replace("fallback-", ""), 10);
-          lookupName = fallbackList[index] || "";
-        }
-        const fallbackProduct = FALLBACK_PRODUCTS_MAP[categoryId]?.[lookupName];
-        setProducts(fallbackProduct ? [fallbackProduct] : []);
-      })
+      .catch(() => setProducts([]))
       .finally(() => setProductsLoading(false));
   }, [subcategoryId, categoryId, subcategories]);
 
@@ -687,7 +662,6 @@ export default function CategoryPage() {
                                 -{discount}%
                               </div>
                             )}
-
                             <button
                               onClick={(e) => handleToggleFavorite(product, e)}
                               className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/95 text-[#4a556a] hover:text-apricot shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
@@ -716,13 +690,19 @@ export default function CategoryPage() {
                                     {product.title}
                                   </h3>
                                   <div className="flex items-center gap-1">
-                                    <Star size={10} className="text-amber-400 fill-amber-400" />
-                                    <span className="text-[10px] font-bold text-[#4a556a] group-hover:text-white transition-colors">
-                                      {product.rating || 4.5}
-                                    </span>
-                                    <span className="text-[10px] text-natural/50 group-hover:text-white/60 transition-colors">
-                                      ({product.reviews || 42})
-                                    </span>
+                                    <Star size={10} className={(product.reviews ?? 0) > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
+                                    {(product.reviews ?? 0) > 0 ? (
+                                      <>
+                                        <span className="text-[10px] font-bold text-[#4a556a] group-hover:text-white transition-colors">
+                                          {Number(product.rating ?? 0).toFixed(1)}
+                                        </span>
+                                        <span className="text-[10px] text-natural/50 group-hover:text-white/60 transition-colors">
+                                          ({product.reviews})
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="text-[10px] text-natural/60 group-hover:text-white/70 transition-colors">No reviews</span>
+                                    )}
                                   </div>
                                 </div>
 

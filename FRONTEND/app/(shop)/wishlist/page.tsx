@@ -112,7 +112,7 @@ type ApiProduct = {
 
 export default function WishlistPage() {
   const { addToCart, toggleFavorite, favorites } = useCart();
-  const [products, setProducts] = useState<any[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -135,8 +135,8 @@ export default function WishlistPage() {
               price: p.sellingPrice,
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
-              rating: p.rating || 4.5,
-              reviews: p.reviews || 50,
+              rating: Number(p.rating ?? 0),
+              reviews: Number(p.reviews ?? 0),
               maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);

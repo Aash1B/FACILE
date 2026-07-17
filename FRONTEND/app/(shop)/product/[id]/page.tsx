@@ -4,6 +4,8 @@ import React, { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
@@ -17,8 +19,8 @@ const MOCK_PRODUCTS: Record<string, any> = {
     price: 89.99,
     originalPrice: 129.99,
     image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400",
-    rating: 4.5,
-    reviews: 128,
+    rating: 0,
+    reviews: 0,
     description: "Stay connected, active, and healthy with this premium Smart Watch Series 5. Features real-time heart rate monitoring, fitness tracking, GPS, notifications, and an always-on Retina display. Waterproof design makes it perfect for swimming and workouts.",
     category: "Electronics",
     subCategory: "Wearables"
@@ -29,8 +31,8 @@ const MOCK_PRODUCTS: Record<string, any> = {
     price: 59.99,
     originalPrice: 89.99,
     image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400",
-    rating: 4.7,
-    reviews: 98,
+    rating: 0,
+    reviews: 0,
     description: "Experience premium sound quality with hybrid Active Noise Cancelling (ANC) technology. These wireless headphones deliver rich bass, clear mids, and crisp highs. Features 40 hours of playtime, comfortable memory-foam earcups, and crystal-clear calls.",
     category: "Electronics",
     subCategory: "Audio"
@@ -41,8 +43,8 @@ const MOCK_PRODUCTS: Record<string, any> = {
     price: 39.99,
     originalPrice: 59.99,
     image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400",
-    rating: 4.6,
-    reviews: 156,
+    rating: 0,
+    reviews: 0,
     description: "Designed for modern travelers and commuters. This heavy-duty, water-resistant travel backpack features a dedicated 15.6-inch laptop compartment, hidden anti-theft pockets, a USB charging port, and ergonomic padded shoulder straps for supreme comfort.",
     category: "Toys & Baby",
     subCategory: "Baby Toys"
@@ -53,8 +55,8 @@ const MOCK_PRODUCTS: Record<string, any> = {
     price: 49.99,
     originalPrice: 79.99,
     image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400",
-    rating: 4.4,
-    reviews: 78,
+    rating: 0,
+    reviews: 0,
     description: "Achieve your personal best with these high-performance running shoes. Engineered with a breathable mesh upper, a responsive foam midsole for ultimate shock absorption, and a durable rubber outsole for excellent grip on any surface.",
     category: "Sports",
     subCategory: "Footwear"
@@ -65,8 +67,8 @@ const MOCK_PRODUCTS: Record<string, any> = {
     price: 29.99,
     originalPrice: 49.99,
     image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400",
-    rating: 4.8,
-    reviews: 64,
+    rating: 0,
+    reviews: 0,
     description: "Indulge in a sophisticated, long-lasting luxury fragrance. Combining fresh citrus top notes with a warm amber and woody base, this premium perfume is perfect for daily wear or special occasions. Comes in an elegantly designed glass bottle.",
     category: "Beauty",
     subCategory: "Fragrance"
@@ -77,12 +79,23 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface ProductReview {
+  id: number;
+  userName: string;
+  userEmail: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  updatedAt: string;
+}
+
 export default function ProductDetailPage({ params }: PageProps) {
   const router = useRouter();
   const resolvedParams = use(params);
   const productId = resolvedParams.id;
   
   const { addToCart, toggleFavorite, favorites, setIsCartOpen } = useCart();
+  const { user, isAuthenticated } = useAuth();
   
   const [product, setProduct] = useState<any>(null);
   const [activeImage, setActiveImage] = useState<string>("");
@@ -91,6 +104,12 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [isSavedForLater, setIsSavedForLater] = useState(false);
+  const [customerReviews, setCustomerReviews] = useState<ProductReview[]>([]);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState("");
 
   // Dynamically compile all mock products across the app to support detail pages for all categories
   const allMockProducts = useMemo(() => {
@@ -163,6 +182,10 @@ export default function ProductDetailPage({ params }: PageProps) {
         }
         const dataProduct = await resProduct.json();
 
+        const resReviews = await fetch(`/api/products/${cleanId}/reviews`);
+        const dataReviews = resReviews.ok ? await resReviews.json() : [];
+        setCustomerReviews(dataReviews);
+
         // 2. Fetch product inventory stock levels
         const resInventory = await fetch(`/api/products/${cleanId}/inventory`);
         const dataInventory = resInventory.ok ? await resInventory.json() : null;
@@ -174,8 +197,8 @@ export default function ProductDetailPage({ params }: PageProps) {
             price: dataProduct.sellingPrice,
             originalPrice: dataProduct.mrp,
             image: dataProduct.image,
-            rating: dataProduct.rating || 4.5,
-            reviews: dataProduct.reviews || 50,
+            rating: dataProduct.rating ?? 0,
+            reviews: dataProduct.reviews ?? 0,
             description: dataProduct.description,
             category: dataProduct.category?.name || "Uncategorized",
             subCategory: dataProduct.subCategory?.name || "General",
@@ -252,6 +275,51 @@ export default function ProductDetailPage({ params }: PageProps) {
     triggerToast(isNowFav ? `Added ${product.name} to Wishlist! ❤️` : `Removed ${product.name} from Wishlist.`);
   };
 
+  const handleReviewSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!isAuthenticated || !user) {
+      router.push(`/login?redirect=/product/${productId}`);
+      return;
+    }
+    if (reviewRating < 1) {
+      setReviewError("Please select a star rating.");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    setReviewError("");
+    try {
+      const cleanId = productId.replace("bs", "");
+      const response = await api.post(`/api/products/${cleanId}/reviews`, {
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment,
+      });
+      const savedReview: ProductReview = response.data;
+      const nextReviews = [
+        savedReview,
+        ...customerReviews.filter((review) => review.userEmail.toLowerCase() !== user.email.toLowerCase()),
+      ];
+      const average = nextReviews.reduce((sum, review) => sum + review.rating, 0) / nextReviews.length;
+      setCustomerReviews(nextReviews);
+      setProduct((current: any) => ({
+        ...current,
+        rating: Number(average.toFixed(1)),
+        reviews: nextReviews.length,
+      }));
+      setReviewRating(0);
+      setReviewTitle("");
+      setReviewComment("");
+      triggerToast("Your review has been saved.");
+    } catch (error: any) {
+      setReviewError(error.response?.status === 403
+        ? "Only customers who purchased this product can review it."
+        : error.response?.data?.message || "Could not save your review. Please try again.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     const timer = window.setTimeout(() => setIsSavedForLater(isProductSaved(productId)), 0);
     return () => window.clearTimeout(timer);
@@ -264,6 +332,7 @@ export default function ProductDetailPage({ params }: PageProps) {
           <div className="w-12 h-12 border-4 border-fern border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm">Loading product details...</p>
         </div>
+
       </div>
     );
   }
@@ -378,7 +447,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                     />
                   ))}
                 </div>
-                <span className="text-fern font-bold ml-1">{product.rating}</span>
+                <span className="text-fern font-bold ml-1">{Number(product.rating).toFixed(1)}</span>
                 <span>•</span>
                 <span className="hover:text-[#FA99C6] cursor-pointer transition-colors">{product.reviews} reviews</span>
               </div>
@@ -569,6 +638,81 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
 
         </div>
+        <section id="customer-reviews" className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
+          <div className="rounded-[28px] border border-natural/15 bg-white/40 p-6 sm:p-8">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FA99C6]">Customer feedback</p>
+                <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4a556a]">Ratings & reviews</h2>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-extrabold text-[#4a556a]">{Number(product.rating).toFixed(1)} / 5</p>
+                <p className="text-xs font-semibold text-natural">{customerReviews.length} verified {customerReviews.length === 1 ? "review" : "reviews"}</p>
+              </div>
+            </div>
+
+            {customerReviews.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-natural/25 px-5 py-10 text-center text-sm font-medium text-natural">
+                No reviews yet. Be the first to share your experience.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {customerReviews.map((review) => (
+                  <article key={review.id} className="rounded-2xl border border-natural/10 bg-[#F4F4F0]/70 p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-extrabold text-[#4a556a]">{review.userName}</p>
+                        <div className="mt-1 flex gap-0.5" aria-label={`${review.rating} out of 5 stars`}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} size={13} className={star <= review.rating ? "fill-amber-400 text-amber-400" : "text-neutral-200"} />
+                          ))}
+                        </div>
+                      </div>
+                      <time className="text-[10px] font-semibold text-natural/70" dateTime={review.updatedAt}>
+                        {new Date(review.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                      </time>
+                    </div>
+                    {review.title && <h3 className="mt-3 text-sm font-bold text-[#4a556a]">{review.title}</h3>}
+                    <p className="mt-2 whitespace-pre-wrap text-xs font-medium leading-relaxed text-natural">{review.comment}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleReviewSubmit} className="h-fit rounded-[28px] border border-natural/15 bg-[#F4F4F0] p-6 shadow-xs lg:sticky lg:top-[120px]">
+            <h2 className="font-serif text-xl font-extrabold text-[#4a556a]">Write a review</h2>
+            <p className="mt-1 text-xs font-medium text-natural">
+              {isAuthenticated ? `Posting as ${user?.name}` : "Sign in to rate this product."}
+            </p>
+
+            <div className="mt-5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-natural">Your rating</span>
+              <div className="mt-2 flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} type="button" onClick={() => setReviewRating(star)} className="rounded-md p-1 transition-transform hover:scale-110" aria-label={`Rate ${star} stars`}>
+                    <Star size={24} className={star <= reviewRating ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <label className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-natural">
+              Review title <span className="font-medium normal-case text-natural/60">(optional)</span>
+              <input value={reviewTitle} onChange={(event) => setReviewTitle(event.target.value)} maxLength={120} className="mt-2 h-11 w-full rounded-xl border border-natural/20 bg-white/70 px-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#FA99C6]" placeholder="What stood out?" />
+            </label>
+
+            <label className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-natural">
+              Your review
+              <textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required minLength={3} maxLength={2000} rows={5} className="mt-2 w-full resize-none rounded-xl border border-natural/20 bg-white/70 p-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#FA99C6]" placeholder="Share your experience with this product" />
+            </label>
+
+            {reviewError && <p className="mt-3 text-xs font-semibold text-red-600">{reviewError}</p>}
+            <button type="submit" disabled={reviewSubmitting} className="mt-5 h-11 w-full rounded-xl bg-[#4A5568] text-xs font-bold tracking-wider text-warm-ivory transition-colors hover:bg-[#3B4455] disabled:cursor-not-allowed disabled:opacity-60">
+              {reviewSubmitting ? "Saving review..." : isAuthenticated ? "Submit review" : "Sign in to review"}
+            </button>
+          </form>
+        </section>
       </div>
     </div>
   );

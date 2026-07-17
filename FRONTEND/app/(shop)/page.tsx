@@ -213,7 +213,7 @@ const TESTIMONIALS = [
 function HomeContent() {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [products, setProducts] = useState<ProductCard[]>(BEST_SELLERS);
+  const [products, setProducts] = useState<ProductCard[]>([]);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
@@ -282,8 +282,8 @@ function HomeContent() {
               price: p.sellingPrice,
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
-              rating: p.rating,
-              reviews: p.reviews,
+              rating: Number(p.rating ?? 0),
+              reviews: Number(p.reviews ?? 0),
               maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);
@@ -615,9 +615,15 @@ function HomeContent() {
 
                       {/* Stars and reviews */}
                       <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
-                        <Star size={11} className="text-amber-400 fill-amber-400" />
-                        <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating}</span>
-                        <span>({product.reviews})</span>
+                        <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
+                        {product.reviews > 0 ? (
+                          <>
+                            <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating.toFixed(1)}</span>
+                            <span>({product.reviews})</span>
+                          </>
+                        ) : (
+                          <span className="text-natural group-hover:text-warm-ivory/80">No reviews</span>
+                        )}
                       </div>
                     </div>
 
@@ -652,7 +658,6 @@ function HomeContent() {
         <section id="recently-viewed" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
-            <p className="mt-1 text-xs text-natural/60 font-medium">Pick up where you left off.</p>
           </div>
           <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
             {recentProducts.map((product) => (
@@ -664,14 +669,13 @@ function HomeContent() {
                   <div className="space-y-2 p-4">
                     <h3 className="truncate text-xs font-bold text-[#4a556a]">{product.name}</h3>
                     <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                      <Star size={11} className="fill-amber-400 text-amber-400" />
-                      <span>{product.rating ?? 4.5}</span>
-                      {product.reviews != null && <span>({product.reviews})</span>}
+                      <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                      {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>No reviews</span>}
                     </div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-extrabold text-[#4a556a]">â‚¹{product.price.toLocaleString("en-IN")}</span>
+                      <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
                       {product.originalPrice != null && product.originalPrice > product.price && (
-                        <span className="text-[10px] font-medium text-natural line-through">â‚¹{product.originalPrice.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
                       )}
                     </div>
                   </div>
