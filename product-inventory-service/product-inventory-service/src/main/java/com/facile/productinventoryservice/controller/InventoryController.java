@@ -48,4 +48,13 @@ public class InventoryController {
             return ResponseEntity.status(500).body("Error processing stock reduction: " + e.getMessage());
         }
     }
+    @PostMapping("/inventory/restore")
+    public ResponseEntity<String> restoreStock(@RequestBody StockReduceRequest request) {
+        try {
+            inventoryService.restoreStock(request.getItems());
+            return ResponseEntity.ok("Stock successfully restored");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error processing stock restoration: " + e.getMessage());
+        }
+    }
 }

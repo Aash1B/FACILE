@@ -17,7 +17,8 @@ import {
   Plus, 
   Trash2, 
   Smartphone,
-  Globe
+  Globe,
+  CreditCard
 } from "lucide-react";
 interface OrderItem {
   productId: string;
@@ -59,37 +60,66 @@ const ORDER_STATUS_STYLES: Record<Order["status"], { bg: string; text: string; d
 };
 
 // Mock Address Data
-const MOCK_ADDRESSES = [
-  {
-    id: 1,
-    label: "Home (Default)",
-    name: "Aashish Bharti",
-    street: "124 Warm Ivory Lane, Sector 4",
-    city: "New Delhi, Delhi - 110001",
-    phone: "+91 98765 43210"
-  },
-  {
-    id: 2,
-    label: "Design Studio",
-    name: "Aashish Bharti",
-    street: "Studio 8B, Fern Creative Hub",
-    city: "Gurugram, Haryana - 122002",
-    phone: "+91 98765 43211"
-  }
-];
+const MOCK_ADDRESSES: any[] = [];
 
 function ProfileContent() {
-  const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs } = useAuth();
+  const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "security">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "gift_cards" | "saved_cards" | "security">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  // Gift Card State
+  const [giftCardValue, setGiftCardValue] = useState(0);
+  const [giftCardQty, setGiftCardQty] = useState(1);
+  const [receiverEmail, setReceiverEmail] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [gifterName, setGifterName] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
+  const [isPurchasingGiftCard, setIsPurchasingGiftCard] = useState(false);
+
+  const handleBuyGiftCard = () => {
+    if (!receiverEmail || !receiverName || giftCardValue === 0 || giftCardQty === 0) {
+      alert("Please fill in all required fields (Email, Name, Card Value).");
+      return;
+    }
+    
+    setIsPurchasingGiftCard(true);
+    setTimeout(() => {
+      alert(`Successfully purchased ${giftCardQty} Gift Card(s) worth ₹${giftCardValue} each for ${receiverName}!`);
+      setIsPurchasingGiftCard(false);
+      setReceiverEmail("");
+      setReceiverName("");
+      setGiftCardValue(0);
+      setGiftCardQty(1);
+      setGifterName("");
+      setGiftMessage("");
+    }, 1500);
+  };
+
+  // Saved Cards State
+  const [savedCards, setSavedCards] = useState([
+    { id: 1, type: "VISA", name: "HDFC Bank Credit Card", last4: "4820" }
+  ]);
+
+  const handleAddCard = () => {
+    if (savedCards.length >= 5) {
+      alert("You cannot save more than 5 cards. Please remove an existing card first.");
+      return;
+    }
+    const newCard = { id: Date.now(), type: "MASTERCARD", name: "New Bank Card", last4: Math.floor(1000 + Math.random() * 9000).toString() };
+    setSavedCards([...savedCards, newCard]);
+  };
+
+  const handleRemoveCard = (id: number) => {
+    setSavedCards(savedCards.filter(c => c.id !== id));
+  };
 
   useEffect(() => {
     if (searchParams) {
       const tab = searchParams.get("tab");
-      if (tab === "profile" || tab === "orders" || tab === "addresses" || tab === "security") {
+      if (tab === "profile" || tab === "orders" || tab === "addresses" || tab === "gift_cards" || tab === "saved_cards" || tab === "security") {
         setActiveTab(tab as any);
       }
     }
@@ -224,7 +254,7 @@ function ProfileContent() {
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
-  const [profileBio, setProfileBio] = useState("Architect & design enthusiast. Passionate about slow living, ceramics, and sustainable craftsmanship.");
+  const [profileGender, setProfileGender] = useState("Prefer not to say");
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
@@ -395,6 +425,32 @@ function ProfileContent() {
                 <MapPin size={15} />
                 Shipping Addresses
               </button>
+              {/* PAYMENTS Sidebar Block */}
+              <div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold text-natural uppercase tracking-wider">
+                <CreditCard size={14} />
+                Payments
+              </div>
+              <button
+                onClick={() => setActiveTab("gift_cards")}
+                className={`flex justify-between items-center px-4 py-3 ml-2 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer lg:w-[calc(100%-0.5rem)] text-left ${
+                  activeTab === "gift_cards" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                Gift Cards
+                <span className="text-warm-ivory/80 font-bold">₹{giftCardValue * giftCardQty}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("saved_cards")}
+                className={`flex items-center gap-3 px-4 py-3 ml-2 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer lg:w-[calc(100%-0.5rem)] text-left ${
+                  activeTab === "saved_cards" 
+                    ? "bg-fern text-warm-ivory shadow-sm" 
+                    : "text-natural hover:bg-warm-ivory/30 hover:text-fern"
+                }`}
+              >
+                Saved Cards
+              </button>
               <button
                 onClick={() => setActiveTab("security")}
                 className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex-shrink-0 lg:w-full text-left ${
@@ -413,7 +469,7 @@ function ProfileContent() {
                 onClick={logout}
                 className="flex lg:hidden items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl text-[#4A5568] hover:bg-warm-ivory/30 transition-all duration-200 cursor-pointer flex-shrink-0"
               >
-                Sign Out
+                Logout
               </button>
             </div>
             
@@ -421,7 +477,7 @@ function ProfileContent() {
               onClick={logout}
               className="hidden lg:flex items-center justify-center gap-2 w-full py-3 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm border border-transparent"
             >
-              Sign Out
+              Logout
             </button>
 
           </div>
@@ -500,16 +556,44 @@ function ProfileContent() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Personal Bio</label>
-                      <textarea 
-                        rows={3} 
-                        value={profileBio}
-                        onChange={(e) => setProfileBio(e.target.value)}
-                        className="w-full p-4 bg-warm-ivory/20 border border-natural/25 focus:border-fern focus:ring-1 focus:ring-fern text-xs font-medium text-fern rounded-xl focus:outline-none transition-all resize-none leading-relaxed"
-                      />
+                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Gender</label>
+                      <div className="flex gap-4 items-center h-10 px-4 bg-warm-ivory/20 border border-natural/25 rounded-xl">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-fern">
+                          <input type="radio" name="gender" value="Male" checked={profileGender === "Male"} onChange={(e) => setProfileGender(e.target.value)} className="accent-fern" />
+                          Male
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-fern">
+                          <input type="radio" name="gender" value="Female" checked={profileGender === "Female"} onChange={(e) => setProfileGender(e.target.value)} className="accent-fern" />
+                          Female
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-fern">
+                          <input type="radio" name="gender" value="Other" checked={profileGender === "Other"} onChange={(e) => setProfileGender(e.target.value)} className="accent-fern" />
+                          Other
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-fern">
+                          <input type="radio" name="gender" value="Prefer not to say" checked={profileGender === "Prefer not to say"} onChange={(e) => setProfileGender(e.target.value)} className="accent-fern" />
+                          Prefer not to say
+                        </label>
+                      </div>
                     </div>
 
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-between items-center pt-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                            try {
+                              await deleteAccount();
+                              alert("Your account has been deleted.");
+                            } catch(e: any) {
+                              alert(e.message || "Failed to delete account");
+                            }
+                          }
+                        }}
+                        className="h-10 px-4 text-red-600 hover:text-red-700 text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-all border border-red-200 hover:border-red-300 hover:bg-red-50"
+                      >
+                        Delete Account
+                      </button>
                       <button
                         type="submit"
                         className="h-10 px-8 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-all active:scale-97 shadow hover:shadow-md border border-transparent"
@@ -680,7 +764,7 @@ function ProfileContent() {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h2 className="font-serif text-xl font-bold text-fern">Shipping Addresses</h2>
+                      <h2 className="font-serif text-xl font-bold text-fern">Manage Address</h2>
                       <p className="text-[11px] text-natural font-medium mt-0.5">Manage delivery destinations for rapid checkout.</p>
                     </div>
                     
@@ -819,11 +903,186 @@ function ProfileContent() {
                       </div>
                     )}
                   </div>
-
                 </div>
               )}
 
-              {/* Tab 4: Security */}
+              {/* Tab: Gift Cards */}
+              {activeTab === "gift_cards" && (
+                <div className="space-y-8 animate-fade-in">
+                  <div className="border border-natural/20 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div className="p-5 flex justify-between items-center border-b border-natural/10">
+                      <h3 className="font-bold text-sm text-fern">FACILE Gift Card</h3>
+                      <div className="flex gap-4 text-[10px] font-bold text-fern">
+                        <button className="hover:text-apricot transition-colors cursor-pointer">Buy a Gift Card</button>
+                        <button className="hover:text-apricot transition-colors cursor-pointer">Check Gift Card Balance</button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 bg-warm-ivory/20 border-b border-natural/10">
+                      <button className="flex items-center gap-2 text-[11px] font-bold text-fern hover:text-apricot transition-colors uppercase tracking-wider cursor-pointer">
+                        <Plus size={14} /> Add A Gift Card
+                      </button>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-sm text-fern">Buy a FACILE Gift Card</h3>
+                        <p className="text-[10px] text-natural font-medium italic">Issued by Qwikcilver</p>
+                      </div>
+                      
+                      {/* Tabs (Removed Corporate) */}
+                      <div className="flex gap-6 border-b border-natural/20 mb-6 text-xs font-bold uppercase tracking-wider">
+                        <button className="pb-3 border-b-2 border-fern text-fern">Personal Gift Cards</button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        {/* Form */}
+                        <div className="space-y-4">
+                          <input 
+                            type="email" 
+                            placeholder="Receiver's Email ID *" 
+                            value={receiverEmail}
+                            onChange={(e) => setReceiverEmail(e.target.value)}
+                            className="w-full h-10 px-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all" 
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Receiver's Name *" 
+                            value={receiverName}
+                            onChange={(e) => setReceiverName(e.target.value)}
+                            className="w-full h-10 px-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all" 
+                          />
+                          
+                          <div className="flex gap-4">
+                            <div className="flex-1 relative">
+                              <select 
+                                value={giftCardValue || ""}
+                                onChange={(e) => setGiftCardValue(Number(e.target.value))}
+                                className="w-full h-10 px-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all appearance-none"
+                              >
+                                <option value="" disabled>Card Value in ₹ (Select)</option>
+                                <option value={500}>₹ 500</option>
+                                <option value={1000}>₹ 1,000</option>
+                                <option value={5000}>₹ 5,000</option>
+                                <option value={10000}>₹ 10,000</option>
+                              </select>
+                              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-natural pointer-events-none" />
+                            </div>
+                            <div className="w-24 relative">
+                              <input 
+                                type="number" 
+                                min="1"
+                                max="10"
+                                value={giftCardQty}
+                                onChange={(e) => setGiftCardQty(Math.max(1, Number(e.target.value)))}
+                                className="w-full h-10 px-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all" 
+                              />
+                              <span className="absolute left-2 -top-2 bg-white px-1 text-[9px] text-natural">No of Cards</span>
+                            </div>
+                          </div>
+
+                          <input 
+                            type="text" 
+                            placeholder="Gifter's Name (Optional)" 
+                            value={gifterName}
+                            onChange={(e) => setGifterName(e.target.value)}
+                            className="w-full h-10 px-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all" 
+                          />
+                          <textarea 
+                            rows={3} 
+                            placeholder="Write a message (Optional, 100 characters)" 
+                            value={giftMessage}
+                            onChange={(e) => setGiftMessage(e.target.value)}
+                            maxLength={100}
+                            className="w-full p-4 bg-warm-ivory/20 text-xs font-medium border border-natural/20 rounded-lg focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all resize-none" 
+                          />
+                          
+                          <button 
+                            onClick={handleBuyGiftCard}
+                            disabled={isPurchasingGiftCard}
+                            className="w-full h-10 bg-[#4A5568] hover:bg-[#4A5568]/90 text-[#FAF3E3] text-xs font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-wait"
+                          >
+                            {isPurchasingGiftCard ? "Processing..." : "Buy Now"}
+                          </button>
+                        </div>
+
+                        {/* Gift Card Preview */}
+                        <div className="bg-fern rounded-xl p-6 h-56 flex flex-col justify-between text-warm-ivory shadow-md relative overflow-hidden">
+                          <div className="flex justify-between items-start relative z-10">
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">Gift Card Value</p>
+                              <p className="text-3xl font-serif mt-1">₹{giftCardValue * giftCardQty}</p>
+                            </div>
+                            <div className="flex items-center gap-2 font-serif text-xl font-bold tracking-tight">
+                              FACILE <ShoppingBag size={18} className="text-yellow-400 fill-yellow-400" />
+                            </div>
+                          </div>
+                          
+                          {/* Decorative Gift Boxes */}
+                          <div className="absolute bottom-0 left-0 right-0 h-20 flex items-end justify-center gap-1 opacity-90">
+                            <div className="w-8 h-12 bg-green-500 rounded-t-sm" />
+                            <div className="w-10 h-16 bg-orange-500 rounded-t-sm flex justify-center"><div className="w-2 h-full bg-orange-400" /></div>
+                            <div className="w-12 h-10 bg-red-400 rounded-t-sm flex justify-center items-center"><div className="w-full h-2 bg-red-300" /></div>
+                            <div className="w-14 h-14 bg-yellow-400 rounded-t-sm" />
+                            <div className="w-10 h-12 bg-teal-400 rounded-t-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Saved Cards */}
+              {activeTab === "saved_cards" && (
+                <div className="animate-fade-in">
+                  <div className="border border-natural/20 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div className="p-5 flex justify-between items-center border-b border-natural/10 bg-[#F4F4F0]">
+                      <h3 className="font-bold text-sm text-fern">Saved Cards</h3>
+                      <span className="text-[10px] font-bold text-natural uppercase tracking-wider">{savedCards.length}/5 Cards</span>
+                    </div>
+                    <div className="p-6">
+                      <div className="grid grid-cols-1 gap-4 mb-6">
+                        {savedCards.map(card => (
+                          <div key={card.id} className="border border-natural/20 rounded-xl p-4 flex justify-between items-center hover:border-blue-400 transition-colors cursor-pointer bg-warm-ivory/20 max-w-md">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-8 bg-blue-900 rounded flex items-center justify-center text-white text-[10px] font-bold italic">
+                                {card.type}
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-fern">{card.name}</p>
+                                <p className="text-[10px] font-medium text-natural mt-0.5">**** **** **** {card.last4}</p>
+                              </div>
+                            </div>
+                            <button onClick={() => handleRemoveCard(card.id)} className="text-natural hover:text-red-500 cursor-pointer p-2">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <button 
+                        onClick={handleAddCard}
+                        disabled={savedCards.length >= 5}
+                        className="h-10 px-6 border border-fern text-fern text-xs font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer hover:bg-fern hover:text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Plus size={14} /> Add New Card
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Saved UPI */}
+              {activeTab === "saved_upi" && (
+                <div className="animate-fade-in">
+                  <div className="border border-natural/20 rounded-2xl overflow-hidden bg-white shadow-sm p-8 text-center text-natural">
+                    <p className="text-sm font-semibold">No saved UPI IDs found.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 5: Security */}
               {activeTab === "security" && (
                 <div className="space-y-8">
                   {/* Password Change Form */}
