@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
     List<ProductReview> findByProductIdOrderByUpdatedAtDesc(Long productId);
     Optional<ProductReview> findByProductIdAndUserEmailIgnoreCase(Long productId, String userEmail);
+    List<ProductReview> findByUserEmailIgnoreCaseOrderByUpdatedAtDesc(String userEmail);
     long countByProductId(Long productId);
 
     @Query("select avg(r.rating) from ProductReview r where r.product.id = :productId")
