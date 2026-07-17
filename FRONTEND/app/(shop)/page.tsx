@@ -132,7 +132,7 @@ const BEST_SELLERS: ProductCard[] = [
 
 // Mock Categories
 const CATEGORIES = [
-  { id: "c2", label: "Fashion", image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=250", bgColor: "bg-green-50/55 border border-green-100/40" },
+  { id: "c2", label: "Fashion", image: "/fashion-circle.png", bgColor: "bg-green-50/55 border border-green-100/40" },
   { id: "c4", label: "Beauty", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250", bgColor: "bg-purple-50/55 border border-purple-100/40" },
   { id: "c3", label: "Home & Living", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c7", label: "Jewellery & Accessories", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250", bgColor: "bg-amber-50/55 border border-amber-100/40" },
