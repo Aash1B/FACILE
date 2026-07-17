@@ -19,40 +19,44 @@ import {
   Smartphone,
   Globe
 } from "lucide-react";
+interface OrderItem {
+  productId: string;
+  productName: string;
+  price: number;
+  quantity: number;
+}
 
-// Mock Order History Data
-const MOCK_ORDERS = [
-  {
-    id: "FC-84920",
-    date: "July 08, 2026",
-    total: "₹2,900.00",
-    status: "Delivered",
-    items: [
-      { name: "Handcrafted Ceramic Pitcher", price: "₹1,200.00", qty: 1, category: "Ceramics" },
-      { name: "Organic Linen Bedspread", price: "₹1,700.00", qty: 1, category: "Home Decor" }
-    ]
-  },
-  {
-    id: "FC-73819",
-    date: "June 24, 2026",
-    total: "₹850.00",
-    status: "In Transit",
-    items: [
-      { name: "Minimalist Soy Candle Set", price: "₹450.00", qty: 1, category: "Aromatherapy" },
-      { name: "Woven Palm Leaf Coasters", price: "₹400.00", qty: 1, category: "Kitchen" }
-    ]
-  },
-  {
-    id: "FC-62910",
-    date: "May 12, 2026",
-    total: "₹1,500.00",
-    status: "Processing",
-    items: [
-      { name: "Earthy Ceramic Coffee Mugs (Set of 2)", price: "₹600.00", qty: 1, category: "Ceramics" },
-      { name: "Pure Cotton Tote Bag", price: "₹900.00", qty: 1, category: "Bags" }
-    ]
+interface Order {
+  id: string;
+  userId: string;
+  items: OrderItem[];
+  totalAmount: number;
+  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  createdAt: string | number[];
+  shippingAddress: string;
+}
+
+const formatPrice = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+
+const formatOrderDate = (raw: string | number[]) => {
+  try {
+    const date = Array.isArray(raw)
+      ? new Date(raw[0], (raw[1] ?? 1) - 1, raw[2] ?? 1, raw[3] ?? 0, raw[4] ?? 0)
+      : new Date(raw);
+    if (isNaN(date.getTime())) return "Date unavailable";
+    return date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  } catch {
+    return "Date unavailable";
   }
-];
+};
+
+const ORDER_STATUS_STYLES: Record<Order["status"], { bg: string; text: string; dot: string; label: string }> = {
+  PENDING:   { bg: "bg-amber-100",  text: "text-amber-800",  dot: "bg-amber-600",  label: "Pending" },
+  CONFIRMED: { bg: "bg-blue-100",   text: "text-blue-800",   dot: "bg-blue-600",   label: "Confirmed" },
+  SHIPPED:   { bg: "bg-indigo-100", text: "text-indigo-800", dot: "bg-indigo-600", label: "Shipped" },
+  DELIVERED: { bg: "bg-green-100",  text: "text-green-800",  dot: "bg-green-600",  label: "Delivered" },
+  CANCELLED: { bg: "bg-red-100",    text: "text-red-800",    dot: "bg-red-600",    label: "Cancelled" },
+};
 
 // Mock Address Data
 const MOCK_ADDRESSES = [
@@ -117,6 +121,31 @@ function ProfileContent() {
     }
   };
 
+  // Order History state variables
+  const [ordersList, setOrdersList] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "orders" && user?.email) {
+      fetchOrders();
+    }
+  }, [activeTab, user]);
+
+  const fetchOrders = async () => {
+    setIsLoadingOrders(true);
+    try {
+      const res = await fetch(`http://localhost:8081/api/orders/${user.email}`);
+      if (res.ok) {
+        const data = await res.json();
+        setOrdersList(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch order history:", e);
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
+  
   // Security Tab state variables
   const [sessionsList, setSessionsList] = useState<any[]>([]);
   const [auditLogsList, setAuditLogsList] = useState<any[]>([]);
@@ -512,94 +541,82 @@ function ProfileContent() {
                     <p className="text-[11px] text-natural font-medium mt-0.5">Track shipping details and history of previous orders.</p>
                   </div>
 
-                  <div className="space-y-4">
-                    {MOCK_ORDERS.map((order) => {
-                      const isExpanded = expandedOrder === order.id;
-                      return (
-                        <div 
-                          key={order.id}
-                          className="border border-natural/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:border-natural/40 bg-warm-ivory/5"
-                        >
-                          {/* Order Header Summary */}
-                          <div 
-                            onClick={() => toggleOrder(order.id)}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4.5 gap-3 sm:gap-6 cursor-pointer bg-white"
+                 {isLoadingOrders ? (
+                    <div className="text-center py-8 text-xs text-natural font-medium">
+                      Loading your orders...
+                    </div>
+                  ) : ordersList.length === 0 ? (
+                    <div className="text-center py-8 bg-white border border-natural/15 rounded-2xl text-xs text-natural font-medium">
+                      No orders yet. Items you order will show up here once checkout is complete.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {ordersList.map((order) => {
+                        const isExpanded = expandedOrder === order.id;
+                        const statusStyle = ORDER_STATUS_STYLES[order.status] ?? ORDER_STATUS_STYLES.PENDING;
+                        return (
+                          <div
+                            key={order.id}
+                            className="border border-natural/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:border-natural/40 bg-warm-ivory/5"
                           >
-                            <div className="grid grid-cols-2 sm:flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
-                              <div>
-                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Order ID</p>
-                                <p className="text-xs font-bold text-fern mt-0.5">{order.id}</p>
+                            <div
+                              onClick={() => toggleOrder(order.id)}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4.5 gap-3 sm:gap-6 cursor-pointer bg-white"
+                            >
+                              <div className="grid grid-cols-2 sm:flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
+                                <div>
+                                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Order ID</p>
+                                  <p className="text-xs font-bold text-fern mt-0.5 font-mono">{order.id.slice(-8)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Placed On</p>
+                                  <p className="text-xs font-semibold text-fern mt-0.5">{formatOrderDate(order.createdAt)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Total Amount</p>
+                                  <p className="text-xs font-bold text-apricot mt-0.5">{formatPrice(order.totalAmount)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Status</p>
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold mt-1 tracking-wide uppercase ${statusStyle.bg} ${statusStyle.text}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                                    {statusStyle.label}
+                                  </span>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Placed On</p>
-                                <p className="text-xs font-semibold text-fern mt-0.5">{order.date}</p>
-                              </div>
-                              <div>
-                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Total Amount</p>
-                                <p className="text-xs font-bold text-apricot mt-0.5">{order.total}</p>
-                              </div>
-                              <div>
-                                <p className="text-[9px] font-bold text-natural uppercase tracking-wider">Status</p>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold mt-1 tracking-wide uppercase ${
-                                  order.status === "Delivered" 
-                                    ? "bg-green-100 text-green-800" 
-                                    : order.status === "In Transit" 
-                                      ? "bg-blue-100 text-blue-800" 
-                                      : "bg-amber-100 text-amber-800"
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${
-                                    order.status === "Delivered" 
-                                      ? "bg-green-600" 
-                                      : order.status === "In Transit" 
-                                        ? "bg-blue-600" 
-                                        : "bg-amber-600"
-                                  }`} />
-                                  {order.status}
-                                </span>
-                              </div>
+
+                              <button className="text-natural hover:text-fern transition-colors self-end sm:self-center" aria-label="Toggle details">
+                                {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                              </button>
                             </div>
 
-                            <button className="text-natural hover:text-fern transition-colors self-end sm:self-center" aria-label="Toggle details">
-                              {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                            </button>
-                          </div>
-
-                          {/* Order Expanded Details */}
-                          {isExpanded && (
-                            <div className="border-t border-natural/15 p-4.5 bg-warm-ivory/10 space-y-4 animate-fade-in">
-                              <h4 className="text-[10px] font-bold uppercase tracking-wider text-natural">Items in Order</h4>
-                              <div className="divide-y divide-natural/10">
-                                {order.items.map((item, idx) => (
-                                  <div key={idx} className="flex justify-between py-3 first:pt-0 last:pb-0 text-xs">
-                                    <div className="space-y-1">
-                                      <p className="font-bold text-fern">{item.name}</p>
-                                      <p className="text-[10px] font-semibold text-natural">{item.category} • Qty: {item.qty}</p>
+                            {isExpanded && (
+                              <div className="border-t border-natural/15 p-4.5 bg-warm-ivory/10 space-y-4 animate-fade-in">
+                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-natural">Items in Order</h4>
+                                <div className="divide-y divide-natural/10">
+                                  {order.items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between py-3 first:pt-0 last:pb-0 text-xs">
+                                      <div className="space-y-1">
+                                        <p className="font-bold text-fern">{item.productName}</p>
+                                        <p className="text-[10px] font-semibold text-natural">Qty: {item.quantity}</p>
+                                      </div>
+                                      <p className="font-bold text-fern">{formatPrice(item.price * item.quantity)}</p>
                                     </div>
-                                    <p className="font-bold text-fern">{item.price}</p>
-                                  </div>
-                                ))}
-                              </div>
+                                  ))}
+                                </div>
 
-                              <div className="border-t border-natural/10 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
-                                <div className="space-y-1 font-semibold text-natural">
-                                  <p>Payment Method: <span className="text-fern font-bold">Credit Card (**** 4820)</span></p>
-                                  <p>Shipment Carrier: <span className="text-fern font-bold">BlueDart Express</span></p>
-                                </div>
-                                <div className="flex gap-2.5 w-full sm:w-auto">
-                                  <button className="flex-1 sm:flex-none h-8 px-4 border border-natural/25 hover:border-fern text-fern font-bold text-[10px] rounded-lg transition-colors cursor-pointer bg-white">
-                                    Invoice PDF
-                                  </button>
-                                  <button className="flex-1 sm:flex-none h-8 px-4 bg-fern hover:bg-apricot text-warm-ivory font-bold text-[10px] rounded-lg transition-colors cursor-pointer">
-                                    Track Package
-                                  </button>
+                                <div className="border-t border-natural/10 pt-4 text-xs">
+                                  <p className="font-semibold text-natural">
+                                    Delivering to: <span className="text-fern font-bold">{order.shippingAddress}</span>
+                                  </p>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {/* Digital Transactions / Payment History section */}
                   <div className="pt-8 border-t border-natural/15">
