@@ -218,14 +218,23 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
+  const [isPaused, setIsPaused] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const scrollCategoriesLeft = () => {
-    setActiveCategoryIndex((current) => Math.max(0, current - 1));
+    setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
   };
   const scrollCategoriesRight = () => {
-    setActiveCategoryIndex((current) => Math.min(CATEGORIES.length - 1, current + 1));
+    setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
   };
+
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   useEffect(() => {
     if (carouselRef.current) {
@@ -464,18 +473,16 @@ function HomeContent() {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
           {/* Left Arrow Button */}
-          {activeCategoryIndex > 0 && (
-            <button
-              type="button"
-              onClick={scrollCategoriesLeft}
-              aria-label="Scroll categories left"
-              className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
-            >
-              <ChevronLeft size={20} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={scrollCategoriesLeft}
+            aria-label="Scroll categories left"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
+          >
+            <ChevronLeft size={20} />
+          </button>
 
           {/* Categories Carousel */}
           <div
@@ -506,16 +513,14 @@ function HomeContent() {
           </div>
 
           {/* Right Arrow Button */}
-          {activeCategoryIndex < CATEGORIES.length - 1 && (
-            <button
-              type="button"
-              onClick={scrollCategoriesRight}
-              aria-label="Scroll categories right"
-              className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
-            >
-              <ChevronRight size={20} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={scrollCategoriesRight}
+            aria-label="Scroll categories right"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
 
         <div className="mt-2 flex justify-center">

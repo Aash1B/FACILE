@@ -7,7 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
-import { FALLBACK_PRODUCTS } from "../../search/page";
+import { FALLBACK_PRODUCTS, FALLBACK_PRODUCTS_MAP, CATEGORY_DETAILS } from "@/lib/fallbackData";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -113,6 +113,32 @@ export default function ProductDetailPage({ params }: PageProps) {
             subCategory: p.brand || ""
           };
         }
+      });
+    }
+
+    // Add from category page fallback products
+    if (FALLBACK_PRODUCTS_MAP) {
+      Object.keys(FALLBACK_PRODUCTS_MAP).forEach((catId) => {
+        const subCatMap = FALLBACK_PRODUCTS_MAP[catId];
+        Object.keys(subCatMap).forEach((subCatName) => {
+          const p = subCatMap[subCatName];
+          if (p && p.id) {
+            const fullId = String(p.id).startsWith("bs") ? p.id : `bs${p.id}`;
+            map[fullId] = {
+              id: fullId,
+              name: p.title,
+              price: p.sellingPrice,
+              originalPrice: p.mrp,
+              image: p.image,
+              rating: p.rating || 4.5,
+              reviews: p.reviews || 42,
+              description: p.description || "",
+              category: CATEGORY_DETAILS[catId]?.name || "Uncategorized",
+              subCategory: subCatName || "",
+              maxOrderQuantity: p.maxOrderQuantity || 10
+            };
+          }
+        });
       });
     }
 
