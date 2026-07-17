@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
@@ -15,7 +15,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -27,14 +27,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const USER_ID = "user123"; // TODO: replace once real auth/JWT is wired in
-const API_BASE = "http://localhost:8081";
-const IMAGE_CACHE_KEY = "facile_product_display_cache"; // productId -> {image, brand}, display-only
-
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const recentAddClicks = useRef<Map<string, number>>(new Map());
 
   // Sync cart from backend or local storage when user state changes
   useEffect(() => {
@@ -61,6 +59,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     body: JSON.stringify({
                       productId: localItem.id,
                       productName: localItem.name,
+                      image: localItem.image,
+                      maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: localItem.quantity,
                     }),
@@ -74,6 +74,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     body: JSON.stringify({
                       productId: localItem.id,
                       productName: localItem.name,
+                      image: localItem.image,
+                      maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: diff,
                     }),
@@ -90,62 +92,55 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           if (finalRes.ok) {
             const finalCart = await finalRes.json();
             // Map backend cart structure back to frontend CartItem
-            const mappedCart: CartItem[] = finalCart.items.map((i: any) => ({
-              id: i.productId,
-              name: i.productName,
-              price: i.price,
-              brand: "Facile",
-              image: i.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300", // mock image path
-              quantity: i.quantity,
+            const mappedCart: CartItem[] = await Promise.all(finalCart.items.map(async (i: any) => {
+              let image = i.image;
+              if (!image) {
+                const numericProductId = String(i.productId).replace(/\D+/g, "");
+                if (numericProductId) {
+                  try {
+                    const productRes = await fetch(`/api/products/${numericProductId}`);
+                    if (productRes.ok) image = (await productRes.json()).image;
+                  } catch {
+                    // Use the fallback below only when product lookup fails.
+                  }
+                }
+              }
+
+              return {
+                id: i.productId,
+                name: i.productName,
+                price: i.price,
+                brand: "Facile",
+                image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
+                maxOrderQuantity: i.maxOrderQuantity || 10,
+                quantity: i.quantity,
+              };
             }));
             setCart(mappedCart);
           }
         } catch (e) {
-          console.error("Error parsing product display cache", e);
+          console.error("Failed to sync cart with backend:", e);
+        }
+      } else {
+        // Guest user: load from local storage
+        const savedCart = localStorage.getItem("facile_cart");
+        if (savedCart) {
+          try {
+            setCart(JSON.parse(savedCart));
+          } catch (e) {
+            console.error("Error parsing cart data", e);
+          }
+        } else {
+          setCart([]);
         }
       }
-    }
-    return backendItems.map((item) => ({
-      id: item.productId,
-      name: item.productName,
-      price: item.price,
-      quantity: item.quantity,
-      brand: displayCache[item.productId]?.brand ?? "Facile Store",
-      image: displayCache[item.productId]?.image ?? "/placeholder-product.png"
-    }));
-  };
+    };
 
-  const cacheDisplayInfo = (id: string, image: string, brand: string) => {
-    if (typeof window === "undefined") return;
-    let displayCache: Record<string, { image: string; brand: string }> = {};
-    const raw = localStorage.getItem(IMAGE_CACHE_KEY);
-    if (raw) {
-      try {
-        displayCache = JSON.parse(raw);
-      } catch (e) {
-        console.error("Error parsing product display cache", e);
-      }
-    }
-    displayCache[id] = { image, brand };
-    localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(displayCache));
-  };
+    syncCart();
+  }, [user]);
 
-  const fetchCartFromBackend = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/cart/${USER_ID}`);
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(mergeWithDisplayCache(data.items ?? []));
-    } catch (e) {
-      console.error("Failed to fetch cart from backend:", e);
-    } finally {
-      setIsCartLoaded(true);
-    }
-  };
-
+  // Load favorites on mount
   useEffect(() => {
-    fetchCartFromBackend();
-
     if (typeof window !== "undefined") {
       const savedFavs = localStorage.getItem("facile_favorites");
       if (savedFavs) {
@@ -158,6 +153,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const saveCartState = (newCart: CartItem[]) => {
+    setCart(newCart);
+    if (!user && typeof window !== "undefined") {
+      localStorage.setItem("facile_cart", JSON.stringify(newCart));
+    }
+  };
+
   const saveFavorites = (newFavs: string[]) => {
     setFavorites(newFavs);
     if (typeof window !== "undefined") {
@@ -166,29 +168,41 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
+    const now = Date.now();
+    const lastClick = recentAddClicks.current.get(item.id) ?? 0;
+    if (now - lastClick < 800) return;
+    recentAddClicks.current.set(item.id, now);
+
     const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
+    const maxQuantity = item.maxOrderQuantity || 10;
+    const safeQuantityToAdd = Math.min(maxQuantity, Math.max(1, quantityToAdd));
     
     if (user && user.email) {
       // Sync with database
       try {
         await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": crypto.randomUUID(),
+          },
           body: JSON.stringify({
             productId: item.id,
             productName: item.name,
+            image: item.image,
+            maxOrderQuantity: maxQuantity,
             price: item.price,
-            quantity: quantityToAdd,
+            quantity: safeQuantityToAdd,
           }),
         });
 
         // Update state
         if (existingIndex > -1) {
           const newCart = [...cart];
-          newCart[existingIndex].quantity += quantityToAdd;
+          newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
           saveCartState(newCart);
         } else {
-          saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
+          saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
         }
       } catch (e) {
         console.error("Failed to add item to db cart:", e);
@@ -197,24 +211,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Guest: local storage
       if (existingIndex > -1) {
         const newCart = [...cart];
-        newCart[existingIndex].quantity += quantityToAdd;
+        newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
         saveCartState(newCart);
       } else {
-        saveCartState([...cart, { ...item, quantity: quantityToAdd }]);
+        saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
       }
     }
   };
 
   const removeFromCart = async (id: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/cart/${USER_ID}/remove/${id}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(mergeWithDisplayCache(data.items ?? []));
-    } catch (e) {
-      console.error("Failed to remove item from cart:", e);
+    if (user && user.email) {
+      try {
+        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+          method: "DELETE",
+        });
+        saveCartState(cart.filter((item) => item.id !== id));
+      } catch (e) {
+        console.error("Failed to remove item from db cart:", e);
+      }
+    } else {
+      saveCartState(cart.filter((item) => item.id !== id));
     }
   };
 
@@ -226,6 +242,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const currentItem = cart.find((item) => item.id === id);
     if (!currentItem) return;
+    qty = Math.min(currentItem.maxOrderQuantity || 10, qty);
 
     if (user && user.email) {
       try {
@@ -238,6 +255,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               productId: id,
               productName: currentItem.name,
+              image: currentItem.image,
+              maxOrderQuantity: currentItem.maxOrderQuantity || 10,
               price: currentItem.price,
               quantity: qty - oldQty,
             }),
@@ -253,6 +272,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               productId: id,
               productName: currentItem.name,
+              image: currentItem.image,
+              maxOrderQuantity: currentItem.maxOrderQuantity || 10,
               price: currentItem.price,
               quantity: qty,
             }),
@@ -273,16 +294,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearCart = async () => {
-    // No bulk-clear endpoint exists — remove items one by one
-    try {
-      for (const item of cart) {
-        await fetch(`${API_BASE}/api/cart/${USER_ID}/remove/${item.id}`, {
-          method: "DELETE"
-        });
+    if (user && user.email) {
+      try {
+        // Clear each item in database
+        for (const item of cart) {
+          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
+            method: "DELETE",
+          });
+        }
+        saveCartState([]);
+      } catch (e) {
+        console.error("Failed to clear db cart:", e);
       }
-      setCart([]);
-    } catch (e) {
-      console.error("Failed to clear cart:", e);
+    } else {
+      saveCartState([]);
     }
   };
 
@@ -305,7 +330,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         favorites,
         toggleFavorite,
         isCartOpen,
-        setIsCartOpen
+        setIsCartOpen,
       }}
     >
       {children}
