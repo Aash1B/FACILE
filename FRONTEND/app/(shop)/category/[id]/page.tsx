@@ -43,6 +43,33 @@ const FALLBACK_SUBCATEGORIES: Record<string, string[]> = {
   "11": ["Dog Supplies", "Cat Supplies", "Pet Food", "Treats", "Toys", "Grooming", "Beds & Mats", "Bowls & Feeders"],
 };
 
+const APPAREL_SUBCATEGORIES = new Set([
+  "Tops & T-Shirts",
+  "Dresses",
+  "Bottom Wear",
+  "Ethnic Wear",
+  "Winter Wear",
+  "Activewear",
+  "Loungewear",
+  "Co-ord Sets",
+]);
+
+const FASHION_RETAIL_SUBCATEGORIES = new Set([
+  "Dresses",
+  "Winter Wear",
+  "Bottom Wear",
+  "Ethnic Wear",
+  "Loungewear",
+  "Co-ord Sets",
+]);
+
+const JEWELRY_SUBCATEGORIES = new Set([
+  "Earrings",
+  "Necklaces",
+  "Bracelets",
+  "Rings",
+]);
+
 const CATEGORY_BRANDS: Record<string, string[]> = {
   "8": ["Adidas", "Nike", "FILA", "HRX", "Puma", "Superdry"],
 };
@@ -963,12 +990,29 @@ function FilterPanel({
     );
 
   const brands = useMemo(() => {
+    const normalizedSubcategoryName = subcategoryName.toLowerCase().replace(/\s+/g, "");
+
+    if (categoryId === "2" && subcategoryName === "Ethnic Wear") {
+      return ["Zara", "H&M", "Mango", "Uniqlo", "Levi's", "Forever 21", "Fabindia"];
+    }
+    if (categoryId === "2" && normalizedSubcategoryName === "activewear") {
+      return ["Nike", "Puma", "Adidas", "Reebok", "HRX", "New Balance"];
+    }
+    if (categoryId === "2" && FASHION_RETAIL_SUBCATEGORIES.has(subcategoryName)) {
+      return ["Zara", "H&M", "Mango", "Uniqlo", "Levi's", "Forever 21"];
+    }
+    if (categoryId === "2" && APPAREL_SUBCATEGORIES.has(subcategoryName)) {
+      return ["The Souled Store", "Snitch", "Bonkers Corner", "Bewakoof", "Urbanic", "NEWME", "Nobero", "Powerlook", "Rare Rabbit", "The Bear House"];
+    }
+    if (categoryId === "7" && JEWELRY_SUBCATEGORIES.has(subcategoryName)) {
+      return ["Pandora", "Giva", "Palmonas", "Pipa Bella"];
+    }
     if (CATEGORY_BRANDS[categoryId]) {
       return CATEGORY_BRANDS[categoryId];
     }
     const s = new Set(products.map((p) => p.brand).filter(Boolean) as string[]);
     return Array.from(s).sort();
-  }, [products, categoryId]);
+  }, [products, categoryId, subcategoryName]);
 
   const colors = useMemo(() => {
     const s = new Set(products.map((p) => p.color).filter(Boolean) as string[]);

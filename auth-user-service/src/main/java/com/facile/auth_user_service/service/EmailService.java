@@ -20,6 +20,9 @@ public class EmailService {
     @org.springframework.beans.factory.annotation.Value("${spring.mail.password:}")
     private String mailPassword;
 
+    @org.springframework.beans.factory.annotation.Value("${application.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
+
     @jakarta.annotation.PostConstruct
     public void init() {
         log.info("[SMTP CONFIG CHECK] Username resolved to: '{}', Password length: {}", 
@@ -143,9 +146,11 @@ public class EmailService {
         }
     }
 
-    public void sendPasswordResetEmail(String toEmail, String name, String otpCode) {
+    public void sendPasswordResetEmail(String toEmail, String name, String resetToken) {
+        String resetUrl = frontendUrl + "/forgot-password?token=" +
+                java.net.URLEncoder.encode(resetToken, java.nio.charset.StandardCharsets.UTF_8);
         System.out.println("\n==================================================");
-        System.out.println("[DEVELOPER PASSWORD RESET OTP] OTP for " + toEmail + " (" + name + ") is: " + otpCode);
+        System.out.println("[DEVELOPER PASSWORD RESET LINK] " + resetUrl);
         System.out.println("==================================================\n");
 
         try {
@@ -181,9 +186,9 @@ public class EmailService {
                         <div class="content">
                             <h2>Password Reset Request</h2>
                             <p>Hello %s,</p>
-                            <p>We received a request to reset your password. Use the following One-Time Password (OTP) code to complete your reset. If you did not request this, please change your password immediately.</p>
-                            <div class="otp-box">%s</div>
-                            <p>This code is valid for <strong>5 minutes</strong>.</p>
+                            <p>We received a request to reset your password. Click the secure link below to choose a new password.</p>
+                            <p><a href="%s" style="display:inline-block;background:#424530;color:#fff;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:bold">Reset my password</a></p>
+                            <p>This one-time link is valid for <strong>15 minutes</strong>. If you did not request it, ignore this email.</p>
                         </div>
                         <div class="footer">
                             &copy; 2026 Facile Inc. All rights reserved.
@@ -191,7 +196,7 @@ public class EmailService {
                     </div>
                 </body>
                 </html>
-                """.formatted(name, otpCode);
+                """.formatted(name, resetUrl);
 
             helper.setText(htmlContent, true);
             mailSender.send(message);

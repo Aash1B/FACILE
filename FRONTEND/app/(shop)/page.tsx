@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCoverflow, Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import "swiper/css/navigation";
+import { motion } from "framer-motion";
 import {
   getRecentlyViewed,
   recordRecentlyViewed,
@@ -132,16 +138,16 @@ const BEST_SELLERS: ProductCard[] = [
 
 // Mock Categories
 const CATEGORIES = [
-  { id: "c2", label: "Fashion", image: "/fashion-circle.png", bgColor: "bg-green-50/55 border border-green-100/40" },
-  { id: "c4", label: "Beauty", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=250", bgColor: "bg-purple-50/55 border border-purple-100/40" },
-  { id: "c3", label: "Home & Living", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=250", bgColor: "bg-orange-50/55 border border-orange-100/40" },
-  { id: "c7", label: "Jewellery & Accessories", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=250", bgColor: "bg-amber-50/55 border border-amber-100/40" },
-  { id: "c8", label: "Footwear", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=250", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
-  { id: "c1", label: "Electronics", image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=250", bgColor: "bg-blue-50/55 border border-blue-100/40" },
-  { id: "c9", label: "Stationery", image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=250", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
-  { id: "c6", label: "Kids & Baby", image: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=250", bgColor: "bg-rose-50/55 border border-rose-100/40" },
-  { id: "c10", label: "Health & Wellness", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=250", bgColor: "bg-lime-50/55 border border-lime-100/40" },
-  { id: "c5", label: "Sports", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=250", bgColor: "bg-teal-50/55 border border-teal-100/40" },
+  { id: "c2", label: "Fashion", image: "https://plain-apac-prod-public.komododecks.com/202607/17/qKpLYvFyROMI7leCj3CB/image.jpg", bgColor: "bg-green-50/55 border border-green-100/40" },
+  { id: "c4", label: "Beauty", image: "https://plain-apac-prod-public.komododecks.com/202607/17/d9NfYAkJvfqHEU2qtifI/image.png", bgColor: "bg-purple-50/55 border border-purple-100/40" },
+  { id: "c3", label: "Home & Living", image: "https://plain-apac-prod-public.komododecks.com/202607/17/NlNTLMW9a5QezH556U2E/image.png", bgColor: "bg-orange-50/55 border border-orange-100/40" },
+  { id: "c7", label: "Jewellery & Accessories", image: "https://plain-apac-prod-public.komododecks.com/202607/17/r2Wl1ThgEtUYbK0mSqCE/image.jpg", bgColor: "bg-amber-50/55 border border-amber-100/40" },
+  { id: "c8", label: "Footwear", image: "https://plain-apac-prod-public.komododecks.com/202607/17/tUmgd5MPVooerUVvRLme/image.jpg", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
+  { id: "c1", label: "Electronics", image: "https://plain-apac-prod-public.komododecks.com/202607/17/OP1zDwVgGwQTldoBny0u/image.png", bgColor: "bg-blue-50/55 border border-blue-100/40" },
+  { id: "c9", label: "Stationery", image: "https://plain-apac-prod-public.komododecks.com/202607/17/wPlN3dHGv1kawI0tdp5t/image.jpg", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
+  { id: "c6", label: "Kids & Baby", image: "https://plain-apac-prod-public.komododecks.com/202607/17/QB3FzjHXFZ78VF7EDRqx/image.png", bgColor: "bg-rose-50/55 border border-rose-100/40" },
+  { id: "c10", label: "Health & Wellness", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PuXLUYcl7nDsR0bD15Ce/image.png", bgColor: "bg-lime-50/55 border border-lime-100/40" },
+  { id: "c5", label: "Sports", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PECWKykUnRfaQoB2VAyf/image.png", bgColor: "bg-teal-50/55 border border-teal-100/40" },
   { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
@@ -217,44 +223,6 @@ function HomeContent() {
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
-  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
-  const [isPaused, setIsPaused] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  const scrollCategoriesLeft = () => {
-    setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
-  };
-  const scrollCategoriesRight = () => {
-    setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
-  };
-
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isPaused]);
-
-  useEffect(() => {
-    if (carouselRef.current) {
-      const activeEl = carouselRef.current.querySelector(".active-category") as HTMLElement;
-      if (activeEl) {
-        const container = carouselRef.current;
-        const containerWidth = container.clientWidth;
-        const activeWidth = activeEl.clientWidth;
-        const activeLeft = activeEl.offsetLeft;
-
-        // Calculate target scrollLeft to center the active category item
-        const targetScrollLeft = activeLeft - (containerWidth / 2) + (activeWidth / 2);
-
-        container.scrollTo({
-          left: targetScrollLeft,
-          behavior: "smooth"
-        });
-      }
-    }
-  }, [activeCategoryIndex]);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -466,61 +434,97 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative">
+      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
           </div>
         </div>
 
-        <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-          {/* Left Arrow Button */}
-          <button
-            type="button"
-            onClick={scrollCategoriesLeft}
-            aria-label="Scroll categories left"
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
-          >
+        <div className="relative group/carousel py-8">
+          {/* Custom Navigation Buttons */}
+          <button className="swiper-button-prev-custom absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronLeft size={20} />
           </button>
-
-          {/* Categories Carousel */}
-          <div
-            ref={carouselRef}
-            className="flex items-center overflow-x-auto justify-start gap-2 sm:gap-3 no-scrollbar pt-3 pb-5 px-12 sm:px-16 select-none"
-          >
-            {CATEGORIES.map((category, index) => {
-              const isActive = index === activeCategoryIndex;
-              return (
-                <Link
-                  key={category.id}
-                  href={`/category/${category.id.replace("c", "")}`}
-                  className={`flex w-52 sm:w-56 flex-col items-center justify-start pt-1 gap-3 rounded-[36px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8A1C4] flex-shrink-0 ${isActive ? "active-category" : ""}`}
-                >
-                  <div className={`${isActive ? "w-56 h-56 sm:w-60 sm:h-60 shadow-[0_16px_40px_rgba(74,85,104,0.35)] ring-4 ring-[#E8437F]/30 scale-105" : "w-48 h-48 sm:w-52 sm:h-52 shadow-sm ring-1 ring-white/70 hover:scale-[1.02]"} aspect-square shrink-0 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 ${category.bgColor}`}>
-                    <img
-                      src={category.image}
-                      alt={category.label}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className={`text-sm sm:text-base font-extrabold text-center transition-colors duration-300 ${isActive ? "text-[#E8437F]" : "text-[#4a556a] hover:text-[#1A202C]"}`}>
-                    {category.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Right Arrow Button */}
-          <button
-            type="button"
-            onClick={scrollCategoriesRight}
-            aria-label="Scroll categories right"
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer z-10"
-          >
+          
+          <button className="swiper-button-next-custom absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronRight size={20} />
           </button>
+
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
+            }}
+          >
+            <Swiper
+              modules={[EffectCoverflow, Navigation, Autoplay]}
+              effect="coverflow"
+              grabCursor={true}
+              centeredSlides={true}
+              slidesPerView="auto"
+              spaceBetween={30}
+              loop={true}
+              speed={450}
+              autoplay={{ delay: 3500, disableOnInteraction: false }}
+              coverflowEffect={{
+                rotate: 4,
+                stretch: 0,
+                depth: 80,
+                modifier: 1.2,
+                slideShadows: false,
+              }}
+              navigation={{
+                nextEl: '.swiper-button-next-custom',
+                prevEl: '.swiper-button-prev-custom',
+              }}
+              className="!px-4 sm:!px-12 !pb-8 !pt-6"
+            >
+              {CATEGORIES.map((category) => (
+                <SwiperSlide key={category.id} className="!w-[200px] sm:!w-[220px]">
+                  {({ isActive }) => (
+                    <motion.div variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+                    }}>
+                      <Link
+                        href={`/category/${category.id.replace("c", "")}`}
+                        className={`flex flex-col items-center justify-start gap-4 focus:outline-none transition-all duration-[450ms] ease-in-out group ${
+                          isActive 
+                            ? "scale-[1.15] -translate-y-[4px]" 
+                            : "scale-[0.88] opacity-80 grayscale-[8%] hover:scale-[0.93] hover:-translate-y-1"
+                        }`}
+                      >
+                        <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${
+                          isActive 
+                            ? `shadow-[0_12px_30px_rgba(232,67,127,0.25)] bg-white ${category.bgColor}` 
+                            : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
+                        }`}>
+                          <img
+                            src={category.image}
+                            alt={category.label}
+                            className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${
+                              isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
+                            }`}
+                          />
+                        </div>
+                        <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${
+                          isActive 
+                            ? "text-[#E8437F] drop-shadow-sm" 
+                            : "text-[#4a556a] group-hover:text-[#1A202C]"
+                        }`}>
+                          {category.label}
+                        </span>
+                      </Link>
+                    </motion.div>
+                  )}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </motion.div>
         </div>
 
         <div className="mt-2 flex justify-center">
