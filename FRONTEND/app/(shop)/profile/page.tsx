@@ -59,7 +59,7 @@ const MOCK_ORDERS = [
 const MOCK_ADDRESSES: any[] = [];
 
 function ProfileContent() {
-  const { user, logout, isLoading, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
+  const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -299,13 +299,11 @@ function ProfileContent() {
     setAddresses(addresses.filter(addr => addr.id !== id));
   };
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword && newPassword === confirmPassword) {
+    if (user?.email) {
+      await forgotPassword(user.email);
       setPasswordSuccess(true);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
       setTimeout(() => setPasswordSuccess(false), 4000);
     }
   };
@@ -1077,11 +1075,12 @@ function ProfileContent() {
                   </div>
 
                   <form onSubmit={handlePasswordUpdate} className="space-y-4 max-w-md">
+                    <div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-natural">Email address</label><input type="email" readOnly value={user.email} className="w-full h-10 px-4 bg-warm-ivory/20 border border-natural/25 text-xs font-medium text-fern rounded-xl" /></div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Current Password</label>
+                      <label className="hidden">Current Password</label>
                       <input 
                         type="password" 
-                        required
+                        hidden
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="••••••••"
@@ -1090,10 +1089,10 @@ function ProfileContent() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-natural">New Password</label>
+                      <label className="hidden">New Password</label>
                       <input 
                         type="password" 
-                        required
+                        hidden
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Min 8 characters"
@@ -1102,10 +1101,10 @@ function ProfileContent() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-natural">Confirm New Password</label>
+                      <label className="hidden">Confirm New Password</label>
                       <input 
                         type="password" 
-                        required
+                        hidden
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Match new password"
@@ -1117,7 +1116,7 @@ function ProfileContent() {
                       type="submit"
                       className="h-10 px-6 bg-fern hover:bg-apricot text-warm-ivory text-xs font-bold tracking-wide rounded-xl cursor-pointer transition-colors shadow"
                     >
-                      Update Password
+                      Send Reset Link
                     </button>
                   </form>
 

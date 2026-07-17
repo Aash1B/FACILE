@@ -50,6 +50,11 @@ public class User implements UserDetails {
     private String resetOtpCode;
     private LocalDateTime resetOtpExpiry;
 
+    @Column(length = 64)
+    private String resetTokenHash;
+    private LocalDateTime resetTokenExpiry;
+    private LocalDateTime passwordChangedAt;
+
     private String mfaSecret;
 
     @Builder.Default

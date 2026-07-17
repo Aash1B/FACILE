@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   LogOut,
   X,
+  Clock,
   Home,
   Store,
   LayoutGrid,
@@ -45,14 +47,22 @@ const FALLBACK_CATEGORIES: StoreCategory[] = [
   { id: 5, name: "Sports" }, { id: 11, name: "Pets" },
 ];
 
+const FALLBACK_SUBCATEGORIES: Record<string, string[]> = {
+  "1": ["Mobile Accessories", "Audio Devices", "Smart Watches", "Laptop Accessories", "Gaming Accessories", "Smart Home Devices", "Power Banks", "Cables & Chargers"],
+  "2": ["Tops & T-Shirts", "Dresses", "Bottom Wear", "Ethnic Wear", "Winter Wear", "Activewear", "Loungewear", "Co-ord Sets"],
+  "3": ["Home Decor", "Kitchen Essentials", "Dining", "Bedding", "Storage & Organization", "Lighting", "Furniture", "Bath Essentials"],
+  "4": ["Skincare", "Makeup", "Hair Care", "Fragrances", "Bath & Body", "Nail Care", "Beauty Tools", "Men's Grooming"],
+  "5": ["Cricket", "Football", "Badminton", "Gym Equipment", "Cycling", "Running Gear", "Outdoor Games", "Sports Accessories"],
+  "6": ["Baby Clothing", "Kids Clothing", "Toys", "Baby Care", "School Essentials", "Feeding Essentials", "Baby Bedding", "Kids Footwear"],
+  "7": ["Earrings", "Necklaces", "Bracelets", "Rings", "Watches", "Bags", "Hair Accessories", "Sunglasses"],
+  "8": ["Sneakers", "Flats", "Heels", "Sandals", "Boots", "Loafers", "Slippers", "Sports Shoes"],
+  "9": ["Notebooks", "Pens & Pencils", "Art Supplies", "Desk Organizers", "Journals", "Planners", "Sticky Notes", "Office Supplies"],
+  "10": ["Vitamins & Supplements", "Fitness Equipment", "Personal Care", "Yoga Essentials", "Healthy Snacks", "Massagers", "Health Monitors", "Wellness Kits"],
+  "11": ["Dog Supplies", "Cat Supplies", "Pet Food", "Treats", "Toys", "Grooming", "Beds & Mats", "Bowls & Feeders"],
+};
+
 // Fallback products for search suggestions when backend is unavailable
 const FALLBACK_PRODUCTS = [
-  { id: "bs1", title: "Smart Watch Series 5", sellingPrice: 8999, image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400" },
-  { id: "bs2", title: "Wireless Headphones", sellingPrice: 5999, image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400" },
-  { id: "bs3", title: "Travel Backpack", sellingPrice: 3999, image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400" },
-  { id: "bs4", title: "Running Shoes", sellingPrice: 4999, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400" },
-  { id: "bs5", title: "Luxury Perfume", sellingPrice: 2999, image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400" },
-  { id: "bs6", title: "Portable Bluetooth Speaker", sellingPrice: 2499, image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400" },
   { id: "bs7", title: "Classic Sunglasses", sellingPrice: 1499, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400" },
   { id: "bs8", title: "Ceramic Coffee Set", sellingPrice: 1899, image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400" },
   { id: "bs9", title: "Premium Yoga Mat", sellingPrice: 1299, image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400" },
@@ -70,6 +80,77 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLFormElement>(null);
   const mobileSearchContainerRef = useRef<HTMLFormElement>(null);
+
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNavHeartFilled, setIsNavHeartFilled] = useState(false);
+  const [categories, setCategories] = useState<StoreCategory[]>(FALLBACK_CATEGORIES);
+  const [activeCategory, setActiveCategory] = useState<StoreCategory | null>(null);
+  const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, StoreSubcategory[]>>({});
+  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("search_history");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const formatted = parsed.map((item: string) =>
+              item
+                .split(/\s+/)
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(" ")
+            );
+            setSearchHistory(formatted);
+          }
+        } catch {
+          setSearchHistory([]);
+        }
+      }
+    }
+  }, []);
+
+  const saveToHistory = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    
+    // Capitalize query to Title Case for consistency (e.g., "shoes" -> "Shoes")
+    const formatted = trimmed
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+
+    setSearchHistory((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== formatted.toLowerCase());
+      const nextHistory = [formatted, ...filtered].slice(0, 10);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("search_history", JSON.stringify(nextHistory));
+      }
+      return nextHistory;
+    });
+  };
+
+  const deleteHistoryItem = (itemToDelete: string) => {
+    setSearchHistory((prev) => {
+      const nextHistory = prev.filter((item) => item !== itemToDelete);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("search_history", JSON.stringify(nextHistory));
+      }
+      return nextHistory;
+    });
+  };
+
+  const clearAllHistory = () => {
+    setSearchHistory([]);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("search_history");
+    }
+  };
 
   useEffect(() => {
     setSearchQuery(urlSearch);
@@ -94,18 +175,50 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCategoriesAndSubcategories = async () => {
       try {
         const response = await fetch("/api/categories");
-        if (!response.ok) return;
+        if (!response.ok) {
+          loadFallbackSubcategories();
+          return;
+        }
         const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) setCategories(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+          // Fetch all subcategories in parallel
+          const subMap: Record<string, StoreSubcategory[]> = {};
+          await Promise.all(
+            data.map(async (cat: StoreCategory) => {
+              try {
+                const subResponse = await fetch(`/api/categories/${cat.id}/subcategories`);
+                const subData = subResponse.ok ? await subResponse.json() : [];
+                subMap[String(cat.id)] = Array.isArray(subData) ? subData : [];
+              } catch {
+                subMap[String(cat.id)] = [];
+              }
+            })
+          );
+          setSubcategoriesByCategory(subMap);
+        } else {
+          loadFallbackSubcategories();
+        }
       } catch {
-        // Keep the local fallback when the category service is offline.
+        loadFallbackSubcategories();
       }
     };
 
-    fetchCategories();
+    const loadFallbackSubcategories = () => {
+      const fallbackSubMap: Record<string, StoreSubcategory[]> = {};
+      Object.entries(FALLBACK_SUBCATEGORIES).forEach(([catId, subNames]) => {
+        fallbackSubMap[catId] = subNames.map((name, idx) => ({
+          id: `sub_${catId}_${idx}`,
+          name,
+        }));
+      });
+      setSubcategoriesByCategory(fallbackSubMap);
+    };
+
+    fetchCategoriesAndSubcategories();
   }, []);
 
   useEffect(() => {
@@ -125,33 +238,170 @@ export default function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setShowSuggestions(false);
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    const queryTerm = searchQuery.trim();
+    if (queryTerm) {
+      saveToHistory(queryTerm);
+      router.push(`/search?q=${encodeURIComponent(queryTerm)}`);
     } else {
       router.push("/");
     }
   };
 
-  const searchSuggestions = searchQuery.trim()
-    ? allProducts.filter((product) =>
-      product.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 5)
-    : [];
+  const query = searchQuery.trim();
 
-  // Helper: avoid double "bs" prefix for fallback products vs backend numeric IDs
-  const getProductHref = (id: string | number) => {
-    const idStr = String(id);
-    return idStr.startsWith("bs") ? `/product/${idStr}` : `/product/bs${idStr}`;
+  // Helper to match suggestions starting strictly with the query prefix
+  const matchesQuery = (text: string, q: string) => {
+    return text.toLowerCase().startsWith(q.toLowerCase());
   };
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isNavHeartFilled, setIsNavHeartFilled] = useState(false);
-  const [categories, setCategories] = useState<StoreCategory[]>(FALLBACK_CATEGORIES);
-  const [activeCategory, setActiveCategory] = useState<StoreCategory | null>(null);
-  const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, StoreSubcategory[]>>({});
-  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+
+  // 1. History matches: Filter matching search history. If query is empty, show all (recent first)
+  const matchingHistory = query
+    ? searchHistory.filter((item) => matchesQuery(item, query))
+    : searchHistory;
+
+  // 2. Combined Suggestions (Categories and Subcategories)
+  interface SuggestionItem {
+    type: "category" | "subcategory";
+    name: string;
+    id: string | number;
+    categoryId?: string | number;
+  }
+
+  const combinedSuggestions: SuggestionItem[] = [];
+
+  if (query) {
+    // Add matching categories
+    categories.forEach((cat) => {
+      if (matchesQuery(cat.name, query)) {
+        combinedSuggestions.push({
+          type: "category",
+          name: cat.name,
+          id: cat.id,
+        });
+      }
+    });
+
+    // Add matching subcategories (deduplicated by name)
+    const addedSubNames = new Set<string>();
+    Object.entries(subcategoriesByCategory).forEach(([catId, subs]) => {
+      subs.forEach((sub) => {
+        if (matchesQuery(sub.name, query) && !addedSubNames.has(sub.name.toLowerCase())) {
+          addedSubNames.add(sub.name.toLowerCase());
+          combinedSuggestions.push({
+            type: "subcategory",
+            name: sub.name,
+            id: sub.id,
+            categoryId: catId,
+          });
+        }
+      });
+    });
+
+    // Sort the combined list alphabetically
+    combinedSuggestions.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  const handleHistoryClick = (term: string) => {
+    setSearchQuery(term);
+    setShowSuggestions(false);
+    saveToHistory(term);
+    router.push(`/search?q=${encodeURIComponent(term)}`);
+  };
+
+  const handleCategoryClick = (cat: StoreCategory) => {
+    setSearchQuery(cat.name);
+    setShowSuggestions(false);
+    saveToHistory(cat.name);
+    router.push(`/category/${cat.id}`);
+  };
+
+  const handleSubcategoryClick = (sub: StoreSubcategory & { categoryId: string | number }) => {
+    setSearchQuery(sub.name);
+    setShowSuggestions(false);
+    saveToHistory(sub.name);
+    router.push(`/category/${sub.categoryId}?subcategory=${sub.id}`);
+  };
+
+  const renderSearchSuggestions = (isMobile: boolean) => {
+    if (!showSuggestions || (!matchingHistory.length && !combinedSuggestions.length)) {
+      return null;
+    }
+
+    return (
+      <div className={`absolute ${isMobile ? "left-1 right-1" : "left-0 right-0"} top-full mt-1.5 bg-white border border-black/15 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto py-2 text-left animate-fade-in`}>
+        {/* History Section */}
+        {matchingHistory.length > 0 && (
+          <div className="border-b border-neutral-100 last:border-0 pb-2 mb-2 last:pb-0 last:mb-0">
+            <div className="px-4 py-1.5 flex items-center justify-between text-[9px] font-bold text-[#4a556a]/40 uppercase tracking-wider">
+              <span>Search History</span>
+              {!query && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearAllHistory();
+                  }}
+                  className="hover:text-apricot transition-colors lowercase font-semibold text-[10px] cursor-pointer"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+            {matchingHistory.map((item) => (
+              <div
+                key={item}
+                onClick={() => handleHistoryClick(item)}
+                className="w-full flex items-center justify-between px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer text-left group/item"
+              >
+                <div className="flex items-center gap-3">
+                  <Clock size={13} className="text-[#4a556a]/50" />
+                  <span className="text-xs font-semibold text-black">{item}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteHistoryItem(item);
+                  }}
+                  className="text-[#4a556a]/40 hover:text-apricot p-0.5 rounded-full hover:bg-natural/10 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-pointer"
+                  aria-label={`Delete ${item} from history`}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Combined Suggestions Section (Alphabetical) */}
+        {combinedSuggestions.length > 0 && (
+          <div className="py-1">
+            {combinedSuggestions.map((item) => (
+              <div
+                key={`${item.type}_${item.id}`}
+                onClick={() => {
+                  if (item.type === "category") {
+                    handleCategoryClick({ id: item.id, name: item.name });
+                  } else {
+                    handleSubcategoryClick({ id: item.id, name: item.name, categoryId: item.categoryId! });
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer text-left"
+              >
+                {item.type === "category" ? (
+                  <LayoutGrid size={13} className="text-[#4a556a]/50" />
+                ) : (
+                  <Sparkles size={13} className="text-[#4a556a]/50" />
+                )}
+                <span className="text-xs font-semibold text-black">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
 
   // Prevent SSR/client hydration mismatch: badge counts come from localStorage
   useEffect(() => {
@@ -407,24 +657,7 @@ export default function Navbar() {
                   </button>
 
                   {/* Suggestions Dropdown */}
-                  {showSuggestions && searchSuggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-black/15 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto py-2 text-left">
-                      {searchSuggestions.map((product) => (
-                        <Link
-                          key={product.id}
-                          href={getProductHref(product.id)}
-                          onClick={() => setShowSuggestions(false)}
-                          className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
-                        >
-                          <img src={product.image} alt={product.title} className="w-8 h-8 object-contain bg-neutral-50 rounded" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-[#4a556a] truncate">{product.title}</h4>
-                            <span className="text-[10px] text-black/45 font-semibold block mt-0.5">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  {renderSearchSuggestions(false)}
                 </form>
               </div>
 
@@ -476,24 +709,7 @@ export default function Navbar() {
                 </button>
 
                 {/* Suggestions Dropdown */}
-                {showSuggestions && searchSuggestions.length > 0 && (
-                  <div className="absolute left-1 right-1 top-full mt-1.5 bg-white border border-black/15 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto py-2 text-left">
-                    {searchSuggestions.map((product) => (
-                      <Link
-                        key={product.id}
-                        href={getProductHref(product.id)}
-                        onClick={() => setShowSuggestions(false)}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
-                      >
-                        <img src={product.image} alt={product.title} className="w-8 h-8 object-contain bg-neutral-50 rounded" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-[#4a556a] truncate">{product.title}</h4>
-                          <span className="text-[10px] text-black/45 font-semibold block mt-0.5">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {renderSearchSuggestions(true)}
               </form>
 
               {/* Scrollable Category Pills (Not pushed by Search) */}

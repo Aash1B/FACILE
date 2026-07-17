@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Override
-    @EntityGraph(attributePaths = {"category", "subCategory", "subCategory.category"})
+    @EntityGraph(attributePaths = {"category", "subCategory", "subCategory.category", "images"})
     List<Product> findAll();
 
     @EntityGraph(attributePaths = {"category", "subCategory", "subCategory.category"})

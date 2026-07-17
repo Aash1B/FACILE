@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -243,12 +246,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
 
-        String resetOtp = generateOtp();
-        user.setResetOtpCode(resetOtp);
-        user.setResetOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        String resetToken = UUID.randomUUID() + "" + UUID.randomUUID();
+        user.setResetTokenHash(hashToken(resetToken));
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetOtp);
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetToken);
 
         AuditLog audit = AuditLog.builder()
                 .userId(user.getId())
@@ -258,23 +261,27 @@ public class AuthService {
         auditLogRepository.save(audit);
     }
 
-    public void resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        if (user.getResetOtpCode() == null || !user.getResetOtpCode().equals(request.getOtpCode())) {
-            throw new IllegalArgumentException("Invalid verification code");
-        }
-
-        if (user.getResetOtpExpiry().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Verification code has expired");
-        }
+    public AuthResponse resetPassword(ResetPasswordRequest request, String userAgent, String ipAddress) {
+        String tokenHash = hashToken(request.getToken());
+        User user = userRepository.findAll().stream()
+                .filter(candidate -> tokenHash.equals(candidate.getResetTokenHash()))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset link"));
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Reset link has expired");
 
         // Reset password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setResetOtpCode(null);
         user.setResetOtpExpiry(null);
+        user.setResetTokenHash(null);
+        user.setResetTokenExpiry(null);
+        user.setPasswordChangedAt(LocalDateTime.now().withNano(0));
         userRepository.save(user);
+
+        userSessionRepository.deleteByUserId(user.getId());
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        registerSession(user, refreshToken, userAgent, ipAddress);
 
         AuditLog audit = AuditLog.builder()
                 .userId(user.getId())
@@ -282,6 +289,15 @@ public class AuthService {
                 .action("PASSWORD_RESET_SUCCESS")
                 .build();
         auditLogRepository.save(audit);
+        return AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken)
+                .email(user.getEmail()).name(user.getName()).role(user.getRole().name()).build();
+    }
+
+    private String hashToken(String token) {
+        try {
+            return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception exception) { throw new IllegalStateException("Unable to secure reset token", exception); }
     }
 
     public AuthResponse loginWithGoogle(GoogleLoginRequest request, String userAgent, String ipAddress) {
@@ -452,7 +468,8 @@ public class AuthService {
                         .id(s.getId())
                         .ipAddress(s.getIpAddress())
                         .userAgent(s.getUserAgent())
-                        .lastActiveAt(s.getLastActiveAt())
+                        .lastActiveAt(s.getLastActiveAt() == null ? null : s.getLastActiveAt()
+                                .atZone(java.time.ZoneId.systemDefault()).toInstant())
                         .build())
                 .collect(Collectors.toList());
     }

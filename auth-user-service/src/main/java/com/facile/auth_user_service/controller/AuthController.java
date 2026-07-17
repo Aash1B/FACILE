@@ -78,9 +78,9 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request,
+            @RequestHeader(value = "User-Agent", required = false) String userAgent, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.resetPassword(request, userAgent, httpRequest.getRemoteAddr()));
     }
 
     @PostMapping("/google")

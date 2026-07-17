@@ -18,8 +18,9 @@ export function proxy(request: NextRequest) {
 
   const authPaths = ["/login", "/register", "/forgot-password", "/verify-email"];
   const isAuthPath = authPaths.some((path) => pathname === path);
+  const isPasswordResetLink = pathname === "/forgot-password" && request.nextUrl.searchParams.has("token");
 
-  if (isAuthPath && token) {
+  if (isAuthPath && token && !isPasswordResetLink) {
     const url = request.nextUrl.clone();
     url.pathname = "/profile";
     return NextResponse.redirect(url);

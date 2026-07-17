@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { Product, FALLBACK_PRODUCTS } from "@/lib/fallbackData";
 import {
   Heart,
   ShoppingCart,
@@ -22,37 +23,7 @@ import {
   Store,
 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type Product = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  originalPrice: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  category: string;
-  brand?: string;
-  color?: string;
-  size?: string;
-  deliveryDays?: number;
-  maxOrderQuantity?: number;
-};
 
-// ─── Fallback Data ────────────────────────────────────────────────────────────
-export const FALLBACK_PRODUCTS: Product[] = [
-  { id: "bs1", name: "Smart Watch Series 5", description: "Stay connected with premium Smart Watch. Features heart rate monitoring, fitness tracking, GPS, and always-on display.", price: 8999, originalPrice: 12999, image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=400", rating: 4.5, reviews: 128, category: "Electronics", brand: "Samsung", color: "Black", size: "One Size", deliveryDays: 2 },
-  { id: "bs2", name: "Wireless Headphones", description: "Premium sound with hybrid Active Noise Cancelling. 40 hours playtime, memory-foam earcups, crystal-clear calls.", price: 5999, originalPrice: 8999, image: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?q=80&w=400", rating: 4.7, reviews: 98, category: "Electronics", brand: "Sony", color: "Black", size: "One Size", deliveryDays: 2 },
-  { id: "bs3", name: "Travel Backpack", description: "Water-resistant backpack with laptop compartment, hidden pockets, USB port, and ergonomic straps.", price: 3999, originalPrice: 5999, image: "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=400", rating: 4.6, reviews: 156, category: "Fashion", brand: "Adidas", color: "Black", size: "One Size", deliveryDays: 3 },
-  { id: "bs4", name: "Running Shoes", description: "High-performance running shoes with breathable mesh upper, responsive foam midsole, and rubber outsole.", price: 4999, originalPrice: 7999, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400", rating: 4.4, reviews: 78, category: "Sports", brand: "Nike", color: "White", size: "8 UK", deliveryDays: 3 },
-  { id: "bs5", name: "Luxury Perfume", description: "Enchanting floral oriental fragrance. Long-lasting with bergamot top notes and sandalwood base.", price: 2999, originalPrice: 4999, image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=400", rating: 4.8, reviews: 64, category: "Beauty", brand: "Fogg", color: "Gold", size: "One Size", deliveryDays: 3 },
-  { id: "bs6", name: "Portable Bluetooth Speaker", description: "360° immersive sound with deep bass. Waterproof, 20-hour battery, and built-in mic for hands-free calls.", price: 2499, originalPrice: 3499, image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400", rating: 4.6, reviews: 112, category: "Electronics", brand: "JBL", color: "Red", size: "One Size", deliveryDays: 3 },
-  { id: "bs7", name: "Classic Sunglasses", description: "UV400 protected lenses in a timeless frame. Lightweight, durable, and stylish for all occasions.", price: 1499, originalPrice: 2299, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400", rating: 4.5, reviews: 87, category: "Fashion", brand: "Ray-Ban", color: "Brown", size: "One Size", deliveryDays: 4 },
-  { id: "bs8", name: "Ceramic Coffee Set", description: "Handcrafted ceramic coffee set with 4 cups and matching pour-over dripper. Dishwasher safe.", price: 1899, originalPrice: 2799, image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400", rating: 4.7, reviews: 73, category: "Home & Kitchen", brand: "Bodum", color: "White", size: "One Size", deliveryDays: 5 },
-  { id: "bs9", name: "Premium Yoga Mat", description: "Eco-friendly non-slip yoga mat with alignment lines, carrying strap, and 6mm cushioning.", price: 1299, originalPrice: 1999, image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=400", rating: 4.8, reviews: 145, category: "Sports", brand: "Boldfit", color: "Purple", size: "One Size", deliveryDays: 3 },
-  { id: "bs10", name: "Minimal Desk Lamp", description: "Touch-controlled LED lamp with 3 color temps, 10 brightness levels, and USB charging port.", price: 2199, originalPrice: 3199, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400", rating: 4.4, reviews: 59, category: "Home & Kitchen", brand: "Syska", color: "White", size: "One Size", deliveryDays: 3 },
-];
 
 // ─── Filter Constants ─────────────────────────────────────────────────────────
 const PRICE_RANGES = [
@@ -81,6 +52,7 @@ const SORT_OPTIONS = [
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "rating", label: "Avg. Customer Rating" },
+  { value: "rating-reviews", label: "Ratings & Reviews" },
   { value: "discount", label: "Biggest Discount" },
 ];
 
@@ -671,6 +643,13 @@ function SearchContent() {
 
   const { addToCart, toggleFavorite, favorites } = useCart();
 
+  useEffect(() => {
+    const qLower = query.trim().toLowerCase();
+    if (qLower === "shoes" || qLower === "shoe") {
+      router.replace("/category/8?filter=shoes");
+    }
+  }, [query, router]);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("featured");
 
@@ -787,8 +766,11 @@ function SearchContent() {
   const priceLimits = useMemo(() => {
     if (!queryFiltered || queryFiltered.length === 0) return { min: 0, max: 10000 };
     const prices = queryFiltered.map((p) => Number(p.price));
-    const min = Math.min(...prices);
+    let min = Math.min(...prices);
     const max = Math.max(...prices);
+    if (min === max) {
+      min = 0;
+    }
     return { min, max };
   }, [queryFiltered]);
 
@@ -837,7 +819,12 @@ function SearchContent() {
     if (sortBy === "rating") return b.rating - a.rating;
     if (sortBy === "discount")
       return calcDiscount(b.price, b.originalPrice) - calcDiscount(a.price, a.originalPrice);
-    return 0;
+    
+    // Default ("featured") and "rating-reviews" sort: Rating (desc) then reviews (desc)
+    const ratA = Number(a.rating || 0);
+    const ratB = Number(b.rating || 0);
+    if (ratB !== ratA) return ratB - ratA;
+    return Number(b.reviews || 0) - Number(a.reviews || 0);
   });
 
   const totalActiveFilters =

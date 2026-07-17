@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
-import { FALLBACK_PRODUCTS } from "../../search/page";
+import { FALLBACK_PRODUCTS, FALLBACK_PRODUCTS_MAP, CATEGORY_DETAILS } from "@/lib/fallbackData";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -98,6 +98,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { user, isAuthenticated } = useAuth();
   
   const [product, setProduct] = useState<any>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState<string>("");
   const [stock, setStock] = useState<number>(50); // Default placeholder stock
   const [loading, setLoading] = useState<boolean>(true);
@@ -135,6 +136,32 @@ export default function ProductDetailPage({ params }: PageProps) {
       });
     }
 
+    // Add from category page fallback products
+    if (FALLBACK_PRODUCTS_MAP) {
+      Object.keys(FALLBACK_PRODUCTS_MAP).forEach((catId) => {
+        const subCatMap = FALLBACK_PRODUCTS_MAP[catId];
+        Object.keys(subCatMap).forEach((subCatName) => {
+          const p = subCatMap[subCatName];
+          if (p && p.id) {
+            const fullId = String(p.id).startsWith("bs") ? p.id : `bs${p.id}`;
+            map[fullId] = {
+              id: fullId,
+              name: p.title,
+              price: p.sellingPrice,
+              originalPrice: p.mrp,
+              image: p.image,
+              rating: p.rating || 4.5,
+              reviews: p.reviews || 42,
+              description: p.description || "",
+              category: CATEGORY_DETAILS[catId]?.name || "Uncategorized",
+              subCategory: subCatName || "",
+              maxOrderQuantity: p.maxOrderQuantity || 10
+            };
+          }
+        });
+      });
+    }
+
     return map;
   }, []);
 
@@ -156,6 +183,22 @@ export default function ProductDetailPage({ params }: PageProps) {
         }
         const dataProduct = await resProduct.json();
 
+        const catalogueResponse = await fetch("/api/products");
+        if (catalogueResponse.ok) {
+          const catalogue = await catalogueResponse.json();
+          const related = (Array.isArray(catalogue) ? catalogue : [])
+            .filter((item: any) => String(item.id) !== String(cleanId))
+            .sort((a: any, b: any) => {
+              const aSubcategory = a.subCategory?.id === dataProduct.subCategory?.id ? 1 : 0;
+              const bSubcategory = b.subCategory?.id === dataProduct.subCategory?.id ? 1 : 0;
+              const aCategory = a.category?.id === dataProduct.category?.id ? 1 : 0;
+              const bCategory = b.category?.id === dataProduct.category?.id ? 1 : 0;
+              return (bSubcategory * 2 + bCategory) - (aSubcategory * 2 + aCategory);
+            })
+            .slice(0, 8);
+          setRecommendedProducts(related);
+        }
+
         const resReviews = await fetch(`/api/products/${cleanId}/reviews`);
         const dataReviews = resReviews.ok ? await resReviews.json() : [];
         setCustomerReviews(dataReviews);
@@ -171,6 +214,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             price: dataProduct.sellingPrice,
             originalPrice: dataProduct.mrp,
             image: dataProduct.image,
+            images: Array.isArray(dataProduct.images) && dataProduct.images.length ? dataProduct.images : [dataProduct.image].filter(Boolean),
             rating: dataProduct.rating ?? 0,
             reviews: dataProduct.reviews ?? 0,
             description: dataProduct.description,
@@ -328,13 +372,8 @@ export default function ProductDetailPage({ params }: PageProps) {
   const maxAllowedQuantity = Math.max(1, Math.min(stock, product.maxOrderQuantity || 10));
   const discountPercent = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
-  const galleryImages = product
-    ? [
-        product.image,
-        product.image ? `${product.image}&sig=1` : "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300",
-        product.image ? `${product.image}&sig=2` : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=300",
-        product.image ? `${product.image}&sig=3` : "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300",
-      ].filter(Boolean)
+  const galleryImages: string[] = product
+    ? (Array.isArray(product.images) && product.images.length ? product.images : [product.image]).filter(Boolean)
     : [];
 
   return (
@@ -612,6 +651,35 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
 
         </div>
+        {recommendedProducts.length > 0 && (
+          <section className="rounded-[28px] border border-natural/15 bg-white/35 p-6 sm:p-8">
+            <div className="mb-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FA99C6]">You may also like</p>
+              <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4a556a]">Recommended products</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-3">
+              {recommendedProducts.map((item) => (
+                <Link key={item.id} href={`/product/bs${item.id}`} className="group w-48 flex-none overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] transition-all hover:-translate-y-1 hover:shadow-md sm:w-56">
+                  <div className="aspect-square overflow-hidden bg-neutral-100">
+                    <img src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  </div>
+                  <div className="space-y-2 p-4">
+                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{item.title}</h3>
+                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
+                      <Star size={11} className={(item.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                      {(item.reviews ?? 0) > 0 ? <span>{Number(item.rating ?? 0).toFixed(1)} ({item.reviews})</span> : <span>No reviews</span>}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-extrabold text-[#4a556a]">₹{Number(item.sellingPrice).toLocaleString("en-IN")}</span>
+                      {Number(item.mrp) > Number(item.sellingPrice) && <span className="text-[10px] text-natural line-through">₹{Number(item.mrp).toLocaleString("en-IN")}</span>}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section id="customer-reviews" className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
           <div className="rounded-[28px] border border-natural/15 bg-white/40 p-6 sm:p-8">
             <div className="mb-6 flex items-end justify-between gap-4">
