@@ -74,6 +74,7 @@ const SORT_OPTIONS = [
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "rating", label: "Avg. Customer Rating" },
+  { value: "rating-reviews", label: "Ratings & Reviews" },
   { value: "discount", label: "Biggest Discount" },
 ];
 
@@ -105,7 +106,57 @@ export default function CategoryPage() {
   const categoryId = params.id;
   const subcategoryId = searchParams?.get("subcategory") || null;
 
-  const details = CATEGORY_DETAILS[categoryId] ?? CATEGORY_DETAILS["1"];
+  const [dbCategoryId, setDbCategoryId] = useState<string>(categoryId);
+  const [details, setDetails] = useState({
+    name: "Category",
+    description: "",
+    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1400",
+  });
+
+  useEffect(() => {
+    const localFallback = CATEGORY_DETAILS[categoryId] ?? CATEGORY_DETAILS["1"];
+    setDetails(localFallback);
+    setDbCategoryId(categoryId);
+
+    const fetchCategoryDetails = async () => {
+      try {
+        const res = await fetch(`/api/categories/${categoryId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.name) {
+            setDetails({
+              name: data.name,
+              description: data.description || localFallback.description,
+              image: data.image || localFallback.image,
+            });
+            return;
+          }
+        }
+      } catch {}
+
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const categoriesList = await res.json();
+          if (Array.isArray(categoriesList) && categoriesList.length > 0) {
+            const matched = categoriesList.find(
+              (c: any) => c.name.toLowerCase() === localFallback.name.toLowerCase()
+            );
+            if (matched) {
+              setDbCategoryId(String(matched.id));
+              setDetails({
+                name: matched.name,
+                description: matched.description || localFallback.description,
+                image: matched.image || localFallback.image,
+              });
+            }
+          }
+        }
+      } catch {}
+    };
+
+    fetchCategoryDetails();
+  }, [categoryId]);
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -226,6 +277,14 @@ export default function CategoryPage() {
         const discB = Number(b.mrp) > Number(b.sellingPrice) ? ((Number(b.mrp) - Number(b.sellingPrice)) / Number(b.mrp)) : 0;
         return discB - discA;
       });
+    } else {
+      // Default ("featured") and "rating-reviews" sort: Rating (desc) then reviews (desc)
+      list.sort((a, b) => {
+        const ratA = Number(a.rating || 0);
+        const ratB = Number(b.rating || 0);
+        if (ratB !== ratA) return ratB - ratA;
+        return Number(b.reviews || 0) - Number(a.reviews || 0);
+      });
     }
     return list;
   }, [filteredProducts, sortBy]);
@@ -286,23 +345,26 @@ export default function CategoryPage() {
   useEffect(() => {
     const fallback = (FALLBACK_SUBCATEGORIES[categoryId] ?? []).map((name, index) => ({ id: `fallback-${index}`, name }));
 
-    fetch(`/api/categories/${categoryId}/subcategories`)
+    fetch(`/api/categories/${dbCategoryId}/subcategories`)
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data) => setSubcategories(Array.isArray(data) && data.length ? data : fallback))
       .catch(() => setSubcategories(fallback))
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [dbCategoryId, categoryId]);
 
   useEffect(() => {
-    if (!subcategoryId) {
+    const isShoesFilter = searchParams?.get("filter") === "shoes";
+    if (!subcategoryId && !isShoesFilter) {
       setProducts([]);
       return;
     }
     setProductsLoading(true);
 
     let url = `/api/products`;
-    if (String(subcategoryId).startsWith("fallback-")) {
-      url = `/api/products?categoryId=${categoryId}`;
+    if (isShoesFilter) {
+      url = `/api/products?categoryId=${dbCategoryId}`;
+    } else if (String(subcategoryId).startsWith("fallback-")) {
+      url = `/api/products?categoryId=${dbCategoryId}`;
     } else {
       url = `/api/products?subCategoryId=${subcategoryId}`;
     }
@@ -312,7 +374,13 @@ export default function CategoryPage() {
       .then((data) => {
         let loadedProducts: any[] = [];
         if (Array.isArray(data) && data.length > 0) {
-          if (String(subcategoryId).startsWith("fallback-")) {
+          if (isShoesFilter) {
+            const allowedSubNames = ["sneakers", "loafers", "sports shoes"];
+            loadedProducts = data.filter((p) => {
+              const subName = (p.subCategory?.name || "").toLowerCase();
+              return allowedSubNames.some((sub) => subName.includes(sub));
+            });
+          } else if (String(subcategoryId).startsWith("fallback-")) {
             const fallbackList = FALLBACK_SUBCATEGORIES[categoryId] ?? [];
             const index = parseInt(String(subcategoryId).replace("fallback-", ""), 10);
             const fallbackName = fallbackList[index];
@@ -326,13 +394,16 @@ export default function CategoryPage() {
       })
       .catch(() => setProducts([]))
       .finally(() => setProductsLoading(false));
-  }, [subcategoryId, categoryId, subcategories]);
+  }, [subcategoryId, dbCategoryId, categoryId, subcategories, searchParams]);
 
+  const isShoesFilter = searchParams?.get("filter") === "shoes";
   const selectedSub = subcategories.find(s => String(s.id) === String(subcategoryId));
-  const subcategoryName = selectedSub ? selectedSub.name : (
-    String(subcategoryId).startsWith("fallback-") ? (
-      FALLBACK_SUBCATEGORIES[categoryId]?.[parseInt(String(subcategoryId).replace("fallback-", ""), 10)] || "Subcategory"
-    ) : "Subcategory"
+  const subcategoryName = isShoesFilter ? "Shoes, Sneakers & Loafers" : (
+    selectedSub ? selectedSub.name : (
+      String(subcategoryId).startsWith("fallback-") ? (
+        FALLBACK_SUBCATEGORIES[categoryId]?.[parseInt(String(subcategoryId).replace("fallback-", ""), 10)] || "Subcategory"
+      ) : "Subcategory"
+    )
   );
 
   const handleAddToCart = (product: any, e: React.MouseEvent) => {
@@ -416,7 +487,7 @@ export default function CategoryPage() {
       )}
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {!subcategoryId ? (
+        {(!subcategoryId && !isShoesFilter) ? (
           <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-6">
             <ArrowLeft size={15} /> Back to categories
           </Link>
@@ -432,7 +503,7 @@ export default function CategoryPage() {
           <div className="relative z-10 max-w-2xl p-8 sm:p-12 text-white">
             <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#FAF3E3]/80 mb-3">Shop category</p>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-              {subcategoryId ? `${details.name} › ${subcategoryName}` : details.name}
+              {subcategoryId || isShoesFilter ? `${details.name} › ${subcategoryName}` : details.name}
             </h1>
             <p className="mt-3 text-sm sm:text-base text-white/85 leading-relaxed">{details.description}</p>
           </div>
@@ -440,7 +511,7 @@ export default function CategoryPage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-        {!subcategoryId ? (
+        {(!subcategoryId && !isShoesFilter) ? (
           /* Render grid of subcategories */
           loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

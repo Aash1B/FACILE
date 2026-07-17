@@ -52,6 +52,7 @@ const SORT_OPTIONS = [
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "rating", label: "Avg. Customer Rating" },
+  { value: "rating-reviews", label: "Ratings & Reviews" },
   { value: "discount", label: "Biggest Discount" },
 ];
 
@@ -642,6 +643,13 @@ function SearchContent() {
 
   const { addToCart, toggleFavorite, favorites } = useCart();
 
+  useEffect(() => {
+    const qLower = query.trim().toLowerCase();
+    if (qLower === "shoes" || qLower === "shoe") {
+      router.replace("/category/8?filter=shoes");
+    }
+  }, [query, router]);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("featured");
 
@@ -811,7 +819,12 @@ function SearchContent() {
     if (sortBy === "rating") return b.rating - a.rating;
     if (sortBy === "discount")
       return calcDiscount(b.price, b.originalPrice) - calcDiscount(a.price, a.originalPrice);
-    return 0;
+    
+    // Default ("featured") and "rating-reviews" sort: Rating (desc) then reviews (desc)
+    const ratA = Number(a.rating || 0);
+    const ratB = Number(b.rating || 0);
+    if (ratB !== ratA) return ratB - ratA;
+    return Number(b.reviews || 0) - Number(a.reviews || 0);
   });
 
   const totalActiveFilters =

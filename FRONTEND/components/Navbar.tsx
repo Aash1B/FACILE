@@ -241,7 +241,12 @@ export default function Navbar() {
     const queryTerm = searchQuery.trim();
     if (queryTerm) {
       saveToHistory(queryTerm);
-      router.push(`/search?q=${encodeURIComponent(queryTerm)}`);
+      const queryLower = queryTerm.toLowerCase();
+      if (queryLower === "shoes" || queryLower === "shoe") {
+        router.push("/category/8?filter=shoes");
+      } else {
+        router.push(`/search?q=${encodeURIComponent(queryTerm)}`);
+      }
     } else {
       router.push("/");
     }
@@ -305,7 +310,12 @@ export default function Navbar() {
     setSearchQuery(term);
     setShowSuggestions(false);
     saveToHistory(term);
-    router.push(`/search?q=${encodeURIComponent(term)}`);
+    const termLower = term.toLowerCase();
+    if (termLower === "shoes" || termLower === "shoe") {
+      router.push("/category/8?filter=shoes");
+    } else {
+      router.push(`/search?q=${encodeURIComponent(term)}`);
+    }
   };
 
   const handleCategoryClick = (cat: StoreCategory) => {

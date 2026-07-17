@@ -31,6 +31,9 @@ public class DataInitializer implements CommandLineRunner {
         // Run standard migrations on existing products to set their attributes if empty
         migrateProductAttributes();
 
+        // Clean up empty subcategories like "Jewellery" if they have no products
+        cleanupEmptySubcategories();
+
         // Seed missing categories, subcategories, and products incrementally
         seedMissingCategoriesAndProducts();
     }
@@ -117,6 +120,18 @@ public class DataInitializer implements CommandLineRunner {
             p.setSize("One Size");
             p.setDeliveryDays(5);
         }
+    }
+
+    private void cleanupEmptySubcategories() {
+        categoryRepository.findByName("Jewellery & Accessories").ifPresent(cat -> {
+            subCategoryRepository.findByNameAndCategoryId("Jewellery", cat.getId()).ifPresent(sub -> {
+                List<Product> products = productRepository.findBySubCategoryId(sub.getId());
+                if (products.isEmpty()) {
+                    subCategoryRepository.delete(sub);
+                    System.out.println("[DataInitializer] Cleaned up empty 'Jewellery' subcategory under category 'Jewellery & Accessories'");
+                }
+            });
+        });
     }
 
     private void seedMissingCategoriesAndProducts() {
