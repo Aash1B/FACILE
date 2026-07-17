@@ -97,6 +97,17 @@ public class OrderService {
         return orderRepository.findByUserId(userId);
     }
 
+    public boolean hasPurchasedProduct(String userId, String productId) {
+        String normalizedProductId = productId.replaceAll("\\D+", "");
+        return orderRepository.findByUserId(userId).stream()
+                .filter(order -> order.getStatus() != OrderStatus.CANCELLED)
+                .flatMap(order -> order.getItems().stream())
+                .map(OrderItem::getProductId)
+                .filter(java.util.Objects::nonNull)
+                .map(id -> id.replaceAll("\\D+", ""))
+                .anyMatch(normalizedProductId::equals);
+    }
+
     public Order getOrderById(String orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));

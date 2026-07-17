@@ -22,7 +22,7 @@ interface AuthContextType {
   verifyOtp: (email: string, otpCode: string) => Promise<boolean>;
   resendOtp: (email: string) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
-  resetPassword: (email: string, otpCode: string, newPassword: string) => Promise<boolean>;
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
   logout: () => void;
   setupMfa: () => Promise<{ secret: string; qrCodeUrl: string }>;
   enableMfa: (code: string) => Promise<boolean>;
@@ -198,9 +198,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const resetPassword = async (email: string, otpCode: string, newPassword: string): Promise<boolean> => {
+  const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     try {
-      await api.post("/api/auth/reset-password", { email, otpCode, newPassword });
+      const response = await api.post("/api/auth/reset-password", { token, newPassword });
+      const data = response.data;
+      const userProfile: User = { name: data.name, email: data.email, role: data.role };
+      setAuthSession(data.accessToken, data.refreshToken, userProfile);
+      setUser(userProfile);
       return true;
     } catch (error: any) {
       console.error("Reset password error:", error);

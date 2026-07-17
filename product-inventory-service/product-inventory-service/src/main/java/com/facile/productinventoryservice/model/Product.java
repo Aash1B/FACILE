@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "products")
@@ -30,7 +31,15 @@ public class Product {
     @Column(name = "selling_price", nullable = false)
     private BigDecimal sellingPrice;
 
+    @Column(columnDefinition = "TEXT")
     private String image;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
+    @OrderColumn(name = "display_order")
+    @Builder.Default
+    private List<String> images = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
@@ -41,9 +50,11 @@ public class Product {
     private SubCategory subCategory;
 
     @Builder.Default
+    @Column(nullable = false)
     private Double rating = 0.0;
 
     @Builder.Default
+    @Column(nullable = false)
     private Integer reviews = 0;
 
     // ── New filterable attributes ─────────────────────────────────────────────

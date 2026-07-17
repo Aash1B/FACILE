@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Check, Lock, ShieldCheck, ArrowRight } from "lucide-react";
@@ -10,11 +10,11 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const [resetToken, setResetToken] = useState("");
   const { forgotPassword, resetPassword } = useAuth();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
-  const [otpCode, setOtpCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
@@ -25,6 +25,11 @@ export default function ForgotPasswordPage() {
 
   // Password strength states
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: "" });
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") || "";
+    if (token) { setResetToken(token); setStep(2); }
+  }, []);
 
   const checkPasswordStrength = (pass: string) => {
     if (!pass) {
@@ -69,10 +74,6 @@ export default function ForgotPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otpCode || otpCode.length !== 6) {
-      setError("Please enter a valid 6-digit OTP code");
-      return;
-    }
     if (!newPassword || newPassword.length < 8) {
       setError("Password must be at least 8 characters");
       return;
@@ -84,10 +85,10 @@ export default function ForgotPasswordPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      await resetPassword(email, otpCode, newPassword);
+      await resetPassword(resetToken, newPassword);
       setShowSuccessToast(true);
       setTimeout(() => {
-        router.push("/login");
+        router.push("/profile");
       }, 1500);
     } catch (err: any) {
       console.error(err);
@@ -130,7 +131,7 @@ export default function ForgotPasswordPage() {
       {step === 1 ? (
         /* STEP 1: Request Code */
         <form onSubmit={handleSendOtp} className="space-y-4">
-          <InputField
+          {!resetToken && <InputField
             label="Email Address"
             type="email"
             placeholder="yourname@example.com"
@@ -142,7 +143,7 @@ export default function ForgotPasswordPage() {
             }}
             disabled={isSubmitting}
             required
-          />
+          />}
 
           {error && (
             <p className="text-xs font-bold text-apricot animate-fade-in flex items-center gap-1">
@@ -174,23 +175,8 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
       ) : (
-        /* STEP 2: Input Code & New Password */
+        /* STEP 2: Choose a new password using the emailed token */
         <form onSubmit={handleReset} className="space-y-4">
-          <InputField
-            label="Verification Code"
-            type="text"
-            placeholder="123456"
-            maxLength={6}
-            value={otpCode}
-            onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, "");
-              setOtpCode(val);
-              if (error) setError("");
-            }}
-            disabled={isSubmitting}
-            required
-          />
-
           <PasswordField
             label="New Password"
             placeholder="••••••••••••"
@@ -229,7 +215,7 @@ export default function ForgotPasswordPage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || showSuccessToast || otpCode.length !== 6 || newPassword.length < 8 || newPassword !== confirmPassword}
+            disabled={isSubmitting || !resetToken || newPassword.length < 8 || newPassword !== confirmPassword}
             className="w-full h-11 active:scale-98 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             style={{ backgroundColor: '#c9d7f0', color: '#4a5568' }}
             onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#a1b5d8'; }}

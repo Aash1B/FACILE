@@ -375,11 +375,16 @@ export default function CheckoutPage() {
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
       setPaymentError(null);
-      // Simulate COD confirmation delay
-      setTimeout(() => {
-        setIsProcessing(false);
-        setPaymentStatus("SUCCESS");
-        handleCheckoutCompletion();
+      setTimeout(async () => {
+        try {
+          await handleCheckoutCompletion();
+          setPaymentStatus("SUCCESS");
+        } catch (error) {
+          setPaymentError(error instanceof Error ? error.message : "Unable to register your order.");
+          paymentRequestStarted.current = false;
+        } finally {
+          setIsProcessing(false);
+        }
       }, 2000);
       return;
     }
@@ -447,8 +452,8 @@ export default function CheckoutPage() {
 
             if (verifyRes.ok) {
               // ✅ Verified — payment is genuine
+              await handleCheckoutCompletion();
               setPaymentStatus("SUCCESS");
-              handleCheckoutCompletion();
             } else {
               // ❌ Backend rejected the signature
               const errData = await verifyRes.json().catch(() => ({}));
@@ -464,6 +469,7 @@ export default function CheckoutPage() {
             setPaymentError(
               "Could not reach the verification server. Please contact support."
             );
+            paymentRequestStarted.current = false;
           } finally {
             setIsVerifying(false);
           }
@@ -481,6 +487,7 @@ export default function CheckoutPage() {
           ondismiss: function () {
             setIsProcessing(false);
             setPaymentStatus("CANCELLED");
+            paymentRequestStarted.current = false;
           },
         },
       };

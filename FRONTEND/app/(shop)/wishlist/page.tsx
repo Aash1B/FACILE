@@ -112,7 +112,7 @@ type ApiProduct = {
 
 export default function WishlistPage() {
   const { addToCart, toggleFavorite, favorites } = useCart();
-  const [products, setProducts] = useState<any[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -135,8 +135,8 @@ export default function WishlistPage() {
               price: p.sellingPrice,
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
-              rating: p.rating || 4.5,
-              reviews: p.reviews || 50,
+              rating: Number(p.rating ?? 0),
+              reviews: Number(p.reviews ?? 0),
               maxOrderQuantity: p.maxOrderQuantity || 10
             }));
             setProducts(mapped);
@@ -217,29 +217,36 @@ export default function WishlistPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {wishlistItems.map((product) => (
-              <div
-                key={product.id}
-                className="group bg-white hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
-              >
-                {/* Remove Button */}
-                <button
-                  onClick={(e) => handleRemoveFavorite(product, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#FAF3E3]/95 text-[#870339] hover:bg-red-50 hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
-                  aria-label="Remove from wishlist"
+            {wishlistItems.map((product) => {
+              const discount = product.originalPrice > product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+              return (
+                <div
+                  key={product.id}
+                  className="group bg-white hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
                 >
-                  <Trash2 size={13} />
-                </button>
+                  {/* Remove Button */}
+                  <button
+                    onClick={(e) => handleRemoveFavorite(product, e)}
+                    className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#FAF3E3]/95 text-[#870339] hover:bg-red-50 hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                    aria-label="Remove from wishlist"
+                  >
+                    <Trash2 size={13} />
+                  </button>
 
-                <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
-                  {/* Product Image */}
-                  <div className="aspect-square bg-neutral-100/30 relative overflow-hidden flex-shrink-0">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
-                  </div>
+                  <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+                    {/* Product Image */}
+                    <div className="aspect-square bg-neutral-100/30 relative overflow-hidden flex-shrink-0">
+                      {discount > 0 && (
+                        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
+                          -{discount}%
+                        </div>
+                      )}
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    </div>
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
@@ -277,7 +284,8 @@ export default function WishlistPage() {
                   </button>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
       </div>
