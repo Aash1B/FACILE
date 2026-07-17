@@ -457,19 +457,19 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Bank Offer</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Get 10% off up to ₹1,500 on HDFC Cards.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">WELCOME10</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 10% Off First Order</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Cashback</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Up to ₹500 cashback on UPI payments.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">2 offers &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">FACILE50</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Flat ₹50 Off</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Partner Offer</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Save up to 18% with GST business invoice.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">SAVE20</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 20% Off Orders &gt; ₹5000</span>
                 </div>
               </div>
             </div>

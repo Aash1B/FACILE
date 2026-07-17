@@ -164,6 +164,18 @@ public class AuthController {
                 .build());
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof com.facile.auth_user_service.model.User)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        com.facile.auth_user_service.model.User user = (com.facile.auth_user_service.model.User) auth.getPrincipal();
+        authService.deleteAccount(user.getId());
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/sellers")
     public ResponseEntity<List<UserResponse>> getSellers() {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();

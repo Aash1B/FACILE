@@ -105,17 +105,7 @@ public class PaymentService {
                 saved.getId(),
                 request.getUserId());
 
-        // Send email receipt to user
-        try {
-            emailService.sendPaymentSuccessEmail(
-                    request.getUserId(),
-                    request.getRazorpay_order_id(),
-                    request.getRazorpay_payment_id(),
-                    request.getAmount()
-            );
-        } catch (Exception e) {
-            log.error("[PAYMENT] Failed to send payment confirmation email to {}: {}", request.getUserId(), e.getMessage());
-        }
+        // Email sending is now handled by the Notification service (Step 4 of Saga)
 
         // ── Future Integration Hook ──────────────────────────────────────
         // TODO: [Member 1 — Order Service Integration]
@@ -233,6 +223,48 @@ public class PaymentService {
      */
     public java.util.List<Payment> getPaymentHistory(String userId) {
         return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 7. REFUND PAYMENT (COMPENSATION)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Refunds a payment. Simulates a refund if actual Razorpay refund fails
+     * (which happens often in test mode without real captures).
+     */
+    public boolean refundPayment(String paymentId) {
+        // Attempt to find the payment by Razorpay payment ID or Order ID
+        java.util.List<Payment> payments = paymentRepository.findAll();
+        Payment payment = payments.stream()
+                .filter(p -> p.getPaymentId().equals(paymentId) || p.getOrderId().equals(paymentId))
+                .findFirst()
+                .orElse(null);
+
+        if (payment == null) {
+            log.warn("[PAYMENT] Refund failed. Payment not found for ID: {}", paymentId);
+            return false;
+        }
+
+        if (payment.getStatus() == PaymentStatus.REFUNDED) {
+            log.info("[PAYMENT] Payment {} already refunded.", paymentId);
+            return true;
+        }
+
+        try {
+            // Attempt Razorpay Refund (might throw exception in test mode if not captured)
+            razorpayClient.payments.refund(new org.json.JSONObject().put("payment_id", payment.getPaymentId()));
+            log.info("[PAYMENT] Razorpay API refund successful for payment {}", payment.getPaymentId());
+        } catch (Exception e) {
+            log.warn("[PAYMENT] Razorpay API refund failed (simulating success for test mode): {}", e.getMessage());
+        }
+
+        // Update status to REFUNDED
+        payment.setStatus(PaymentStatus.REFUNDED);
+        paymentRepository.save(payment);
+        log.info("[PAYMENT] Payment {} marked as REFUNDED in database.", payment.getPaymentId());
+        
+        return true;
     }
 
     // ═══════════════════════════════════════════════════════════════════

@@ -113,6 +113,48 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
     }
 
+    public synchronized Order createOrderForSaga(String userId, String shippingAddress, String idempotencyKey) {
+        Order existingOrder = orderRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+        if (existingOrder != null) {
+            return existingOrder;
+        }
+
+        Cart cart = cartService.getCartByUserId(userId);
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalStateException("Cannot checkout an empty cart");
+        }
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem cartItem : cart.getItems()) {
+            orderItems.add(new OrderItem(
+                    cartItem.getProductId(),
+                    cartItem.getProductName(),
+                    cartItem.getImage(),
+                    cartItem.getPrice(),
+                    cartItem.getQuantity()
+            ));
+        }
+
+        Order order = new Order();
+        order.setIdempotencyKey(idempotencyKey);
+        order.setUserId(userId);
+        order.setItems(orderItems);
+        order.setTotalAmount(cart.getTotalAmount());
+        order.setStatus(OrderStatus.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setShippingAddress(shippingAddress);
+
+        Order savedOrder = orderRepository.save(order);
+        cartService.clearCart(userId);
+        return savedOrder;
+    }
+
+    public void cancelOrder(String orderId) {
+        Order order = getOrderById(orderId);
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+    }
+
     public Order updateOrderStatus(String orderId, OrderStatus newStatus) {
         Order order = getOrderById(orderId);
         order.setStatus(newStatus);

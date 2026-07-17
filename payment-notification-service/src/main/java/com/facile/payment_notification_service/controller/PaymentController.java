@@ -56,4 +56,21 @@ public class PaymentController {
                     .body(Map.of("success", false, "message", "Failed to retrieve payment history."));
         }
     }
+
+    // POST /payments/refund (Compensation API)
+    @PostMapping("/refund")
+    public ResponseEntity<?> refundPayment(@RequestBody Map<String, String> payload) {
+        try {
+            String paymentId = payload.get("paymentId");
+            boolean success = paymentService.refundPayment(paymentId);
+            if (success) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "Refund processed"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Refund failed"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "message", "Internal error during refund."));
+        }
+    }
 }

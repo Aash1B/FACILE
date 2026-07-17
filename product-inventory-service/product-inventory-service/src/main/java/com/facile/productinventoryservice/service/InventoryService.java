@@ -52,4 +52,16 @@ public class InventoryService {
             inventoryRepository.save(inventory);
         }
     }
+
+    @Transactional
+    public void restoreStock(List<StockReduceItem> items) {
+        for (StockReduceItem item : items) {
+            Optional<Inventory> inventoryOpt = inventoryRepository.findByProductId(item.getProductId());
+            if (inventoryOpt.isPresent()) {
+                Inventory inventory = inventoryOpt.get();
+                inventory.setStock(inventory.getStock() + item.getQuantity());
+                inventoryRepository.save(inventory);
+            }
+        }
+    }
 }
