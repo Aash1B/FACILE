@@ -71,7 +71,7 @@ function ProfileContent() {
   const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews" | "saved_upi">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Reviews State
@@ -286,7 +286,7 @@ function ProfileContent() {
   const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const res = await fetch(`http://localhost:8081/api/orders/${user.email}`);
+      const res = await fetch(`http://localhost:8081/api/orders/${user?.email}`);
       if (res.ok) {
         const data = await res.json();
         setOrdersList(Array.isArray(data) ? data : []);
