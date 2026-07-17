@@ -8,12 +8,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class InventoryController {
 
     private final InventoryService inventoryService;
+
+    @GetMapping("/inventory")
+    public List<Inventory> getAllInventory() {
+        return inventoryService.getAllInventory();
+    }
 
     @GetMapping("/{id}/inventory")
     public ResponseEntity<Inventory> getInventoryByProductId(@PathVariable Long id) {

@@ -98,6 +98,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { user, isAuthenticated } = useAuth();
   
   const [product, setProduct] = useState<any>(null);
+  const [isFacileChoice, setIsFacileChoice] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState<string>("");
   const [stock, setStock] = useState<number>(50); // Default placeholder stock
@@ -186,6 +187,11 @@ export default function ProductDetailPage({ params }: PageProps) {
         const catalogueResponse = await fetch("/api/products");
         if (catalogueResponse.ok) {
           const catalogue = await catalogueResponse.json();
+          const categoryChoice = (Array.isArray(catalogue) ? catalogue : [])
+            .filter((item: any) => String(item.category?.id) === String(dataProduct.category?.id) && Number(item.reviews ?? 0) > 0)
+            .sort((a: any, b: any) => Number(b.rating ?? 0) - Number(a.rating ?? 0)
+              || Number(b.reviews ?? 0) - Number(a.reviews ?? 0))[0];
+          setIsFacileChoice(String(categoryChoice?.id ?? "") === String(cleanId));
           const related = (Array.isArray(catalogue) ? catalogue : [])
             .filter((item: any) => String(item.id) !== String(cleanId))
             .sort((a: any, b: any) => {
@@ -428,6 +434,11 @@ export default function ProductDetailPage({ params }: PageProps) {
               {discountPercent > 0 && (
                 <span className="absolute top-4 left-4 bg-[#FA99C6] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
                   {discountPercent}% OFF
+                </span>
+              )}
+              {isFacileChoice && (
+                <span className={`absolute left-4 z-10 rounded-full bg-[#4a556a] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-14" : "top-4"}`}>
+                  Facile Choice
                 </span>
               )}
               <img

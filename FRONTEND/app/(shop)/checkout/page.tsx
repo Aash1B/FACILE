@@ -112,6 +112,14 @@ export default function CheckoutPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [alertModal, setAlertModal] = useState<{show: boolean; title: string; message: string}>({show: false, title: "", message: ""});
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
+  const [walletBalance, setWalletBalance] = useState(0);
+  useEffect(() => {
+    if (!user?.email) return;
+    fetch(`${PAYMENT_SERVICE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (data) setWalletBalance(Number(data.balance || 0)); })
+      .catch(() => setWalletBalance(0));
+  }, [user?.email]);
   /**
    * paymentStatus tracks the full payment lifecycle:
    *   IDLE         — not yet attempted
@@ -356,47 +364,34 @@ export default function CheckoutPage() {
     if (!activeAddress) throw new Error("Please select a delivery address.");
     const isBuyNow = Boolean(localStorage.getItem("facile_buynow"));
 
-    if (user?.email && !isBuyNow) {
+    if (user?.email) {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
-      
-      if (selectedPaymentMethod === "cod") {
-        // Standard Checkout for COD
-        const payload = { shippingAddress };
+      if (isBuyNow) {
+        const directResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress, items: checkoutItems.map((item) => ({
+            productId: String(item.id), productName: item.name, image: item.image,
+            price: item.price, quantity: item.quantity,
+          })) }),
+        });
+        if (!directResponse.ok) throw new Error("Payment succeeded, but the direct order could not be registered.");
+      } else if (selectedPaymentMethod === "cod" || selectedPaymentMethod === "giftcard") {
         const response = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Idempotency-Key": checkoutIdempotencyKey.current,
-          },
-          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress }),
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Checkout failed: ${errorText}`);
-        }
+        if (!response.ok) throw new Error(`Checkout failed: ${await response.text()}`);
       } else {
-        // Saga Checkout for Online Payment
-        const payload = {
-          shippingAddress,
-          razorpay_order_id: paymentResponse?.razorpay_order_id,
-          razorpay_payment_id: paymentResponse?.razorpay_payment_id,
-          razorpay_signature: paymentResponse?.razorpay_signature,
-          amount: totalAmount
-        };
-
         const sagaResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Idempotency-Key": checkoutIdempotencyKey.current,
-          },
-          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress, razorpay_order_id: paymentResponse?.razorpay_order_id,
+            razorpay_payment_id: paymentResponse?.razorpay_payment_id,
+            razorpay_signature: paymentResponse?.razorpay_signature, amount: totalAmount }),
         });
-
-        if (!sagaResponse.ok) {
-          const errorText = await sagaResponse.text();
-          throw new Error(`Checkout saga failed: ${errorText}`);
-        }
+        if (!sagaResponse.ok) throw new Error(`Checkout saga failed: ${await sagaResponse.text()}`);
       }
     }
 
@@ -410,6 +405,23 @@ export default function CheckoutPage() {
   const handleConfirmPayment = async () => {
     if (paymentRequestStarted.current) return;
     paymentRequestStarted.current = true;
+
+    if (selectedPaymentMethod === "giftcard") {
+      if (!user?.email) { setPaymentError("Sign in to use your gift-card wallet."); paymentRequestStarted.current = false; return; }
+      setIsProcessing(true); setPaymentError(null);
+      try {
+        const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Gift-card payment failed.");
+        setWalletBalance(Number(data.balance));
+        await handleCheckoutCompletion();
+        setPaymentStatus("SUCCESS");
+      } catch (error) {
+        setPaymentError(error instanceof Error ? error.message : "Gift-card payment failed.");
+        paymentRequestStarted.current = false;
+      } finally { setIsProcessing(false); }
+      return;
+    }
 
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
@@ -1306,6 +1318,17 @@ export default function CheckoutPage() {
                     <div className="flex gap-1.5">
                       <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" className="h-2.5 object-contain" />
                       <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-3 object-contain" />
+                    </div>
+                  </label>
+
+                  {/* COD Option */}
+                  <label
+                    onClick={() => setSelectedPaymentMethod("giftcard")}
+                    className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "giftcard" ? "border-[#4A5568] bg-warm-ivory font-bold shadow-xs text-black" : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60 text-fern/90"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input type="radio" checked={selectedPaymentMethod === "giftcard"} onChange={() => setSelectedPaymentMethod("giftcard")} className="accent-[#4A5568]" />
+                      <div className="text-left"><p className="text-xs font-bold">Gift Card Wallet</p><p className="text-[9px] font-medium">Available: {formatPrice(walletBalance)}</p></div>
                     </div>
                   </label>
 

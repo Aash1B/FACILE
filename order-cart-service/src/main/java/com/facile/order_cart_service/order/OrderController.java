@@ -24,6 +24,14 @@ public class OrderController {
         return orderService.checkout(userId, shippingAddress, idempotencyKey);
     }
 
+    @PostMapping("/{userId}/checkout-direct")
+    public Order checkoutDirect(
+            @PathVariable String userId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestBody DirectCheckoutRequest request) {
+        return orderService.checkoutDirect(userId, request.getShippingAddress(), request.getItems(), idempotencyKey);
+    }
+
     @GetMapping("/{userId}")
     public List<Order> getOrderHistory(@PathVariable String userId) {
         return orderService.getOrderHistory(userId);

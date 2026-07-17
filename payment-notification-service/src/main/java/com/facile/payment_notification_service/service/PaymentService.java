@@ -18,6 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 /**
  * Core business logic for the Payment & Notification Service.
@@ -36,6 +37,7 @@ public class PaymentService {
     private final RazorpayClient razorpayClient;
     private final PaymentRepository paymentRepository;
     private final EmailService emailService;
+    private final GiftCardService giftCardService;
 
     /**
      * Razorpay secret key — injected from application.properties.
@@ -105,7 +107,11 @@ public class PaymentService {
                 saved.getId(),
                 request.getUserId());
 
-        // Email sending is now handled by the Notification service (Step 4 of Saga)
+        if ("GIFT_CARD".equalsIgnoreCase(request.getPurpose())) {
+            giftCardService.issue(request.getUserId(), BigDecimal.valueOf(request.getAmount()), request.getRazorpay_payment_id());
+        } else {
+            // Standard order email is handled by the notification step of the checkout saga.
+        }
 
         // ── Future Integration Hook ──────────────────────────────────────
         // TODO: [Member 1 — Order Service Integration]

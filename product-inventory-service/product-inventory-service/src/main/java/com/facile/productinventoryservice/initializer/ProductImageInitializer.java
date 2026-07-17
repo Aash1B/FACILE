@@ -23,6 +23,15 @@ public class ProductImageInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         for (Product product : productRepository.findAll()) {
+            boolean brokenLegacyImage = product.getImage() == null || product.getImage().isBlank()
+                    || product.getImage().contains("wikimedia.org")
+                    || product.getImage().contains("loremflickr.com");
+            if (!brokenLegacyImage) {
+                if (product.getImages() == null || product.getImages().isEmpty()) {
+                    product.setImages(List.of(product.getImage()));
+                }
+                continue;
+            }
             String photoId = resolvePhotoId(product);
             List<String> images = imageVariants(photoId);
             if (!images.equals(product.getImages()) || !images.getFirst().equals(product.getImage())) {
@@ -45,7 +54,13 @@ public class ProductImageInitializer implements CommandLineRunner {
     }
 
     private String resolvePhotoId(Product product) {
-        String text = (product.getTitle() + " " + product.getSubCategory().getName()).toLowerCase(Locale.ROOT);
+        String text = product.getTitle().toLowerCase(Locale.ROOT);
+
+        if (has(text, "wooden educational block", "wooden stacking block")) return "photo-1568828668638-b1b4014d91a2";
+        if (has(text, "squeaky dog ball")) return "photo-1560075432-05535f6671e8";
+        if (has(text, "baby milestone blanket", "baby blanket", "baby swaddle")) return "photo-1638772721909-7dc230c123bd";
+        if (has(text, "bedsheet", "bed sheet")) return "photo-1666800722722-ea7485206035";
+        if (has(text, "bath towel", "towels")) return "photo-1724847885015-be191f1a47ef";
 
         if (has(text, "sneaker", "running shoe", "sports shoe")) return "photo-1542291026-7eec264c27ff";
         if (has(text, "heel", "stiletto")) return "photo-1543163521-1bf539c55dd2";
@@ -68,8 +83,8 @@ public class ProductImageInitializer implements CommandLineRunner {
         if (has(text, "sweater", "winter", "jacket")) return "photo-1556905055-8f358a7a47b2";
         if (has(text, "bag", "backpack", "tote")) return "photo-1584917865442-de89df76afd3";
         if (has(text, "ring", "necklace", "earring", "bracelet", "jewellery")) return "photo-1599643478518-a784e5dc4c8f";
-        if (has(text, "toy", "block", "teddy", "baby")) return "photo-1513364776144-60967b0f800f";
         if (has(text, "dog", "cat", "pet")) return "photo-1543466835-00a7907e9de1";
+        if (has(text, "toy", "block", "teddy", "baby")) return "photo-1513364776144-60967b0f800f";
         if (has(text, "yoga", "fitness", "gym", "dumbbell", "resistance")) return "photo-1517838277536-f5f99be501cd";
         if (has(text, "cricket")) return "photo-1531415074968-036ba1b575da";
         if (has(text, "football")) return "photo-1461896836934-ffe607ba8211";

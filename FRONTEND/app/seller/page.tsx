@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Package, Trash2, Edit3, Image as ImageIcon, Sparkles, Check, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
+import { Plus, Package, Trash2, Image as ImageIcon, Sparkles, Check, IndianRupee, TrendingUp, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface Product {
@@ -14,6 +14,7 @@ interface Product {
   category: string;
   subcategory: string;
   stocks: number;
+  sold: number;
   maxOrderQuantity: number;
   image: string;
   images: string[];
@@ -29,6 +30,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Ceramics & Pottery",
     subcategory: "Drinkware",
     stocks: 14,
+    sold: 0,
     maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"]
@@ -42,6 +44,7 @@ const INITIAL_PRODUCTS: Product[] = [
     category: "Home Accents",
     subcategory: "Textiles",
     stocks: 25,
+    sold: 0,
     maxOrderQuantity: 5,
     image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop",
     images: ["https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=300&auto=format&fit=crop"]
@@ -204,8 +207,6 @@ export default function SellerDashboardPage() {
   
   const [stocks, setStocks] = useState("");
   const [maxOrderQuantity, setMaxOrderQuantity] = useState("5");
-  const [image, setImage] = useState("");
-  
   // Multiple Images State
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
@@ -213,13 +214,37 @@ export default function SellerDashboardPage() {
   // Listing states
   const [products, setProducts] = useState<Product[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [saleNotification, setSaleNotification] = useState("");
+  const previousSoldTotal = useRef<number | null>(null);
   const [formError, setFormError] = useState("");
+  const [listingCategoryFilter, setListingCategoryFilter] = useState("ALL");
+  const [listingSubcategoryFilter, setListingSubcategoryFilter] = useState("ALL");
+  const [imageEditorProduct, setImageEditorProduct] = useState<Product | null>(null);
+  const [imageEditorUrls, setImageEditorUrls] = useState("");
+  const [imageEditorError, setImageEditorError] = useState("");
+  const [savingProductImages, setSavingProductImages] = useState(false);
+
+  const listingCategories = Array.from(new Set(products.map((product) => product.category))).sort();
+  const listingSubcategories = Array.from(new Set(products
+    .filter((product) => listingCategoryFilter === "ALL" || product.category === listingCategoryFilter)
+    .map((product) => product.subcategory))).sort();
+  const visibleProducts = products.filter((product) =>
+    (listingCategoryFilter === "ALL" || product.category === listingCategoryFilter)
+    && (listingSubcategoryFilter === "ALL" || product.subcategory === listingSubcategoryFilter)
+  );
 
   const fetchProductsFromDb = async () => {
     try {
-      const res = await fetch("/api/products");
+      const [res, inventoryRes] = await Promise.all([
+        fetch(`/api/products?sellerEmail=${encodeURIComponent(user?.email || "")}`, { cache: "no-store" }),
+        fetch("/api/products/inventory", { cache: "no-store" }),
+      ]);
       if (res.ok) {
         const data = await res.json();
+        const inventoryData = inventoryRes.ok ? await inventoryRes.json() : [];
+        const inventoryByProduct = new Map<string, any>(
+          inventoryData.map((inventory: any) => [String(inventory.productId), inventory])
+        );
         const mapped: Product[] = data.map((p: any) => ({
           id: String(p.id),
           title: p.title,
@@ -228,26 +253,21 @@ export default function SellerDashboardPage() {
           sellingPrice: Number(p.sellingPrice),
           category: p.category?.name || "General",
           subcategory: p.subCategory?.name || "General",
-          stocks: 50,
+          stocks: Number(inventoryByProduct.get(String(p.id))?.stock ?? 0),
+          sold: Number(inventoryByProduct.get(String(p.id))?.sold ?? 0),
           maxOrderQuantity: Number(p.maxOrderQuantity || 10),
           image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
-          images: [p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"]
+          images: Array.isArray(p.images) && p.images.length ? p.images : [p.image].filter(Boolean)
         }));
         
+        const soldTotal = mapped.reduce((total, product) => total + product.sold, 0);
+        if (previousSoldTotal.current !== null && soldTotal > previousSoldTotal.current) {
+          const soldSinceLastRefresh = soldTotal - previousSoldTotal.current;
+          setSaleNotification(`${soldSinceLastRefresh} product${soldSinceLastRefresh === 1 ? "" : "s"} bought — inventory updated.`);
+          window.setTimeout(() => setSaleNotification(""), 5000);
+        }
+        previousSoldTotal.current = soldTotal;
         setProducts(mapped);
-        
-        // Background fetch stock levels
-        mapped.forEach(async (prod) => {
-          try {
-            const resInv = await fetch(`/api/products/${prod.id}/inventory`);
-            if (resInv.ok) {
-              const inv = await resInv.json();
-              setProducts(prev => prev.map(pr => pr.id === prod.id ? { ...pr, stocks: inv.stock } : pr));
-            }
-          } catch (e) {
-            console.error("Failed to load inventory for product id: " + prod.id, e);
-          }
-        });
       }
     } catch (err) {
       console.error("Failed to load products from database:", err);
@@ -276,7 +296,9 @@ export default function SellerDashboardPage() {
   useEffect(() => {
     fetchProductsFromDb();
     fetchCategoriesFromDb();
-  }, []);
+    const inventoryRefresh = window.setInterval(fetchProductsFromDb, 5000);
+    return () => window.clearInterval(inventoryRefresh);
+  }, [user?.email]);
 
   useEffect(() => {
     const fetchSubcategories = async () => {
@@ -321,19 +343,6 @@ export default function SellerDashboardPage() {
     };
     fetchSubcategories();
   }, [selectedCategoryId]);
-
-  const handleMultipleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImages(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
 
   const handleAddImageUrl = () => {
     if (newImageUrl.trim()) {
@@ -393,6 +402,8 @@ export default function SellerDashboardPage() {
       mrp: mrpNum,
       sellingPrice: priceNum,
       image: imageSource,
+      images,
+      sellerEmail: user?.email,
       maxOrderQuantity: maxOrderQuantityNum,
       category: {
         id: Number(selectedCategoryId)
@@ -438,7 +449,7 @@ export default function SellerDashboardPage() {
 
   const handleDeleteProduct = async (id: string) => {
     try {
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(`/api/products/${id}?sellerEmail=${encodeURIComponent(user?.email || "")}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -449,6 +460,37 @@ export default function SellerDashboardPage() {
     } catch (err) {
       console.error("Failed to delete product:", err);
       alert("Error occurred while deleting product from database.");
+    }
+  };
+
+  const openProductImageEditor = (product: Product) => {
+    setImageEditorProduct(product);
+    setImageEditorUrls(product.images.join("\n"));
+    setImageEditorError("");
+  };
+
+  const handleSaveProductImages = async () => {
+    if (!imageEditorProduct) return;
+    const urls = imageEditorUrls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+    if (!urls.length || urls.some((url) => !/^https?:\/\//i.test(url))) {
+      setImageEditorError("Enter at least one valid http:// or https:// image URL, one per line.");
+      return;
+    }
+    setSavingProductImages(true);
+    setImageEditorError("");
+    try {
+      const response = await fetch(`/api/products/${imageEditorProduct.id}/images?sellerEmail=${encodeURIComponent(user?.email || "")}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ primaryImage: urls[0], images: urls })
+      });
+      if (!response.ok) throw new Error("Image update failed");
+      await fetchProductsFromDb();
+      setImageEditorProduct(null);
+    } catch {
+      setImageEditorError("Could not update the product images. Check the URLs and try again.");
+    } finally {
+      setSavingProductImages(false);
     }
   };
 
@@ -482,6 +524,11 @@ export default function SellerDashboardPage() {
           <span>Product listed successfully in shop catalog! 🌟</span>
         </div>
       )}
+      {saleNotification && (
+        <div className="fixed top-6 right-6 z-50 rounded-2xl border border-green-700/20 bg-green-50 px-5 py-3.5 text-xs font-bold text-green-800 shadow-xl animate-slide-in">
+          {saleNotification}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-6" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
@@ -506,7 +553,7 @@ export default function SellerDashboardPage() {
           <div className="space-y-1">
             <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Estimated Sales Revenue</p>
             <h3 className="text-xl font-bold text-fern">
-              ₹{(products.reduce((acc, p) => acc + (p.sellingPrice * (p.stocks + 4)), 0) * 8.5).toLocaleString("en-IN", {maximumFractionDigits: 0})}
+              ₹{products.reduce((acc, p) => acc + (p.sellingPrice * p.sold), 0).toLocaleString("en-IN", {maximumFractionDigits: 0})}
             </h3>
             <span className="text-[9px] text-green-700 bg-green-500/10 px-1.5 py-0.5 rounded font-bold">Platform Active</span>
           </div>
@@ -518,9 +565,9 @@ export default function SellerDashboardPage() {
         {/* Card 2: Orders */}
         <div className="bg-white border rounded-3xl p-5 shadow-sm flex items-start justify-between" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Estimated Orders</p>
+            <p className="text-[10px] font-bold text-natural tracking-wider uppercase">Products Sold</p>
             <h3 className="text-xl font-bold text-fern">
-              {products.reduce((acc, p) => acc + (p.stocks % 3), 0) + 8} Completed
+              {products.reduce((acc, p) => acc + p.sold, 0)} Units
             </h3>
             <span className="text-[9px] text-natural font-semibold">100% Fulfillment Rate</span>
           </div>
@@ -650,18 +697,18 @@ export default function SellerDashboardPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                  MRP ($) <span className="text-apricot">*</span>
+                  MRP (INR) <span className="text-apricot">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-natural">
-                    <DollarSign size={12} />
+                    <IndianRupee size={12} />
                   </div>
                   <input
                     type="number"
                     step="0.01"
                     value={mrp}
                     onChange={(e) => setMrp(e.target.value)}
-                    placeholder="39.99"
+                    placeholder="3999"
                     className="w-full h-10 pl-8 pr-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
                     style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                     required
@@ -671,18 +718,18 @@ export default function SellerDashboardPage() {
 
               <div className="space-y-1">
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-fern">
-                  Selling Price ($) <span className="text-apricot">*</span>
+                  Selling Price (INR) <span className="text-apricot">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-natural">
-                    <DollarSign size={12} />
+                    <IndianRupee size={12} />
                   </div>
                   <input
                     type="number"
                     step="0.01"
                     value={sellingPrice}
                     onChange={(e) => setSellingPrice(e.target.value)}
-                    placeholder="35.00"
+                    placeholder="2999"
                     className="w-full h-10 pl-8 pr-3.5 text-xs font-medium rounded-xl border bg-transparent outline-none"
                     style={{ borderColor: 'rgba(74,85,104,0.2)', color: '#4A5568' }}
                     required
@@ -749,17 +796,11 @@ export default function SellerDashboardPage() {
                 </button>
               </div>
 
-              <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/10" style={{ borderColor: 'rgba(74,85,104,0.15)' }}>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleMultipleImageUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
+              <div className="relative border-2 border-dashed rounded-xl h-24 flex flex-col items-center justify-center transition-all hover:bg-white/10" style={{ borderColor: 'rgba(74,85,104,0.15)' }}>
                 <div className="flex flex-col items-center justify-center text-center">
                   <ImageIcon size={20} className="text-natural mb-1" />
-                  <span className="text-[10px] font-bold text-natural uppercase tracking-wider">Upload Multiple Files</span>
+                  <span className="text-[10px] font-bold text-natural uppercase tracking-wider">Add multiple external image URLs above</span>
+                  <span className="text-[9px] text-natural/70 mt-1">Images are stored as URLs and the first image is primary.</span>
                 </div>
               </div>
 
@@ -809,21 +850,49 @@ export default function SellerDashboardPage() {
               <h2 className="font-serif text-xl font-bold">Current Workspace Listings</h2>
             </div>
             <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full text-fern" style={{ backgroundColor: 'rgba(165,142,116,0.15)' }}>
-              {products.length} Products
+              {visibleProducts.length} of {products.length} Products
             </span>
           </div>
 
-          {products.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border bg-white p-4" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
+            <label className="space-y-1 text-[10px] font-bold uppercase tracking-wider text-natural">
+              Filter by category
+              <select
+                value={listingCategoryFilter}
+                onChange={(event) => {
+                  setListingCategoryFilter(event.target.value);
+                  setListingSubcategoryFilter("ALL");
+                }}
+                className="w-full h-10 rounded-xl border bg-white px-3 text-xs font-semibold normal-case text-fern"
+              >
+                <option value="ALL">All categories</option>
+                {listingCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+              </select>
+            </label>
+            <label className="space-y-1 text-[10px] font-bold uppercase tracking-wider text-natural">
+              Filter by subcategory
+              <select
+                value={listingSubcategoryFilter}
+                onChange={(event) => setListingSubcategoryFilter(event.target.value)}
+                className="w-full h-10 rounded-xl border bg-white px-3 text-xs font-semibold normal-case text-fern"
+              >
+                <option value="ALL">All subcategories</option>
+                {listingSubcategories.map((subcategory) => <option key={subcategory} value={subcategory}>{subcategory}</option>)}
+              </select>
+            </label>
+          </div>
+
+          {visibleProducts.length === 0 ? (
             <div className="border border-dashed rounded-3xl p-12 text-center" style={{ borderColor: 'rgba(165,142,116,0.3)', backgroundColor: 'rgba(244,230,199,0.2)' }}>
               <Package size={36} className="mx-auto text-natural mb-3 opacity-60" />
-              <h3 className="font-serif text-lg font-semibold text-fern mb-1">No products listed</h3>
+              <h3 className="font-serif text-lg font-semibold text-fern mb-1">No matching products</h3>
               <p className="text-xs text-natural font-medium max-w-sm mx-auto leading-relaxed">
-                You haven't listed any items in your store yet. Fill out the catalog builder form to display products.
+                {products.length ? "Change the category or subcategory filters to see more products." : "Fill out the catalog builder form to list your first product."}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {products.map((p) => (
+              {visibleProducts.map((p) => (
                 <div
                   key={p.id}
                   className="group relative border rounded-3xl overflow-hidden flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md"
@@ -855,11 +924,11 @@ export default function SellerDashboardPage() {
                         </div>
                         <div className="text-right">
                           <span className="text-sm font-bold text-fern">
-                            ${p.sellingPrice.toFixed(2)}
+                            ₹{p.sellingPrice.toLocaleString("en-IN")}
                           </span>
                           {p.mrp > p.sellingPrice && (
                             <p className="text-[10px] text-natural line-through font-medium leading-none mt-0.5">
-                              ${p.mrp.toFixed(2)}
+                              ₹{p.mrp.toLocaleString("en-IN")}
                             </p>
                           )}
                         </div>
@@ -878,12 +947,17 @@ export default function SellerDashboardPage() {
                       <span>{p.stocks} units left</span>
                     </div>
 
+                    <span className="rounded-full bg-green-100 px-2 py-1 text-[10px] font-bold text-green-800">
+                      {p.sold} sold
+                    </span>
+
                     <div className="flex items-center gap-1">
                       <button
-                        title="Edit product info (visual only)"
+                        onClick={() => openProductImageEditor(p)}
+                        title="Edit product image URLs"
                         className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-fern border border-transparent cursor-pointer hover:border-stone-200"
                       >
-                        <Edit3 size={13} />
+                        <ImageIcon size={13} />
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(p.id)}
@@ -900,6 +974,51 @@ export default function SellerDashboardPage() {
           )}
         </div>
       </div>
+
+      {imageEditorProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" onMouseDown={() => setImageEditorProduct(null)}>
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border bg-[#F4F4F0] p-6 shadow-2xl" onMouseDown={(event) => event.stopPropagation()} style={{ borderColor: 'rgba(165,142,116,0.3)' }}>
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-fern">Edit Product Images</h2>
+                <p className="text-xs font-semibold text-natural mt-1">{imageEditorProduct.title}</p>
+              </div>
+              <button type="button" onClick={() => setImageEditorProduct(null)} className="h-9 w-9 rounded-full border bg-white text-fern font-bold cursor-pointer">×</button>
+            </div>
+
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-natural">
+              External image URLs — one per line
+              <textarea
+                value={imageEditorUrls}
+                onChange={(event) => setImageEditorUrls(event.target.value)}
+                rows={7}
+                className="mt-2 w-full rounded-2xl border bg-white p-4 text-xs font-medium leading-6 normal-case text-fern outline-none focus:ring-2 focus:ring-[#4A5568]/25"
+                placeholder={'https://example.com/product-front.jpg\nhttps://example.com/product-side.jpg'}
+              />
+            </label>
+            <p className="mt-2 text-[10px] text-natural">The first URL is the primary image shown on product cards.</p>
+
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {imageEditorUrls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean).map((url, index) => (
+                <div key={`${url}-${index}`}>
+                  <div className="aspect-square overflow-hidden rounded-2xl border bg-white">
+                    <img src={url} alt={`${imageEditorProduct.title} preview ${index + 1}`} className="h-full w-full object-contain" />
+                  </div>
+                  <p className="mt-1 text-[9px] font-bold uppercase text-natural">{index === 0 ? "Primary image" : `Image ${index + 1}`}</p>
+                </div>
+              ))}
+            </div>
+
+            {imageEditorError && <p className="mt-4 text-xs font-bold text-red-600">{imageEditorError}</p>}
+            <div className="mt-6 flex justify-end gap-3 border-t pt-5" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
+              <button type="button" onClick={() => setImageEditorProduct(null)} className="h-10 rounded-xl border bg-white px-5 text-xs font-bold uppercase tracking-wider text-fern cursor-pointer">Cancel</button>
+              <button type="button" disabled={savingProductImages} onClick={handleSaveProductImages} className="h-10 rounded-xl bg-[#4A5568] px-5 text-xs font-bold uppercase tracking-wider text-[#F4E6C7] disabled:opacity-50 cursor-pointer">
+                {savingProductImages ? "Saving..." : "Save Images"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

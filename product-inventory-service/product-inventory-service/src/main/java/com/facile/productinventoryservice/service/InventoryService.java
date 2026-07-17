@@ -18,12 +18,19 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
 
+    public List<Inventory> getAllInventory() {
+        return inventoryRepository.findAll();
+    }
+
     public Optional<Inventory> getInventoryByProductId(Long productId) {
         return inventoryRepository.findByProductId(productId);
     }
 
     @Transactional
     public Inventory updateStock(Long productId, Integer newStock) {
+        if (newStock == null || newStock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseGet(() -> Inventory.builder().productId(productId).build());
         inventory.setStock(newStock);
@@ -33,6 +40,9 @@ public class InventoryService {
     @Transactional
     public void reduceStock(List<StockReduceItem> items) {
         for (StockReduceItem item : items) {
+            if (item.getProductId() == null || item.getQuantity() == null || item.getQuantity() < 1) {
+                throw new IllegalArgumentException("Product id and a positive quantity are required");
+            }
             var product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
             int maxOrderQuantity = product.getMaxOrderQuantity() != null ? product.getMaxOrderQuantity() : 10;
@@ -40,7 +50,7 @@ public class InventoryService {
                 throw new IllegalStateException("Maximum order quantity for " + product.getTitle()
                         + " is " + maxOrderQuantity);
             }
-            Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
+            Inventory inventory = inventoryRepository.findByProductIdForUpdate(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + item.getProductId()));
             
             if (inventory.getStock() < item.getQuantity()) {
@@ -49,6 +59,7 @@ public class InventoryService {
             }
             
             inventory.setStock(inventory.getStock() - item.getQuantity());
+            inventory.setSold((inventory.getSold() == null ? 0 : inventory.getSold()) + item.getQuantity());
             inventoryRepository.save(inventory);
         }
     }

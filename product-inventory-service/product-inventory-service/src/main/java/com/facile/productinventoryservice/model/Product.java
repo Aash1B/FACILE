@@ -34,6 +34,9 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String image;
 
+    @Column(name = "seller_email")
+    private String sellerEmail;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")

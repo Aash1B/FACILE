@@ -163,6 +163,7 @@ export default function CategoryPage() {
   // Cart & Favorites integration
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [products, setProducts] = useState<any[]>([]);
+  const [facileChoiceId, setFacileChoiceId] = useState<string | null>(null);
   const [productsLoading, setProductsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -396,6 +397,19 @@ export default function CategoryPage() {
       .finally(() => setProductsLoading(false));
   }, [subcategoryId, dbCategoryId, categoryId, subcategories, searchParams]);
 
+  useEffect(() => {
+    fetch(`/api/products?categoryId=${dbCategoryId}`)
+      .then((response) => response.ok ? response.json() : [])
+      .then((categoryProducts) => {
+        const choice = (Array.isArray(categoryProducts) ? categoryProducts : [])
+          .filter((product) => Number(product.reviews ?? 0) > 0)
+          .sort((a, b) => Number(b.rating ?? 0) - Number(a.rating ?? 0)
+            || Number(b.reviews ?? 0) - Number(a.reviews ?? 0))[0];
+        setFacileChoiceId(choice ? String(choice.id) : null);
+      })
+      .catch(() => setFacileChoiceId(null));
+  }, [dbCategoryId]);
+
   const isShoesFilter = searchParams?.get("filter") === "shoes";
   const selectedSub = subcategories.find(s => String(s.id) === String(subcategoryId));
   const subcategoryName = isShoesFilter ? "Shoes, Sneakers & Loafers" : (
@@ -497,17 +511,6 @@ export default function CategoryPage() {
           </Link>
         )}
 
-        <div className="relative min-h-[220px] sm:min-h-[300px] overflow-hidden rounded-[32px] shadow-sm flex items-end">
-          <img src={details.image} alt={details.name} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#303746]/90 via-[#303746]/35 to-transparent" />
-          <div className="relative z-10 max-w-2xl p-8 sm:p-12 text-white">
-            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#FAF3E3]/80 mb-3">Shop category</p>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-              {subcategoryId || isShoesFilter ? `${details.name} › ${subcategoryName}` : details.name}
-            </h1>
-            <p className="mt-3 text-sm sm:text-base text-white/85 leading-relaxed">{details.description}</p>
-          </div>
-        </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
@@ -722,6 +725,7 @@ export default function CategoryPage() {
                         const mrp = Number(product.mrp);
                         const price = Number(product.sellingPrice);
                         const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+                        const isFacileChoice = String(product.id) === facileChoiceId;
 
                         return (
                           <div
@@ -731,6 +735,11 @@ export default function CategoryPage() {
                             {discount > 0 && (
                               <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
                                 -{discount}%
+                              </div>
+                            )}
+                            {isFacileChoice && (
+                              <div className={`absolute left-3 z-20 rounded-full bg-[#4a556a] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
+                                Facile Choice
                               </div>
                             )}
                             <button

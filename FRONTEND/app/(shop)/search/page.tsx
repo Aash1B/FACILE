@@ -643,13 +643,6 @@ function SearchContent() {
 
   const { addToCart, toggleFavorite, favorites } = useCart();
 
-  useEffect(() => {
-    const qLower = query.trim().toLowerCase();
-    if (qLower === "shoes" || qLower === "shoe") {
-      router.replace("/category/8?filter=shoes");
-    }
-  }, [query, router]);
-
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("featured");
 
