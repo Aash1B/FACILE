@@ -41,9 +41,11 @@ public class Product {
     private SubCategory subCategory;
 
     @Builder.Default
+    @Column(nullable = false)
     private Double rating = 0.0;
 
     @Builder.Default
+    @Column(nullable = false)
     private Integer reviews = 0;
 
     // ── New filterable attributes ─────────────────────────────────────────────

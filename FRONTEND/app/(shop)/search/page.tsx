@@ -671,7 +671,7 @@ function SearchContent() {
 
   const { addToCart, toggleFavorite, favorites } = useCart();
 
-  const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("featured");
 
   // Filter state
@@ -699,8 +699,8 @@ function SearchContent() {
               price: p.sellingPrice,
               originalPrice: p.mrp,
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
-              rating: p.rating,
-              reviews: p.reviews,
+              rating: Number(p.rating ?? 0),
+              reviews: Number(p.reviews ?? 0),
               category: p.category?.name || "General",
               brand: p.brand || undefined,
               color: p.color || undefined,
