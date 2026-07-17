@@ -553,6 +553,11 @@ public class AuthService {
         userSessionRepository.deleteByRefreshToken(refreshToken);
     }
 
+    public void deleteAccount(Long userId) {
+        userSessionRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
+    }
+
     public List<UserResponse> getSellers() {
         return userRepository.findByRole(Role.SELLER).stream()
                 .map(user -> UserResponse.builder()
