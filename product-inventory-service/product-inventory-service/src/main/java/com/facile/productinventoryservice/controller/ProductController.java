@@ -1,5 +1,6 @@
 package com.facile.productinventoryservice.controller;
 
+import com.facile.productinventoryservice.dto.ProductImageUpdateRequest;
 import com.facile.productinventoryservice.model.Product;
 import com.facile.productinventoryservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,12 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts(
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long subCategoryId
+            @RequestParam(required = false) Long subCategoryId,
+            @RequestParam(required = false) String sellerEmail
     ) {
+        if (sellerEmail != null && !sellerEmail.isBlank()) {
+            return ResponseEntity.ok(productService.getProductsBySeller(sellerEmail));
+        }
         if (subCategoryId != null) {
             return ResponseEntity.ok(productService.getProductsBySubCategory(subCategoryId));
         }
@@ -64,10 +69,23 @@ public class ProductController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    @PatchMapping("/{id}/images")
+    public ResponseEntity<Product> updateProductImages(
+            @PathVariable Long id,
+            @RequestBody ProductImageUpdateRequest request,
+            @RequestParam(required = false) String sellerEmail
+    ) {
         try {
-            productService.deleteProduct(id);
+            return ResponseEntity.ok(productService.updateProductImages(id, request, sellerEmail));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id, @RequestParam(required = false) String sellerEmail) {
+        try {
+            productService.deleteProduct(id, sellerEmail);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();

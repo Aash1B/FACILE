@@ -32,6 +32,10 @@ public class ProductReviewService {
         return reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId);
     }
 
+    public List<ProductReview> getReviewsByUserEmail(String email) {
+        return reviewRepository.findByUserEmailIgnoreCaseOrderByUpdatedAtDesc(email);
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void reconcileProductRatings() {

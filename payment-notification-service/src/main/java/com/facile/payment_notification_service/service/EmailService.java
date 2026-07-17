@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -96,6 +97,19 @@ public class EmailService {
             log.info("Payment success email sent to {}", toEmail);
         } catch (Exception e) {
             log.error("Failed to send payment confirmation email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    public void sendGiftCardEmail(String toEmail, String code, String pin, BigDecimal amount) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject("Your Facile Gift Card");
+            helper.setText("<h2>Your Facile Gift Card</h2><p>Value: ₹" + amount + "</p><p>Card number: <b>" + code + "</b></p><p>PIN: <b>" + pin + "</b></p><p>Keep these details private. Add the card from your Facile profile.</p>", true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("Failed to email gift card to {}: {}", toEmail, e.getMessage());
         }
     }
 }

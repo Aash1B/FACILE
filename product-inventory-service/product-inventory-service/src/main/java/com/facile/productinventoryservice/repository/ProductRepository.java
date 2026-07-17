@@ -16,4 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @EntityGraph(attributePaths = {"category", "subCategory", "subCategory.category"})
     List<Product> findBySubCategoryId(Long subCategoryId);
+
+    @EntityGraph(attributePaths = {"category", "subCategory", "subCategory.category", "images"})
+    List<Product> findBySellerEmailIgnoreCase(String sellerEmail);
 }

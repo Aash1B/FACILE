@@ -30,6 +30,7 @@ interface AuthContextType {
   getSessions: () => Promise<any[]>;
   revokeSession: (id: number) => Promise<boolean>;
   getAuditLogs: () => Promise<any[]>;
+  deleteAccount: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -212,15 +213,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    const refreshToken = localStorage.getItem("facile_refresh_token");
-    try {
-      await api.post("/api/auth/logout", { refreshToken });
-    } catch (e) {
-      console.error("Backend logout failed:", e);
-    }
+  const logout = () => {
+    // Optionally call backend /logout if you want to invalidate refresh token
+    api.post("/api/auth/logout", { refreshToken: localStorage.getItem("facile_refresh_token") }).catch(() => {});
     clearAuthSession();
     setUser(null);
+  };
+
+  const deleteAccount = async (): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      await api.delete("/api/auth/me");
+      clearAuthSession();
+      setUser(null);
+      return true;
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      throw new Error(error.response?.data?.error || "Failed to delete account.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const setupMfa = async (): Promise<{ secret: string; qrCodeUrl: string }> => {
@@ -300,6 +312,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         forgotPassword,
         resetPassword,
         logout,
+        deleteAccount,
         setupMfa,
         enableMfa,
         disableMfa,

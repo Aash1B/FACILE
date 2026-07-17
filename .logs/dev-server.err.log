@@ -1,0 +1,3 @@
+ Container postgres Running 
+ Container mongo-order Running 
+ Container redis-cart Running 

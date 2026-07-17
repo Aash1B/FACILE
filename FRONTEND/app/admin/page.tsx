@@ -5,7 +5,7 @@ import {
   TrendingUp, DollarSign, Percent, Award, Users, UserCheck, UserPlus, 
   ShoppingBag, ShieldAlert, Activity, FileText, Check, X, Ban, AlertTriangle, 
   Trash2, Search, Sliders, ChevronDown, CheckCircle, HelpCircle, Server,
-  Plus, Package
+  Plus, Package, Image as ImageIcon, Link2
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -25,6 +25,15 @@ interface Seller {
   joinDate: string;
   totalSales: number;
   listedCount: number;
+}
+
+interface AdminProduct {
+  id: number;
+  title: string;
+  image?: string;
+  images?: string[];
+  category?: { id: number; name: string };
+  subCategory?: { id: number; name: string };
 }
 
 const INITIAL_SELLERS: Seller[] = [
@@ -130,10 +139,17 @@ const INITIAL_SELLERS: Seller[] = [
 ];
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<"executive" | "sellers" | "vouchers">("executive");
+  const [activeTab, setActiveTab] = useState<"executive" | "sellers" | "vouchers" | "images">("executive");
   const [sellers, setSellers] = useState<Seller[]>(INITIAL_SELLERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [imageUrls, setImageUrls] = useState("");
+  const [imageStatus, setImageStatus] = useState("");
+  const [savingImages, setSavingImages] = useState(false);
 
   // Voucher states
   interface Voucher {
@@ -166,6 +182,52 @@ export default function AdminDashboardPage() {
       }
     }
   }, []);
+
+  React.useEffect(() => {
+    api.get("/api/products")
+      .then((response) => setProducts(Array.isArray(response.data) ? response.data : []))
+      .catch(() => setImageStatus("Could not load products. Make sure the inventory service is running."));
+  }, []);
+
+  const categories = Array.from(new Map(products
+    .filter((product) => product.category)
+    .map((product) => [String(product.category!.id), product.category!])).values());
+  const subCategories = Array.from(new Map(products
+    .filter((product) => String(product.category?.id) === selectedCategoryId && product.subCategory)
+    .map((product) => [String(product.subCategory!.id), product.subCategory!])).values());
+  const filteredProducts = products.filter((product) => String(product.subCategory?.id) === selectedSubCategoryId);
+  const selectedProduct = products.find((product) => String(product.id) === selectedProductId);
+
+  const selectProduct = (id: string) => {
+    setSelectedProductId(id);
+    setImageStatus("");
+    const product = products.find((item) => String(item.id) === id);
+    const urls = product?.images?.length ? product.images : [product?.image].filter(Boolean) as string[];
+    setImageUrls(urls.join("\n"));
+  };
+
+  const saveProductImages = async () => {
+    if (!selectedProduct) return;
+    const urls = imageUrls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+    if (!urls.length || urls.some((url) => !/^https?:\/\//i.test(url))) {
+      setImageStatus("Enter at least one valid http:// or https:// image URL, one per line.");
+      return;
+    }
+    setSavingImages(true);
+    setImageStatus("");
+    try {
+      const response = await api.patch(`/api/products/${selectedProduct.id}/images`, {
+        primaryImage: urls[0],
+        images: urls
+      });
+      setProducts((current) => current.map((product) => product.id === selectedProduct.id ? response.data : product));
+      setImageStatus("Images saved. The first URL is now the primary product image.");
+    } catch {
+      setImageStatus("Could not save the image URLs. Check the URLs and inventory service.");
+    } finally {
+      setSavingImages(false);
+    }
+  };
 
   React.useEffect(() => {
     const fetchDBSellers = async () => {
@@ -409,6 +471,17 @@ export default function AdminDashboardPage() {
           >
             <Percent size={14} />
             <span>Vouchers & Promos</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("images")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+            style={{
+              backgroundColor: activeTab === "images" ? '#4A5568' : 'transparent',
+              color: activeTab === "images" ? '#F4E6C7' : '#4A5568'
+            }}
+          >
+            <ImageIcon size={14} />
+            <span>Product Images</span>
           </button>
         </div>
       </div>
@@ -1061,6 +1134,84 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ── Merchant Profile Modal ──────────────────────────────────────── */}
+      {activeTab === "images" && (
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 animate-fade-in">
+          <section className="bg-white border rounded-3xl p-6 shadow-sm space-y-6" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-fern flex items-center gap-2">
+                <Link2 size={20} /> Product Image URLs
+              </h2>
+              <p className="text-xs text-natural mt-1">Choose a category, subcategory, and product. Add one external image URL per line; the first URL is used on product cards.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="space-y-2 text-[10px] font-bold uppercase tracking-wider text-natural">
+                Category
+                <select value={selectedCategoryId} onChange={(event) => {
+                  setSelectedCategoryId(event.target.value);
+                  setSelectedSubCategoryId("");
+                  setSelectedProductId("");
+                  setImageUrls("");
+                }} className="w-full h-11 rounded-xl border bg-white px-3 text-xs font-semibold text-fern normal-case">
+                  <option value="">Select category</option>
+                  {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                </select>
+              </label>
+              <label className="space-y-2 text-[10px] font-bold uppercase tracking-wider text-natural">
+                Subcategory
+                <select value={selectedSubCategoryId} disabled={!selectedCategoryId} onChange={(event) => {
+                  setSelectedSubCategoryId(event.target.value);
+                  setSelectedProductId("");
+                  setImageUrls("");
+                }} className="w-full h-11 rounded-xl border bg-white px-3 text-xs font-semibold text-fern normal-case disabled:opacity-50">
+                  <option value="">Select subcategory</option>
+                  {subCategories.map((subcategory) => <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>)}
+                </select>
+              </label>
+              <label className="space-y-2 text-[10px] font-bold uppercase tracking-wider text-natural">
+                Product
+                <select value={selectedProductId} disabled={!selectedSubCategoryId} onChange={(event) => selectProduct(event.target.value)} className="w-full h-11 rounded-xl border bg-white px-3 text-xs font-semibold text-fern normal-case disabled:opacity-50">
+                  <option value="">Select product</option>
+                  {filteredProducts.map((product) => <option key={product.id} value={product.id}>{product.title}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <label className="block space-y-2 text-[10px] font-bold uppercase tracking-wider text-natural">
+              Image URLs — one per line
+              <textarea
+                value={imageUrls}
+                disabled={!selectedProduct}
+                onChange={(event) => setImageUrls(event.target.value)}
+                rows={8}
+                placeholder={'https://example.com/product-front.jpg\nhttps://example.com/product-side.jpg'}
+                className="w-full rounded-2xl border bg-white p-4 text-xs leading-6 text-fern normal-case disabled:opacity-50"
+              />
+            </label>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className={`text-xs font-semibold ${imageStatus.startsWith("Images saved") ? "text-green-700" : "text-red-600"}`}>{imageStatus}</p>
+              <button type="button" disabled={!selectedProduct || savingImages} onClick={saveProductImages} className="h-11 px-6 rounded-xl bg-[#4A5568] text-[#F4E6C7] text-xs font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer">
+                {savingImages ? "Saving..." : "Save image URLs"}
+              </button>
+            </div>
+          </section>
+
+          <aside className="bg-white border rounded-3xl p-5 shadow-sm" style={{ borderColor: 'rgba(165,142,116,0.2)' }}>
+            <h3 className="font-serif text-lg font-bold text-fern mb-4">Image Preview</h3>
+            {imageUrls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean).map((url, index) => (
+              <div key={`${url}-${index}`} className="mb-4">
+                <div className="aspect-square rounded-2xl overflow-hidden border bg-[#F4F4F0]">
+                  <img src={url} alt={`${selectedProduct?.title || "Product"} preview ${index + 1}`} className="w-full h-full object-contain" />
+                </div>
+                <p className="mt-1 text-[10px] font-bold text-natural">{index === 0 ? "PRIMARY IMAGE" : `IMAGE ${index + 1}`}</p>
+              </div>
+            ))}
+            {!imageUrls.trim() && <p className="text-xs text-natural">Select a product to preview its current images.</p>}
+          </aside>
+        </div>
+      )}
+
       {selectedSellerProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-fade-in font-sans">
           <div className="bg-[#FAF6EE] border rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6" style={{ borderColor: 'rgba(165,142,116,0.3)' }}>

@@ -18,7 +18,7 @@ export default function CartDrawer() {
 
   const handleCheckout = () => {
     setIsCartOpen(false);
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   return (
@@ -161,7 +161,7 @@ export default function CartDrawer() {
                       </>
                     ) : (
                       <>
-                        Proceed to Checkout
+                        Proceed
                         <ArrowRight size={14} />
                       </>
                     )}

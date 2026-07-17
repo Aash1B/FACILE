@@ -18,4 +18,5 @@ public class PaymentVerifyRequest {
     private String userId;
     private double amount;
     private String currency = "INR";
+    private String purpose;
 }

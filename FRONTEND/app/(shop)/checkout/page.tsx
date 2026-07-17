@@ -110,7 +110,16 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [alertModal, setAlertModal] = useState<{show: boolean; title: string; message: string}>({show: false, title: "", message: ""});
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
+  const [walletBalance, setWalletBalance] = useState(0);
+  useEffect(() => {
+    if (!user?.email) return;
+    fetch(`${PAYMENT_SERVICE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (data) setWalletBalance(Number(data.balance || 0)); })
+      .catch(() => setWalletBalance(0));
+  }, [user?.email]);
   /**
    * paymentStatus tracks the full payment lifecycle:
    *   IDLE         — not yet attempted
@@ -252,17 +261,26 @@ export default function CheckoutPage() {
 
   const handleAddCustomAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    const phoneDigits = customAddress.phone.replace(/\D/g, "");
     if (!customAddress.name.trim() || !customAddress.street.trim() || !customAddress.city.trim()) {
-      setAddressError("Please complete every address field.");
+      setAlertModal({show: true, title: "Missing Information", message: "Please complete every address field before saving."});
       return;
     }
-    if (!/^\d{6}$/.test(customAddress.zip.trim())) {
-      setAddressError("Enter a valid 6-digit PIN code.");
+    
+    // ZIP Validation
+    const zipClean = customAddress.zip.trim();
+    if (!/^\d{6}$/.test(zipClean)) {
+      setAlertModal({show: true, title: "Invalid ZIP Code", message: "Please enter a valid 6-digit ZIP code."});
       return;
     }
-    if (phoneDigits.length < 10 || phoneDigits.length > 13) {
-      setAddressError("Enter a valid phone number.");
+    
+    // Phone Validation: Remove +91 if present, then count digits
+    let phoneStr = customAddress.phone.trim();
+    if (phoneStr.startsWith("+91")) {
+      phoneStr = phoneStr.substring(3).trim();
+    }
+    const phoneDigits = phoneStr.replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      setAlertModal({show: true, title: "Invalid Phone Number", message: "Enter valid phone number. It must be exactly 10 digits (excluding +91)."});
       return;
     }
 
@@ -336,28 +354,44 @@ export default function CheckoutPage() {
       return;
     }
     if (!activeAddress) {
-      setAddressError("Add and select a delivery address before continuing.");
+      setAlertModal({show: true, title: "Address Required", message: "Please add and select a delivery address where the product is to be delivered before proceeding to payment."});
       return;
     }
     setShowPaymentModal(true);
   };
 
-  const handleCheckoutCompletion = async () => {
+  const handleCheckoutCompletion = async (paymentResponse?: any, orderData?: any) => {
     if (!activeAddress) throw new Error("Please select a delivery address.");
     const isBuyNow = Boolean(localStorage.getItem("facile_buynow"));
 
-    if (user?.email && !isBuyNow) {
+    if (user?.email) {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
-      const orderResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": checkoutIdempotencyKey.current,
-        },
-        body: JSON.stringify({ shippingAddress }),
-      });
-      if (!orderResponse.ok) {
-        throw new Error("Payment succeeded, but the order could not be registered. Please contact support.");
+      if (isBuyNow) {
+        const directResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress, items: checkoutItems.map((item) => ({
+            productId: String(item.id), productName: item.name, image: item.image,
+            price: item.price, quantity: item.quantity,
+          })) }),
+        });
+        if (!directResponse.ok) throw new Error("Payment succeeded, but the direct order could not be registered.");
+      } else if (selectedPaymentMethod === "cod" || selectedPaymentMethod === "giftcard") {
+        const response = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress }),
+        });
+        if (!response.ok) throw new Error(`Checkout failed: ${await response.text()}`);
+      } else {
+        const sagaResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
+          body: JSON.stringify({ shippingAddress, razorpay_order_id: paymentResponse?.razorpay_order_id,
+            razorpay_payment_id: paymentResponse?.razorpay_payment_id,
+            razorpay_signature: paymentResponse?.razorpay_signature, amount: totalAmount }),
+        });
+        if (!sagaResponse.ok) throw new Error(`Checkout saga failed: ${await sagaResponse.text()}`);
       }
     }
 
@@ -371,6 +405,23 @@ export default function CheckoutPage() {
   const handleConfirmPayment = async () => {
     if (paymentRequestStarted.current) return;
     paymentRequestStarted.current = true;
+
+    if (selectedPaymentMethod === "giftcard") {
+      if (!user?.email) { setPaymentError("Sign in to use your gift-card wallet."); paymentRequestStarted.current = false; return; }
+      setIsProcessing(true); setPaymentError(null);
+      try {
+        const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Gift-card payment failed.");
+        setWalletBalance(Number(data.balance));
+        await handleCheckoutCompletion();
+        setPaymentStatus("SUCCESS");
+      } catch (error) {
+        setPaymentError(error instanceof Error ? error.message : "Gift-card payment failed.");
+        paymentRequestStarted.current = false;
+      } finally { setIsProcessing(false); }
+      return;
+    }
 
     if (selectedPaymentMethod === "cod") {
       setIsProcessing(true);
@@ -427,47 +478,21 @@ export default function CheckoutPage() {
         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=100",
         order_id: orderData.id,
 
-        // ── Step 4: On Razorpay success → verify signature on backend
+        // ── Step 4: On Razorpay success → trigger Saga on backend
         handler: async function (paymentResponse: any) {
           setIsProcessing(false);
           setIsVerifying(true);
           setPaymentStatus("VERIFYING");
 
           try {
-            const verifyRes = await fetch(
-              `${PAYMENT_SERVICE_URL}/payments/verify`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  razorpay_order_id: paymentResponse.razorpay_order_id,
-                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                  razorpay_signature: paymentResponse.razorpay_signature,
-                  userId: user?.email || null,
-                  amount: totalAmount,
-                  currency: orderData.currency || "INR",
-                }),
-              }
-            );
-
-            if (verifyRes.ok) {
-              // ✅ Verified — payment is genuine
-              await handleCheckoutCompletion();
-              setPaymentStatus("SUCCESS");
-            } else {
-              // ❌ Backend rejected the signature
-              const errData = await verifyRes.json().catch(() => ({}));
-              setPaymentStatus("VERIFY_FAILED");
-              setPaymentError(
-                (errData as any).message ||
-                "Payment verification failed. Please contact support."
-              );
-            }
+            // Trigger the Saga Orchestrator directly
+            await handleCheckoutCompletion(paymentResponse, orderData);
+            setPaymentStatus("SUCCESS");
           } catch (verifyErr: any) {
             console.error("Payment verification network error:", verifyErr);
             setPaymentStatus("VERIFY_FAILED");
             setPaymentError(
-              "Could not reach the verification server. Please contact support."
+              verifyErr.message || "Could not complete the checkout process. Please contact support."
             );
             paymentRequestStarted.current = false;
           } finally {
@@ -479,6 +504,7 @@ export default function CheckoutPage() {
           name: activeAddress?.name || "",
           contact: activeAddress?.phone || "",
           email: user?.email || "",
+          method: selectedPaymentMethod === "upi" ? "upi" : (selectedPaymentMethod === "card" ? "card" : undefined)
         },
         theme: { color: "#4A5568" },
 
@@ -1297,6 +1323,17 @@ export default function CheckoutPage() {
 
                   {/* COD Option */}
                   <label
+                    onClick={() => setSelectedPaymentMethod("giftcard")}
+                    className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "giftcard" ? "border-[#4A5568] bg-warm-ivory font-bold shadow-xs text-black" : "border-natural/20 hover:border-natural/35 bg-warm-ivory/60 text-fern/90"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input type="radio" checked={selectedPaymentMethod === "giftcard"} onChange={() => setSelectedPaymentMethod("giftcard")} className="accent-[#4A5568]" />
+                      <div className="text-left"><p className="text-xs font-bold">Gift Card Wallet</p><p className="text-[9px] font-medium">Available: {formatPrice(walletBalance)}</p></div>
+                    </div>
+                  </label>
+
+                  {/* COD Option */}
+                  <label
                     onClick={() => setSelectedPaymentMethod("cod")}
                     className={`flex items-center justify-between p-3.5 border rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === "cod"
                       ? "border-[#4A5568] bg-warm-ivory font-bold shadow-xs text-black"
@@ -1357,6 +1394,33 @@ export default function CheckoutPage() {
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* UNIFIED ALERT MODAL */}
+      {alertModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setAlertModal({ ...alertModal, show: false })}
+            className="fixed inset-0 bg-[#4A5568]/60 backdrop-blur-sm transition-opacity"
+          />
+          <div className="relative bg-warm-ivory border border-[#4A5568]/20 rounded-3xl max-w-sm w-full p-6 shadow-2xl z-10 animate-fade-in text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+              <Info size={24} className="text-red-600" />
+            </div>
+            <h3 className="font-serif text-lg font-extrabold text-black mb-2">
+              {alertModal.title}
+            </h3>
+            <p className="text-xs text-[#4A5568] font-medium mb-6">
+              {alertModal.message}
+            </p>
+            <button
+              onClick={() => setAlertModal({ ...alertModal, show: false })}
+              className="w-full h-11 bg-[#4A5568] hover:bg-[#3B4455] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95"
+            >
+              Okay
+            </button>
           </div>
         </div>
       )}

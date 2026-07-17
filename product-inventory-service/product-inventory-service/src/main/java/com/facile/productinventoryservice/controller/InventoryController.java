@@ -8,12 +8,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class InventoryController {
 
     private final InventoryService inventoryService;
+
+    @GetMapping("/inventory")
+    public List<Inventory> getAllInventory() {
+        return inventoryService.getAllInventory();
+    }
 
     @GetMapping("/{id}/inventory")
     public ResponseEntity<Inventory> getInventoryByProductId(@PathVariable Long id) {
@@ -46,6 +53,15 @@ public class InventoryController {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error processing stock reduction: " + e.getMessage());
+        }
+    }
+    @PostMapping("/inventory/restore")
+    public ResponseEntity<String> restoreStock(@RequestBody StockReduceRequest request) {
+        try {
+            inventoryService.restoreStock(request.getItems());
+            return ResponseEntity.ok("Stock successfully restored");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error processing stock restoration: " + e.getMessage());
         }
     }
 }

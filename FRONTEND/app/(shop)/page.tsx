@@ -40,6 +40,7 @@ type ProductCard = {
   reviews: number;
   description?: string;
   maxOrderQuantity?: number;
+  facileChoice?: boolean;
 };
 
 // Mock Database of Best Selling Products
@@ -243,6 +244,19 @@ function HomeContent() {
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
+            const choicesByCategory = new Map<string, any>();
+            (data as ApiProduct[]).forEach((product: any) => {
+              if (Number(product.reviews ?? 0) < 1) return;
+              const categoryKey = String(product.category?.id ?? product.category?.name ?? "uncategorized");
+              const current = choicesByCategory.get(categoryKey);
+              if (!current
+                || Number(product.rating ?? 0) > Number(current.rating ?? 0)
+                || (Number(product.rating ?? 0) === Number(current.rating ?? 0)
+                  && Number(product.reviews ?? 0) > Number(current.reviews ?? 0))) {
+                choicesByCategory.set(categoryKey, product);
+              }
+            });
+            const choiceIds = new Set(Array.from(choicesByCategory.values()).map((product) => String(product.id)));
             const mapped = (data as ApiProduct[]).map((p) => ({
               id: "bs" + p.id,
               name: p.title,
@@ -252,7 +266,8 @@ function HomeContent() {
               image: p.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
               rating: Number(p.rating ?? 0),
               reviews: Number(p.reviews ?? 0),
-              maxOrderQuantity: p.maxOrderQuantity || 10
+              maxOrderQuantity: p.maxOrderQuantity || 10,
+              facileChoice: choiceIds.has(String(p.id))
             }));
             setProducts(mapped);
             setProductPage(0);
@@ -601,6 +616,11 @@ function HomeContent() {
                     {discount > 0 && (
                       <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
                         -{discount}%
+                      </div>
+                    )}
+                    {product.facileChoice && (
+                      <div className={`absolute left-3 z-20 rounded-full bg-[#4a556a] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
+                        Facile Choice
                       </div>
                     )}
                     <img

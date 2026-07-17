@@ -98,6 +98,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { user, isAuthenticated } = useAuth();
   
   const [product, setProduct] = useState<any>(null);
+  const [isFacileChoice, setIsFacileChoice] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState<string>("");
   const [stock, setStock] = useState<number>(50); // Default placeholder stock
@@ -186,6 +187,11 @@ export default function ProductDetailPage({ params }: PageProps) {
         const catalogueResponse = await fetch("/api/products");
         if (catalogueResponse.ok) {
           const catalogue = await catalogueResponse.json();
+          const categoryChoice = (Array.isArray(catalogue) ? catalogue : [])
+            .filter((item: any) => String(item.category?.id) === String(dataProduct.category?.id) && Number(item.reviews ?? 0) > 0)
+            .sort((a: any, b: any) => Number(b.rating ?? 0) - Number(a.rating ?? 0)
+              || Number(b.reviews ?? 0) - Number(a.reviews ?? 0))[0];
+          setIsFacileChoice(String(categoryChoice?.id ?? "") === String(cleanId));
           const related = (Array.isArray(catalogue) ? catalogue : [])
             .filter((item: any) => String(item.id) !== String(cleanId))
             .sort((a: any, b: any) => {
@@ -430,6 +436,11 @@ export default function ProductDetailPage({ params }: PageProps) {
                   {discountPercent}% OFF
                 </span>
               )}
+              {isFacileChoice && (
+                <span className={`absolute left-4 z-10 rounded-full bg-[#4a556a] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-14" : "top-4"}`}>
+                  Facile Choice
+                </span>
+              )}
               <img
                 src={activeImage || product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                 alt={product.name}
@@ -496,19 +507,19 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Bank Offer</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Get 10% off up to ₹1,500 on HDFC Cards.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">WELCOME10</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 10% Off First Order</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Cashback</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Up to ₹500 cashback on UPI payments.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">2 offers &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">FACILE50</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Flat ₹50 Off</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
-                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Partner Offer</p>
-                  <p className="text-[10px] text-natural font-semibold leading-relaxed font-sans">Save up to 18% with GST business invoice.</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] hover:underline cursor-pointer block pt-1">1 offer &gt;</span>
+                  <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
+                  <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">SAVE20</p>
+                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 20% Off Orders &gt; ₹5000</span>
                 </div>
               </div>
             </div>

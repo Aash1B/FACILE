@@ -38,14 +38,47 @@ public class OrderService {
             throw new IllegalStateException("Cannot checkout an empty cart");
         }
 
-        // Deduct stock from product-inventory-service
-        List<Map<String, Object>> itemsToReduce = new ArrayList<>();
+        List<OrderItem> orderItems = new ArrayList<>();
         for (CartItem cartItem : cart.getItems()) {
+            orderItems.add(new OrderItem(
+                    cartItem.getProductId(), cartItem.getProductName(), cartItem.getImage(),
+                    cartItem.getPrice(), cartItem.getQuantity()));
+        }
+
+        reduceInventory(orderItems);
+
+        Order savedOrder = saveOrder(userId, shippingAddress, idempotencyKey, orderItems, cart.getTotalAmount());
+        cartService.clearCart(userId);
+        return savedOrder;
+    }
+
+    public synchronized Order checkoutDirect(String userId, String shippingAddress, List<OrderItem> items,
+                                             String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            throw new IllegalArgumentException("Idempotency-Key header is required");
+        }
+        Order existingOrder = orderRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+        if (existingOrder != null) return existingOrder;
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            throw new IllegalArgumentException("Shipping address is required");
+        }
+        if (items == null || items.isEmpty()) {
+            throw new IllegalStateException("Cannot checkout without products");
+        }
+
+        reduceInventory(items);
+        double total = items.stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
+        return saveOrder(userId, shippingAddress, idempotencyKey, items, total);
+    }
+
+    private void reduceInventory(List<OrderItem> orderItems) {
+        List<Map<String, Object>> itemsToReduce = new ArrayList<>();
+        for (OrderItem orderItem : orderItems) {
             Map<String, Object> reduceItem = new HashMap<>();
-            String rawId = cartItem.getProductId();
+            String rawId = orderItem.getProductId();
             long parsedId = Long.parseLong(rawId.replaceAll("\\D+", ""));
             reduceItem.put("productId", parsedId);
-            reduceItem.put("quantity", cartItem.getQuantity());
+            reduceItem.put("quantity", orderItem.getQuantity());
             itemsToReduce.add(reduceItem);
         }
         
@@ -64,33 +97,20 @@ public class OrderService {
         } catch (Exception e) {
             throw new IllegalStateException("Product & Inventory service communication error: " + e.getMessage());
         }
+    }
 
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (CartItem cartItem : cart.getItems()) {
-            OrderItem orderItem = new OrderItem(
-                    cartItem.getProductId(),
-                    cartItem.getProductName(),
-                    cartItem.getImage(),
-                    cartItem.getPrice(),
-                    cartItem.getQuantity()
-            );
-            orderItems.add(orderItem);
-        }
-
+    private Order saveOrder(String userId, String shippingAddress, String idempotencyKey,
+                            List<OrderItem> orderItems, double totalAmount) {
         Order order = new Order();
         order.setIdempotencyKey(idempotencyKey);
         order.setUserId(userId);
         order.setItems(orderItems);
-        order.setTotalAmount(cart.getTotalAmount());
+        order.setTotalAmount(totalAmount);
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(LocalDateTime.now());
         order.setShippingAddress(shippingAddress);
 
-        Order savedOrder = orderRepository.save(order);
-
-        cartService.clearCart(userId);
-
-        return savedOrder;
+        return orderRepository.save(order);
     }
 
     public List<Order> getOrderHistory(String userId) {
@@ -111,6 +131,48 @@ public class OrderService {
     public Order getOrderById(String orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+    }
+
+    public synchronized Order createOrderForSaga(String userId, String shippingAddress, String idempotencyKey) {
+        Order existingOrder = orderRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+        if (existingOrder != null) {
+            return existingOrder;
+        }
+
+        Cart cart = cartService.getCartByUserId(userId);
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalStateException("Cannot checkout an empty cart");
+        }
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem cartItem : cart.getItems()) {
+            orderItems.add(new OrderItem(
+                    cartItem.getProductId(),
+                    cartItem.getProductName(),
+                    cartItem.getImage(),
+                    cartItem.getPrice(),
+                    cartItem.getQuantity()
+            ));
+        }
+
+        Order order = new Order();
+        order.setIdempotencyKey(idempotencyKey);
+        order.setUserId(userId);
+        order.setItems(orderItems);
+        order.setTotalAmount(cart.getTotalAmount());
+        order.setStatus(OrderStatus.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setShippingAddress(shippingAddress);
+
+        Order savedOrder = orderRepository.save(order);
+        cartService.clearCart(userId);
+        return savedOrder;
+    }
+
+    public void cancelOrder(String orderId) {
+        Order order = getOrderById(orderId);
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
     }
 
     public Order updateOrderStatus(String orderId, OrderStatus newStatus) {
