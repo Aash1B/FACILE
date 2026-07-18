@@ -425,7 +425,7 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="flex-1 w-full space-y-8 max-w-7xl mx-auto">
+    <div className="flex-1 w-full space-y-8 max-w-[1600px] mx-auto">
       {/* Title */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-6" style={{ borderColor: 'rgba(165,142,116,0.15)' }}>
         <div>

@@ -133,7 +133,7 @@ export default function SellerLayout({
               className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-xl transition-all cursor-pointer hover:bg-red-500/10 text-red-700"
             >
               <LogOut size={14} />
-              <span className="hidden sm:inline">Sign Out</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         )}

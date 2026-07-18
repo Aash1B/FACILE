@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -111,5 +113,56 @@ public class EmailService {
         } catch (Exception e) {
             log.error("Failed to email gift card to {}: {}", toEmail, e.getMessage());
         }
+    }
+
+    public void sendTrackingEmail(String toEmail, String orderId, String status, List<Map<String, Object>> history) {
+        if (toEmail == null || toEmail.isBlank() || !toEmail.contains("@")) {
+            throw new IllegalArgumentException("A valid customer email is required");
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject("FACILE order tracking - #" + shortOrderId(orderId));
+
+            StringBuilder timeline = new StringBuilder();
+            if (history != null) {
+                for (Map<String, Object> event : history) {
+                    boolean completed = Boolean.TRUE.equals(event.get("completed"));
+                    timeline.append("<div style=\"padding:14px 16px;margin:10px 0;border-radius:12px;background:")
+                            .append(completed ? "#edf8f1" : "#f4f4f0")
+                            .append(";border:1px solid #e2e8f0\">")
+                            .append("<strong style=\"color:#4a5568\">").append(escape(event.get("status"))).append("</strong>")
+                            .append("<div style=\"font-size:13px;color:#718096;margin-top:4px\">").append(escape(event.get("message"))).append("</div>")
+                            .append("</div>");
+                }
+            }
+
+            String html = "<div style=\"max-width:600px;margin:30px auto;font-family:Arial,sans-serif;color:#2d3748\">"
+                    + "<div style=\"background:#4a5568;color:white;padding:24px;border-radius:18px 18px 0 0;text-align:center\"><h1 style=\"margin:0\">FACILE</h1></div>"
+                    + "<div style=\"padding:28px;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 18px 18px\">"
+                    + "<h2>Your order tracking history</h2><p><strong>Order:</strong> #" + shortOrderId(orderId) + "</p>"
+                    + "<p><strong>Current status:</strong> " + escape(status) + "</p>" + timeline
+                    + "<p style=\"font-size:12px;color:#718096;margin-top:24px\">Open My Orders in FACILE for the latest status.</p></div></div>";
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("Tracking email sent to {} for order {}", toEmail, orderId);
+        } catch (Exception exception) {
+            log.error("Failed to email tracking history to {}: {}", toEmail, exception.getMessage());
+            throw new IllegalStateException("Tracking email failed", exception);
+        }
+    }
+
+    private String shortOrderId(String orderId) {
+        if (orderId == null) return "UNKNOWN";
+        return orderId.substring(Math.max(0, orderId.length() - 8)).toUpperCase();
+    }
+
+    private String escape(Object value) {
+        return String.valueOf(value == null ? "" : value)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 }

@@ -1,7 +1,7 @@
-"use client";
+  "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { useAuth } from "@/context/AuthContext";
+  import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+  import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -11,24 +11,26 @@ export interface CartItem {
   image: string;
   maxOrderQuantity?: number;
   quantity: number;
+  selectedSize?: string | null;
 }
 
-interface CartContextType {
-  cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, qty: number) => void;
-  clearCart: () => void;
-  favorites: string[];
-  toggleFavorite: (id: string) => void;
-  isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
-}
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+  interface CartContextType {
+    cart: CartItem[];
+    addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
+    removeFromCart: (id: string) => void;
+    updateQuantity: (id: string, qty: number) => void;
+    clearCart: () => void;
+    favorites: string[];
+    toggleFavorite: (id: string) => void;
+    isCartOpen: boolean;
+    setIsCartOpen: (open: boolean) => void;
+  }
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const CartContext = createContext<CartContextType | undefined>(undefined);
+
+  export function CartProvider({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -63,6 +65,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                       maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: localItem.quantity,
+                      selectedSize: localItem.selectedSize || null,
                     }),
                   });
                 } else if (localItem.quantity > dbItem.quantity) {
@@ -78,6 +81,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                       maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: diff,
+                      selectedSize: localItem.selectedSize || null,
                     }),
                   });
                 }
@@ -101,7 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     const productRes = await fetch(`/api/products/${numericProductId}`);
                     if (productRes.ok) image = (await productRes.json()).image;
                   } catch {
-                    // Use the fallback below only when product lookup fails.
+                    // Use fallback when product lookup fails
                   }
                 }
               }
@@ -114,6 +118,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
                 maxOrderQuantity: i.maxOrderQuantity || 10,
                 quantity: i.quantity,
+                selectedSize: i.selectedSize || null,
               };
             }));
             setCart(mappedCart);
@@ -133,39 +138,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } else {
           setCart([]);
         }
-      }
+      };
     };
 
     syncCart();
   }, [user]);
 
-  // Load favorites on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedFavs = localStorage.getItem("facile_favorites");
-      if (savedFavs) {
-        try {
-          setFavorites(JSON.parse(savedFavs));
-        } catch (e) {
-          console.error("Error parsing favorites data", e);
+    // Load favorites on mount
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const savedFavs = localStorage.getItem("facile_favorites");
+        if (savedFavs) {
+          try {
+            setFavorites(JSON.parse(savedFavs));
+          } catch (e) {
+            console.error("Error parsing favorites data", e);
+          }
         }
       }
-    }
-  }, []);
+    }, []);
 
-  const saveCartState = (newCart: CartItem[]) => {
-    setCart(newCart);
-    if (!user && typeof window !== "undefined") {
-      localStorage.setItem("facile_cart", JSON.stringify(newCart));
-    }
-  };
+    const saveCartState = (newCart: CartItem[]) => {
+      setCart(newCart);
+      if (!user && typeof window !== "undefined") {
+        localStorage.setItem("facile_cart", JSON.stringify(newCart));
+      }
+    };
 
-  const saveFavorites = (newFavs: string[]) => {
-    setFavorites(newFavs);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("facile_favorites", JSON.stringify(newFavs));
-    }
-  };
+    const saveFavorites = (newFavs: string[]) => {
+      setFavorites(newFavs);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("facile_favorites", JSON.stringify(newFavs));
+      }
+    };
+
 
   const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
     const now = Date.now();
@@ -173,7 +179,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (now - lastClick < 800) return;
     recentAddClicks.current.set(item.id, now);
 
-    const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
+    const existingIndex = cart.findIndex(
+      (cartItem) => cartItem.id === item.id && cartItem.selectedSize === item.selectedSize
+    );
     const maxQuantity = item.maxOrderQuantity || 10;
     const safeQuantityToAdd = Math.min(maxQuantity, Math.max(1, quantityToAdd));
     
@@ -193,10 +201,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             maxOrderQuantity: maxQuantity,
             price: item.price,
             quantity: safeQuantityToAdd,
+            selectedSize: item.selectedSize || null,
           }),
         });
 
         // Update state
+          // Update state
+          if (existingIndex > -1) {
+            const newCart = [...cart];
+            newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
+            saveCartState(newCart);
+          } else {
+            saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
+          }
+        } catch (e) {
+          console.error("Failed to add item to db cart:", e);
+        }
+      } else {
+        // Guest: local storage
         if (existingIndex > -1) {
           const newCart = [...cart];
           newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
@@ -204,144 +226,132 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } else {
           saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
         }
-      } catch (e) {
-        console.error("Failed to add item to db cart:", e);
       }
-    } else {
-      // Guest: local storage
-      if (existingIndex > -1) {
-        const newCart = [...cart];
-        newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
-        saveCartState(newCart);
-      } else {
-        saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
-      }
-    }
-  };
+    };
 
-  const removeFromCart = async (id: string) => {
-    if (user && user.email) {
-      try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
-          method: "DELETE",
-        });
-        saveCartState(cart.filter((item) => item.id !== id));
-      } catch (e) {
-        console.error("Failed to remove item from db cart:", e);
-      }
-    } else {
-      saveCartState(cart.filter((item) => item.id !== id));
-    }
-  };
-
-  const updateQuantity = async (id: string, qty: number) => {
-    if (qty <= 0) {
-      removeFromCart(id);
-      return;
-    }
-
-    const currentItem = cart.find((item) => item.id === id);
-    if (!currentItem) return;
-    qty = Math.min(currentItem.maxOrderQuantity || 10, qty);
-
-    if (user && user.email) {
-      try {
-        const oldQty = currentItem.quantity;
-        if (qty > oldQty) {
-          // Add the difference
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: id,
-              productName: currentItem.name,
-              image: currentItem.image,
-              maxOrderQuantity: currentItem.maxOrderQuantity || 10,
-              price: currentItem.price,
-              quantity: qty - oldQty,
-            }),
-          });
-        } else if (qty < oldQty) {
-          // Remove from DB first and add back the smaller quantity
+    const removeFromCart = async (id: string) => {
+      if (user && user.email) {
+        try {
           await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
             method: "DELETE",
           });
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: id,
-              productName: currentItem.name,
-              image: currentItem.image,
-              maxOrderQuantity: currentItem.maxOrderQuantity || 10,
-              price: currentItem.price,
-              quantity: qty,
-            }),
-          });
+          saveCartState(cart.filter((item) => item.id !== id));
+        } catch (e) {
+          console.error("Failed to remove item from db cart:", e);
         }
-        
+      } else {
+        saveCartState(cart.filter((item) => item.id !== id));
+      }
+    };
+
+    const updateQuantity = async (id: string, qty: number) => {
+      if (qty <= 0) {
+        removeFromCart(id);
+        return;
+      }
+
+      const currentItem = cart.find((item) => item.id === id);
+      if (!currentItem) return;
+      qty = Math.min(currentItem.maxOrderQuantity || 10, qty);
+
+      if (user && user.email) {
+        try {
+          const oldQty = currentItem.quantity;
+          if (qty > oldQty) {
+            // Add the difference
+            await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                productId: id,
+                productName: currentItem.name,
+                image: currentItem.image,
+                maxOrderQuantity: currentItem.maxOrderQuantity || 10,
+                price: currentItem.price,
+                quantity: qty - oldQty,
+              }),
+            });
+          } else if (qty < oldQty) {
+            // Remove from DB first and add back the smaller quantity
+            await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+              method: "DELETE",
+            });
+            await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                productId: id,
+                productName: currentItem.name,
+                image: currentItem.image,
+                maxOrderQuantity: currentItem.maxOrderQuantity || 10,
+                price: currentItem.price,
+                quantity: qty,
+              }),
+            });
+          }
+          
+          saveCartState(cart.map((item) =>
+            item.id === id ? { ...item, quantity: qty } : item
+          ));
+        } catch (e) {
+          console.error("Failed to update item quantity in db cart:", e);
+        }
+      } else {
         saveCartState(cart.map((item) =>
           item.id === id ? { ...item, quantity: qty } : item
         ));
-      } catch (e) {
-        console.error("Failed to update item quantity in db cart:", e);
       }
-    } else {
-      saveCartState(cart.map((item) =>
-        item.id === id ? { ...item, quantity: qty } : item
-      ));
-    }
-  };
+    };
 
-  const clearCart = async () => {
-    if (user && user.email) {
-      try {
-        // Clear each item in database
-        for (const item of cart) {
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
-            method: "DELETE",
-          });
+    const clearCart = async () => {
+      if (user && user.email) {
+        try {
+          // Clear each item in database
+          for (const item of cart) {
+            await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
+              method: "DELETE",
+            });
+          }
+          saveCartState([]);
+        } catch (e) {
+          console.error("Failed to clear db cart:", e);
         }
+      } else {
         saveCartState([]);
-      } catch (e) {
-        console.error("Failed to clear db cart:", e);
       }
-    } else {
-      saveCartState([]);
-    }
-  };
+    };
 
-  const toggleFavorite = (id: string) => {
-    const isFav = favorites.includes(id);
-    const newFavs = isFav
-      ? favorites.filter((favId) => favId !== id)
-      : [...favorites, id];
-    saveFavorites(newFavs);
-  };
+    const toggleFavorite = (id: string) => {
+      const isFav = favorites.includes(id);
+      const newFavs = isFav
+        ? favorites.filter((favId) => favId !== id)
+        : [...favorites, id];
+      saveFavorites(newFavs);
+    };
 
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        favorites,
-        toggleFavorite,
-        isCartOpen,
-        setIsCartOpen,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
+    return (
+      <CartContext.Provider
+        value={{
+          cart,
+          addToCart,
+          removeFromCart,
+          updateQuantity,
+          clearCart,
+          favorites,
+          toggleFavorite,
+          isCartOpen,
+          setIsCartOpen,
+        }}
+      >
+        {children}
+      </CartContext.Provider>
+    );
   }
-  return context;
-}
+
+  export function useCart() {
+    const context = useContext(CartContext);
+    if (!context) {
+      throw new Error("useCart must be used within a CartProvider");
+    }
+    return context;
+  }

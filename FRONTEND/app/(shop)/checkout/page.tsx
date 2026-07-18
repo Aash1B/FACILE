@@ -744,8 +744,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-sand py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-sand py-8 font-sans animate-fade-in">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 text-xs font-bold text-natural mb-6">
@@ -1059,6 +1059,9 @@ export default function CheckoutPage() {
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">{item.brand}</span>
                           <h4 className="text-xs font-bold text-[#4A5568] truncate leading-snug">{item.name}</h4>
+                          {item.selectedSize && (
+                            <p className="text-[10px] font-bold text-blue-600 mt-0.5 opacity-90">Size: {item.selectedSize}</p>
+                          )}
                           <div className="mt-2 flex items-center gap-1 rounded-full border border-natural/20 bg-[#F4F4F0] p-0.5 w-fit">
                             <button type="button" onClick={() => handleCheckoutQuantity(item, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-6 w-6 items-center justify-center rounded-full text-[#4A5568] hover:bg-white disabled:opacity-35" aria-label={`Decrease ${item.name} quantity`}>
                               <Minus size={10} />

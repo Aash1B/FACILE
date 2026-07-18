@@ -30,7 +30,8 @@ public class CartService {
         int maxQuantity = newItem.getMaxOrderQuantity() != null && newItem.getMaxOrderQuantity() > 0
                 ? newItem.getMaxOrderQuantity() : 10;
         for (CartItem item : cart.getItems()) {
-            if (item.getProductId().equals(newItem.getProductId())) {
+            if (item.getProductId().equals(newItem.getProductId()) &&
+                java.util.Objects.equals(item.getSelectedSize(), newItem.getSelectedSize())) {
                 item.setMaxOrderQuantity(maxQuantity);
                 item.setQuantity(Math.min(maxQuantity, item.getQuantity() + newItem.getQuantity()));
                 if (newItem.getImage() != null && !newItem.getImage().isBlank()) {

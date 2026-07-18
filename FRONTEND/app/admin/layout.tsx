@@ -131,7 +131,7 @@ export default function AdminLayout({
             className="w-full h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer hover:bg-red-500/10 text-red-700"
           >
             <LogOut size={15} />
-            <span>Sign Out</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>

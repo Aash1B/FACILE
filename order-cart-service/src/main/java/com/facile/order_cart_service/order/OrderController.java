@@ -49,6 +49,13 @@ public class OrderController {
         return orderService.getOrderById(orderId);
     }
 
+    @PostMapping("/{orderId}/track")
+    public Map<String, Object> trackOrder(
+            @PathVariable String orderId,
+            @RequestBody Map<String, String> body) {
+        return orderService.requestTracking(orderId, body.get("userId"));
+    }
+
     @PatchMapping("/{orderId}/status")
     public Order updateOrderStatus(@PathVariable String orderId, @RequestBody Map<String, String> body) {
         OrderStatus newStatus = OrderStatus.valueOf(body.get("status"));

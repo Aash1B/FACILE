@@ -98,6 +98,9 @@ export default function CartDrawer() {
                           {item.brand}
                         </span>
                         <h4 className="text-xs font-semibold text-fern truncate mb-1">{item.name}</h4>
+                        {item.selectedSize && (
+                          <p className="text-[10px] font-bold text-blue-600 mt-0.5 opacity-90">Size: {item.selectedSize}</p>
+                        )}
                         <p className="text-xs font-bold text-[#4A5568]">₹{item.price.toLocaleString("en-IN")}</p>
                       </div>
 
