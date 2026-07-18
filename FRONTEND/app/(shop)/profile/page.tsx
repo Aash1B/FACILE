@@ -23,8 +23,15 @@ import {
   Gift,
   WalletCards,
   Box,
-  Star
+  Star,
+  Truck
 } from "lucide-react";
+interface TrackingEvent {
+  status: string;
+  message: string;
+  occurredAt?: string | number[] | null;
+  completed: boolean;
+}
 interface OrderItem {
   productId: string;
   productName: string;
@@ -40,6 +47,7 @@ interface Order {
   status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   createdAt: string | number[];
   shippingAddress: string;
+  trackingHistory?: TrackingEvent[];
 }
 
 const formatPrice = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
@@ -71,7 +79,7 @@ function ProfileContent() {
   const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews" | "saved_upi">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "tracking" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews" | "saved_upi">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Reviews State
@@ -179,7 +187,7 @@ function ProfileContent() {
   useEffect(() => {
     if (searchParams) {
       const tab = searchParams.get("tab");
-      if (tab === "profile" || tab === "orders" || tab === "addresses" || tab === "gift_cards" || tab === "saved_cards" || tab === "security" || tab === "reviews") {
+      if (tab === "profile" || tab === "orders" || tab === "tracking" || tab === "addresses" || tab === "gift_cards" || tab === "saved_cards" || tab === "security" || tab === "reviews") {
         setActiveTab(tab as any);
       }
     }
@@ -251,7 +259,7 @@ function ProfileContent() {
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
 
   useEffect(() => {
-    if (activeTab === "orders" && user?.email) {
+    if ((activeTab === "orders" || activeTab === "tracking") && user?.email) {
       fetchPaymentHistory();
     }
   }, [activeTab, user]);
@@ -276,9 +284,11 @@ function ProfileContent() {
   // Order History state variables
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [trackingNotices, setTrackingNotices] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (activeTab === "orders" && user?.email) {
+    if ((activeTab === "orders" || activeTab === "tracking") && user?.email) {
       fetchOrders();
     }
   }, [activeTab, user]);
@@ -286,7 +296,7 @@ function ProfileContent() {
   const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const res = await fetch(`http://localhost:8081/api/orders/${user?.email}`);
+      const res = await fetch(`/api/orders/${encodeURIComponent(user?.email || "")}`);
       if (res.ok) {
         const data = await res.json();
         setOrdersList(Array.isArray(data) ? data : []);
@@ -295,6 +305,29 @@ function ProfileContent() {
       console.error("Failed to fetch order history:", e);
     } finally {
       setIsLoadingOrders(false);
+    }
+  };
+
+  const handleTrackOrder = async (orderId: string) => {
+    if (!user?.email || trackingOrderId) return;
+    setTrackingOrderId(orderId);
+    setTrackingNotices((current) => ({ ...current, [orderId]: "Preparing the latest tracking history..." }));
+    try {
+      const response = await fetch(`/api/orders/${orderId}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.email }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Tracking could not be requested.");
+      setOrdersList((current) => current.map((order) => order.id === orderId
+        ? { ...order, trackingHistory: result.history || result.order?.trackingHistory || [] }
+        : order));
+      setTrackingNotices((current) => ({ ...current, [orderId]: result.message || "Tracking history is ready." }));
+    } catch (error) {
+      setTrackingNotices((current) => ({ ...current, [orderId]: error instanceof Error ? error.message : "Tracking is temporarily unavailable." }));
+    } finally {
+      setTrackingOrderId(null);
     }
   };
   
@@ -555,6 +588,18 @@ function ProfileContent() {
               </button>
 
               <button
+                onClick={() => setActiveTab("tracking")}
+                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                  activeTab === "tracking"
+                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-white/60 hover:text-fern"
+                }`}
+              >
+                <Truck size={18} strokeWidth={activeTab === "tracking" ? 2.5 : 2} />
+                Track Order
+              </button>
+
+              <button
                 onClick={() => setActiveTab("addresses")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "addresses" 
@@ -661,7 +706,7 @@ function ProfileContent() {
               >
                 {/* Tab 1: Profile Settings */}
                 {activeTab === "profile" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
                     <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
@@ -678,12 +723,12 @@ function ProfileContent() {
                           value={profileName}
                           onChange={(e) => setProfileName(e.target.value)}
                           required
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Full Name"
                         />
                         <label 
                           htmlFor="fullName" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           FULL NAME
                         </label>
@@ -697,12 +742,12 @@ function ProfileContent() {
                           value={profileEmail}
                           onChange={(e) => setProfileEmail(e.target.value)}
                           required
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Email Address"
                         />
                         <label 
                           htmlFor="emailAddress" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           EMAIL ADDRESS
                         </label>
@@ -718,12 +763,12 @@ function ProfileContent() {
                           id="phoneNumber"
                           value={profilePhone}
                           onChange={(e) => setProfilePhone(e.target.value)}
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Phone Number"
                         />
                         <label 
                           htmlFor="phoneNumber" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           PHONE NUMBER
                         </label>
@@ -732,14 +777,14 @@ function ProfileContent() {
                       {/* Premium Select for Region */}
                       <div className="relative group">
                         <select 
-                          className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
+                          className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
                           defaultValue="India"
                         >
                           <option value="India">India (INR)</option>
                           <option value="US">United States (USD)</option>
                           <option value="UK">United Kingdom (GBP)</option>
                         </select>
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1 pointer-events-none">
+                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
                           PREFERRED REGION
                         </label>
                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
@@ -809,6 +854,54 @@ function ProfileContent() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </div>
+              )}
+
+              {activeTab === "tracking" && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-6">
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold text-fern">Track Your Orders</h2>
+                    <p className="text-xs text-natural font-medium mt-1">Select any order to view its progress and email the tracking history to {user?.email}.</p>
+                  </div>
+                  {isLoadingOrders ? (
+                    <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-fern border-t-transparent rounded-full animate-spin" /></div>
+                  ) : ordersList.length === 0 ? (
+                    <div className="text-center py-14 border border-dashed border-natural/30 rounded-3xl text-sm text-natural">No orders are available to track.</div>
+                  ) : (
+                    <div className="space-y-5">
+                      {ordersList.map((order) => {
+                        const history = order.trackingHistory || [];
+                        const statusStyle = ORDER_STATUS_STYLES[order.status] ?? ORDER_STATUS_STYLES.PENDING;
+                        return (
+                          <article key={order.id} className="rounded-3xl border-2 border-natural/10 p-5 sm:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-natural">Order #{order.id.slice(-8).toUpperCase()}</p>
+                                <p className="mt-1 text-sm font-bold text-fern">{formatOrderDate(order.createdAt)} · {formatPrice(order.totalAmount)}</p>
+                              </div>
+                              <span className={`self-start inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}><span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />{statusStyle.label}</span>
+                            </div>
+                            {history.length > 0 && (
+                              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                {history.map((event) => (
+                                  <div key={event.status} className={`rounded-2xl border p-4 ${event.completed ? "border-green-200 bg-green-50" : "border-natural/10 bg-[#F4F4F0]/60"}`}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-fern">{event.status}</p>
+                                    <p className="mt-1 text-xs font-medium text-natural">{event.message}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <p className="text-[11px] font-semibold text-natural">{trackingNotices[order.id] || "Click Track & Email to request the latest history."}</p>
+                              <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="shrink-0 rounded-xl bg-fern px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-apricot disabled:cursor-wait disabled:opacity-60">
+                                {trackingOrderId === order.id ? "Preparing..." : "Track & Email"}
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -913,11 +1006,14 @@ function ProfileContent() {
                                         <button className="px-5 py-2.5 bg-white border-2 border-natural/20 text-fern text-xs font-bold uppercase tracking-widest rounded-xl hover:border-fern transition-colors">
                                           Invoice
                                         </button>
-                                        <button className="px-5 py-2.5 bg-fern text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-apricot transition-colors shadow-sm">
-                                          Track Order
+                                        <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="px-5 py-2.5 bg-fern text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-apricot transition-colors shadow-sm disabled:cursor-wait disabled:opacity-60">
+                                          {trackingOrderId === order.id ? "Sending..." : "Track Order"}
                                         </button>
                                       </div>
                                     </div>
+                                    {trackingNotices[order.id] && (
+                                      <p className="rounded-xl bg-white px-4 py-3 text-xs font-semibold text-fern border border-natural/10" role="status">{trackingNotices[order.id]}</p>
+                                    )}
                                   </div>
                                 </motion.div>
                               )}

@@ -33,4 +33,8 @@ public class Order {
     private LocalDateTime createdAt;
 
     private String shippingAddress;
+
+    private List<TrackingEvent> trackingHistory;
+
+    private LocalDateTime trackingRequestedAt;
 }
