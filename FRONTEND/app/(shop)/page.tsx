@@ -139,16 +139,16 @@ const BEST_SELLERS: ProductCard[] = [
 
 // Mock Categories
 const CATEGORIES = [
-  { id: "c2", label: "Fashion", image: "https://plain-apac-prod-public.komododecks.com/202607/17/qKpLYvFyROMI7leCj3CB/image.jpg", bgColor: "bg-green-50/55 border border-green-100/40" },
-  { id: "c4", label: "Beauty", image: "https://plain-apac-prod-public.komododecks.com/202607/17/d9NfYAkJvfqHEU2qtifI/image.png", bgColor: "bg-purple-50/55 border border-purple-100/40" },
-  { id: "c3", label: "Home & Living", image: "https://plain-apac-prod-public.komododecks.com/202607/17/NlNTLMW9a5QezH556U2E/image.png", bgColor: "bg-orange-50/55 border border-orange-100/40" },
+  { id: "c2", label: "Fashion", image: "/fashion_model.png", bgColor: "bg-green-50/55 border border-green-100/40" },
+  { id: "c4", label: "Beauty", image: "https://plain-apac-prod-public.komododecks.com/202607/17/3ycnSUIgMdexVNSF82Ra/image.png", bgColor: "bg-purple-50/55 border border-purple-100/40" },
+  { id: "c3", label: "Home & Living", image: "https://plain-apac-prod-public.komododecks.com/202607/18/tDedHWXYOjaYCXJx6JkU/image.png", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c7", label: "Jewellery & Accessories", image: "https://plain-apac-prod-public.komododecks.com/202607/17/r2Wl1ThgEtUYbK0mSqCE/image.jpg", bgColor: "bg-amber-50/55 border border-amber-100/40" },
-  { id: "c8", label: "Footwear", image: "https://plain-apac-prod-public.komododecks.com/202607/17/tUmgd5MPVooerUVvRLme/image.jpg", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
-  { id: "c1", label: "Electronics", image: "https://plain-apac-prod-public.komododecks.com/202607/17/OP1zDwVgGwQTldoBny0u/image.png", bgColor: "bg-blue-50/55 border border-blue-100/40" },
-  { id: "c9", label: "Stationery", image: "https://plain-apac-prod-public.komododecks.com/202607/17/wPlN3dHGv1kawI0tdp5t/image.jpg", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
+  { id: "c8", label: "Footwear", image: "https://plain-apac-prod-public.komododecks.com/202607/17/inBO4F22OrRIT0Gep6Li/image.png", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
+  { id: "c1", label: "Electronics", image: "https://plain-apac-prod-public.komododecks.com/202607/18/CFEDJmfGLPxeAaBrfGkg/image.png", bgColor: "bg-blue-50/55 border border-blue-100/40" },
+  { id: "c9", label: "Stationery", image: "https://plain-apac-prod-public.komododecks.com/202607/18/EPkaqlfAPhSL9rqbzGlV/image.png", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
   { id: "c6", label: "Kids & Baby", image: "https://plain-apac-prod-public.komododecks.com/202607/17/QB3FzjHXFZ78VF7EDRqx/image.png", bgColor: "bg-rose-50/55 border border-rose-100/40" },
-  { id: "c10", label: "Health & Wellness", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PuXLUYcl7nDsR0bD15Ce/image.png", bgColor: "bg-lime-50/55 border border-lime-100/40" },
-  { id: "c5", label: "Sports", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PECWKykUnRfaQoB2VAyf/image.png", bgColor: "bg-teal-50/55 border border-teal-100/40" },
+  { id: "c10", label: "Health & Wellness", image: "https://plain-apac-prod-public.komododecks.com/202607/18/4Y7tzw7CeoPlHbREaaqS/image.png", bgColor: "bg-lime-50/55 border border-lime-100/40" },
+  { id: "c5", label: "Sports", image: "https://plain-apac-prod-public.komododecks.com/202607/17/CctkrgFjW7Wn7KVN65jl/image.png", bgColor: "bg-teal-50/55 border border-teal-100/40" },
   { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
@@ -224,6 +224,28 @@ function HomeContent() {
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
+  const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const updated = CATEGORIES.map((cat) => {
+              const dbCat = data.find((c: any) => c.name.toLowerCase() === cat.label.toLowerCase());
+              return dbCat ? { ...cat, id: `c${dbCat.id}` } : cat;
+            });
+            setCategoriesList(updated);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load categories from backend, using fallbacks.", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -379,7 +401,7 @@ function HomeContent() {
                 <ArrowRight size={14} />
               </a>
               <a
-                href="#special-offer"
+                href="#categories"
                 className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
               >
                 Explore Deals
@@ -412,7 +434,7 @@ function HomeContent() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-[#4a556a]">Free Shipping</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over $50</p>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over ₹999</p>
             </div>
           </div>
 
@@ -498,7 +520,7 @@ function HomeContent() {
               }}
               className="!px-4 sm:!px-12 !pb-8 !pt-6"
             >
-              {CATEGORIES.map((category) => (
+              {categoriesList.map((category) => (
                 <SwiperSlide key={category.id} className="!w-[200px] sm:!w-[220px]">
                   {({ isActive }) => (
                     <motion.div variants={{
@@ -521,7 +543,7 @@ function HomeContent() {
                           <img
                             src={category.image}
                             alt={category.label}
-                            className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${
+                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${
                               isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
                             }`}
                           />
@@ -542,7 +564,7 @@ function HomeContent() {
           </motion.div>
         </div>
 
-        <div className="mt-2 flex justify-center">
+        <div className="-mt-3 flex justify-center relative z-20">
           <Link
             href="/categories"
             className="inline-flex items-center gap-2 rounded-full bg-[#E8437F] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#d93670] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8437F] focus-visible:ring-offset-2"
@@ -555,7 +577,7 @@ function HomeContent() {
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">
             Best Selling Products
           </h2>
           <div className="flex items-center gap-4 self-end sm:self-auto">
@@ -715,55 +737,11 @@ function HomeContent() {
         </section>
       )}
 
-      {/* 5. Special Offer Banner */}
-      <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="group bg-[#F4F4F0] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
-
-          {/* Shimmer overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-[-100%] group-hover:translate-x-[100%] ease-in-out" style={{ transition: 'opacity 0.4s ease, transform 0.8s ease' }} />
-
-          {/* Subtle Leaf Shadow Graphic overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-natural/5 via-transparent to-transparent pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center p-8 sm:p-12">
-
-            {/* Banner Left Details */}
-            <div className="md:col-span-7 space-y-4 text-center md:text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E8437F]">
-                Special Offer
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] group-hover:text-[#2d3748] leading-tight transition-colors duration-300">
-                Up to 50% Off
-              </h2>
-              <p className="text-xs sm:text-sm text-[#4A5568] max-w-md leading-relaxed font-medium">
-                Limited time offer on selected items. Hurry up and grab the best deals!
-              </p>
-              <button className="h-11 px-6 bg-[#DDE0F0] group-hover:bg-[#4A5568] group-hover:text-white border border-transparent active:scale-98 text-[#4A5568] font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer hover:scale-[1.02]">
-                Shop the Sale
-                <ArrowRight size={14} />
-              </button>
-            </div>
-
-            {/* Banner Right Image */}
-            <div className="md:col-span-5 flex justify-center relative">
-              <img
-                src="/special_offer.png"
-                alt="Special Offer Sale Kraft Bag"
-                className="w-full max-w-[340px] h-auto object-contain transition-all duration-500 group-hover:scale-[1.06] group-hover:drop-shadow-2xl select-none"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=400";
-                }}
-              />
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* 6. Customer Testimonials */}
       <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 
           {/* Navigation Arrows */}
           <div className="flex gap-2">

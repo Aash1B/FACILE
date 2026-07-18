@@ -202,7 +202,7 @@ export default function CartPage() {
   };
 
   const subtotal = cart?.totalAmount ?? 0;
-  const shipping = subtotal >= 1500 || subtotal === 0 ? 0 : 99;
+  const shipping = subtotal >= 999 || subtotal === 0 ? 0 : 99;
   const grandTotal = subtotal + shipping;
   const totalItems = cart?.items.reduce((acc, i) => acc + i.quantity, 0) ?? 0;
 

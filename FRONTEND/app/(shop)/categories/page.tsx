@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag, Leaf, Award, Truck } from "lucide-react";
 
@@ -24,7 +25,7 @@ const CATEGORIES = [
     id: "3",
     name: "Home & Living",
     tagline: "Beautiful essentials for every room and home decor",
-    image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=900",
+    image: "https://plain-apac-prod-public.komododecks.com/202607/18/tDedHWXYOjaYCXJx6JkU/image.png",
     href: "/category/3",
   },
   {
@@ -45,14 +46,14 @@ const CATEGORIES = [
     id: "1",
     name: "Electronics",
     tagline: "Smart gadgets & home electronics",
-    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=900",
+    image: "https://plain-apac-prod-public.komododecks.com/202607/18/CFEDJmfGLPxeAaBrfGkg/image.png",
     href: "/category/1",
   },
   {
     id: "9",
     name: "Stationery",
     tagline: "Notebooks, journals & creative workspace tools",
-    image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=900",
+    image: "https://plain-apac-prod-public.komododecks.com/202607/18/EPkaqlfAPhSL9rqbzGlV/image.png",
     href: "/category/9",
   },
   {
@@ -66,7 +67,7 @@ const CATEGORIES = [
     id: "10",
     name: "Health & Wellness",
     tagline: "Fitness, nutrition & healthcare essentials",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=900",
+    image: "https://plain-apac-prod-public.komododecks.com/202607/18/4Y7tzw7CeoPlHbREaaqS/image.png",
     href: "/category/10",
   },
   {
@@ -111,6 +112,29 @@ const BADGES = [
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
+  const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const updated = CATEGORIES.map((cat) => {
+              const dbCat = data.find((c: any) => c.name.toLowerCase() === cat.name.toLowerCase());
+              return dbCat ? { ...cat, id: String(dbCat.id), href: `/category/${dbCat.id}` } : cat;
+            });
+            setCategoriesList(updated);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load categories from backend, using fallbacks.", err);
+      }
+    };
+    loadCategories();
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#FAF3E3] text-[#4a556a] pb-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -134,7 +158,7 @@ export default function CategoriesPage() {
 
         {/* Category grid — matches reference 4-col on desktop, 2-col on mobile */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {CATEGORIES.map((cat) => (
+          {categoriesList.map((cat) => (
             <Link
               key={cat.id}
               href={cat.href}

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:databases": "cross-env DOCKER_API_VERSION=1.45 docker compose up -d",
+    "dev:databases": "docker compose up -d",
     "dev:frontend": "next dev FRONTEND --webpack",
     "dev:backend-order": "cd order-cart-service && mvnw.cmd spring-boot:run",
     "dev:backend-payment": "cd payment-notification-service && mvnw.cmd spring-boot:run",
