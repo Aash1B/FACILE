@@ -10,6 +10,8 @@ import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
 import { FALLBACK_PRODUCTS, FALLBACK_PRODUCTS_MAP, CATEGORY_DETAILS } from "@/lib/fallbackData";
+import { getSizesForCategory } from "@/lib/sizeConfig";
+import { SizeSelector } from "@/components/SizeSelector";
 
 // Mock Fallback Database in case the API is offline
 const MOCK_PRODUCTS: Record<string, any> = {
@@ -112,6 +114,50 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [showSizeValidation, setShowSizeValidation] = useState(false);
+
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    freeDeliveryDate: "",
+    fastestDeliveryDate: "",
+    hours: 0,
+    minutes: 0,
+    isMounted: false
+  });
+
+  useEffect(() => {
+    const updateDeliveryInfo = () => {
+      const now = new Date();
+      const cutoff = new Date();
+      cutoff.setHours(23, 59, 59, 999);
+      let diff = cutoff.getTime() - now.getTime();
+      if (diff < 0) {
+        cutoff.setDate(cutoff.getDate() + 1);
+        diff = cutoff.getTime() - now.getTime();
+      }
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      const freeDate = new Date();
+      freeDate.setDate(now.getDate() + 4);
+      const freeDateStr = freeDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      const fastestDate = new Date();
+      fastestDate.setDate(now.getDate() + 1);
+      const fastestDateStr = fastestDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+      setDeliveryInfo({
+        freeDeliveryDate: freeDateStr,
+        fastestDeliveryDate: "Tomorrow, " + fastestDateStr,
+        hours: hrs,
+        minutes: mins,
+        isMounted: true
+      });
+    };
+    updateDeliveryInfo();
+    const interval = setInterval(updateDeliveryInfo, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Dynamically compile all mock products across the app to support detail pages for all categories
   const allMockProducts = useMemo(() => {
@@ -250,8 +296,18 @@ export default function ProductDetailPage({ params }: PageProps) {
     fetchProductDetails();
   }, [productId]);
 
+  const availableSizes = useMemo(() => {
+    if (!product) return null;
+    return getSizesForCategory(product.category, product.subCategory, product.name);
+  }, [product]);
+
   const handleAddToCart = () => {
     if (!product) return;
+    if (availableSizes && !selectedSize) {
+      setShowSizeValidation(true);
+      return;
+    }
+    setShowSizeValidation(false);
     recordRecentlyViewed(product);
     addToCart({
       id: product.id,
@@ -259,13 +315,19 @@ export default function ProductDetailPage({ params }: PageProps) {
       price: product.price,
       brand: "facile Store",
       image: product.image,
-      maxOrderQuantity: product.maxOrderQuantity || 10
+      maxOrderQuantity: product.maxOrderQuantity || 10,
+      selectedSize: selectedSize
     }, quantity);
     triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
   };
 
   const handleBuyNow = () => {
     if (!product) return;
+    if (availableSizes && !selectedSize) {
+      setShowSizeValidation(true);
+      return;
+    }
+    setShowSizeValidation(false);
     const buyNowItem = {
       id: product.id,
       name: product.name,
@@ -273,7 +335,8 @@ export default function ProductDetailPage({ params }: PageProps) {
       brand: "facile Store",
       image: product.image,
       maxOrderQuantity: product.maxOrderQuantity || 10,
-      quantity: quantity
+      quantity: quantity,
+      selectedSize: selectedSize
     };
     localStorage.setItem("facile_buynow", JSON.stringify([buyNowItem]));
     router.push("/checkout?buynow=true");
@@ -383,7 +446,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     : [];
 
   return (
-    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
@@ -392,7 +455,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-[1600px] mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
         {/* Navigation path & back link */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link href="/" className="inline-flex items-center gap-2 text-fern/80 hover:text-fern font-bold text-xs group transition-all">
@@ -432,12 +495,12 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Main Showcase Image (Right of the thumbnail list) */}
             <div className="flex-1 aspect-square bg-neutral-100/50 rounded-2xl border border-natural/10 flex items-center justify-center p-8 relative overflow-hidden order-1 md:order-2">
               {discountPercent > 0 && (
-                <span className="absolute top-4 left-4 bg-[#FA99C6] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
+                <span className="absolute top-3 left-3 z-10 bg-[#FA99C6] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
                   {discountPercent}% OFF
                 </span>
               )}
               {isFacileChoice && (
-                <span className={`absolute left-4 z-10 rounded-full bg-[#4a556a] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-14" : "top-4"}`}>
+                <span className={`absolute left-3 z-10 rounded-full bg-[#4a556a] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-11" : "top-3"}`}>
                   Facile Choice
                 </span>
               )}
@@ -453,10 +516,9 @@ export default function ProductDetailPage({ params }: PageProps) {
           {/* COLUMN 2: Product Specifications & Details (Span 4 on Desktop) */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Brand Store Link, Title & Star Rating */}
+            {/* Title & Star Rating */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold text-natural uppercase tracking-wider block">Visit the facile Store</span>
-              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#4a556a] leading-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#4a556a] leading-tight mt-1">
                 {product.name}
               </h1>
               
@@ -497,7 +559,22 @@ export default function ProductDetailPage({ params }: PageProps) {
               <p className="text-[10px] text-natural/80 font-bold tracking-wide uppercase">Inclusive of all taxes</p>
             </div>
 
-            <div className="border-t border-natural/10" />
+            {availableSizes ? (
+              <div className="border-t border-b border-natural/10 py-3">
+                <SizeSelector
+                  sizes={availableSizes}
+                  selectedSize={selectedSize}
+                  onSelectSize={(size) => {
+                    setSelectedSize(size);
+                    setShowSizeValidation(false);
+                  }}
+                  isShoeSize={(product.category?.toLowerCase().includes("shoe") || product.subCategory?.toLowerCase().includes("shoe"))}
+                  showValidation={showSizeValidation}
+                />
+              </div>
+            ) : (
+              <div className="border-t border-natural/10" />
+            )}
 
             {/* Special Offers Scrollable Deck */}
             <div className="space-y-3">
@@ -573,12 +650,25 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               
               <div className="border-t border-natural/10 pt-3.5 space-y-1.5">
-                <p className="text-xs text-natural font-semibold">
-                  FREE delivery <span className="font-bold text-[#4A5568]">Friday, 17 July</span>.
-                </p>
-                <p className="text-[10px] text-natural/80 font-medium leading-relaxed font-sans">
-                  Or fastest delivery <span className="font-bold text-[#FA99C6]">Tomorrow, July 15</span>. Order within <span className="font-bold text-[#4A5568]">7 hrs 3 mins</span>.
-                </p>
+                {deliveryInfo.isMounted ? (
+                  <>
+                    <p className="text-xs text-natural font-semibold">
+                      FREE delivery <span className="font-bold text-[#4A5568]">{deliveryInfo.freeDeliveryDate}</span>.
+                    </p>
+                    <p className="text-[10px] text-natural/80 font-medium leading-relaxed font-sans">
+                      Or fastest delivery <span className="font-bold text-[#FA99C6]">{deliveryInfo.fastestDeliveryDate}</span>. Order within <span className="font-bold text-[#4A5568]">{deliveryInfo.hours} hrs {deliveryInfo.minutes} mins</span>.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-natural font-semibold">
+                      FREE delivery <span className="font-bold text-[#4A5568]">...</span>
+                    </p>
+                    <p className="text-[10px] text-natural/80 font-medium leading-relaxed font-sans">
+                      Or fastest delivery <span className="font-bold text-[#FA99C6]">...</span>
+                    </p>
+                  </>
+                )}
               </div>
               
               {/* Stock levels */}
@@ -637,21 +727,21 @@ export default function ProductDetailPage({ params }: PageProps) {
               <div className="border-t border-natural/10 pt-3.5 text-[10px] text-natural/80 font-semibold space-y-1">
                 <div className="flex justify-between">
                   <span>Ships from</span>
-                  <span className="text-[#4A5568]">facile</span>
+                  <span className="text-[#4A5568]">facile Warehouse</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Sold by</span>
-                  <span className="text-[#4A5568]">facile Store</span>
+                  <span className="text-[#4A5568]">Facile seller</span>
                 </div>
               </div>
 
               <div className="border-t border-natural/10 pt-3.5">
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={handleToggleFavorite} className="h-10 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                  <button onClick={handleToggleFavorite} className="h-12 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
                     <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
                     {isFav ? "Wishlisted" : "Wishlist"}
                   </button>
-                  <button onClick={handleSaveForLater} className="h-10 border border-natural/25 hover:border-[#E8437F] rounded-xl text-xs font-bold text-[#4A5568] flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-white/30">
+                  <button onClick={handleSaveForLater} className="h-12 border border-natural/25 hover:border-[#E8437F] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
                     <Bookmark size={14} className={isSavedForLater ? "fill-[#E8437F] text-[#E8437F]" : "text-[#4A5568]"} />
                     {isSavedForLater ? "Saved" : "Save for Later"}
                   </button>
@@ -675,14 +765,18 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <img src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   </div>
                   <div className="space-y-2 p-4">
-                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{item.title}</h3>
-                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                      <Star size={11} className={(item.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
-                      {(item.reviews ?? 0) > 0 ? <span>{Number(item.rating ?? 0).toFixed(1)} ({item.reviews})</span> : <span>No reviews</span>}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate text-sm font-bold text-[#4a556a]">{item.title}</h3>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-extrabold text-[#4a556a]">₹{Number(item.sellingPrice).toLocaleString("en-IN")}</span>
-                      {Number(item.mrp) > Number(item.sellingPrice) && <span className="text-[10px] text-natural line-through">₹{Number(item.mrp).toLocaleString("en-IN")}</span>}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-extrabold text-[#4a556a]">₹{Number(item.sellingPrice).toLocaleString("en-IN")}</span>
+                        {Number(item.mrp) > Number(item.sellingPrice) && <span className="text-[10px] text-natural line-through">₹{Number(item.mrp).toLocaleString("en-IN")}</span>}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
+                        <Star size={11} className={(item.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                        {(item.reviews ?? 0) > 0 ? <span>{Number(item.rating ?? 0).toFixed(1)} ({item.reviews})</span> : <span>0</span>}
+                      </div>
                     </div>
                   </div>
                 </Link>

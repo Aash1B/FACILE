@@ -11,6 +11,7 @@ export interface CartItem {
   image: string;
   maxOrderQuantity?: number;
   quantity: number;
+  selectedSize?: string | null;
 }
 
 interface CartContextType {
@@ -63,6 +64,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                       maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: localItem.quantity,
+                      selectedSize: localItem.selectedSize || null,
                     }),
                   });
                 } else if (localItem.quantity > dbItem.quantity) {
@@ -78,6 +80,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                       maxOrderQuantity: localItem.maxOrderQuantity || 10,
                       price: localItem.price,
                       quantity: diff,
+                      selectedSize: localItem.selectedSize || null,
                     }),
                   });
                 }
@@ -108,12 +111,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
               return {
                 id: i.productId,
-                name: i.productName,
-                price: i.price,
-                brand: "Facile",
+                name: String(i.productName || "Unknown Product"),
+                price: Number(i.price || 0),
+                brand: "facile Store",
                 image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
-                maxOrderQuantity: i.maxOrderQuantity || 10,
-                quantity: i.quantity,
+                quantity: Number(i.quantity || 1),
+                maxOrderQuantity: Number(i.maxOrderQuantity || 10),
+                selectedSize: i.selectedSize || null,
               };
             }));
             setCart(mappedCart);
@@ -173,7 +177,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (now - lastClick < 800) return;
     recentAddClicks.current.set(item.id, now);
 
-    const existingIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
+    const existingIndex = cart.findIndex(
+      (cartItem) => cartItem.id === item.id && cartItem.selectedSize === item.selectedSize
+    );
     const maxQuantity = item.maxOrderQuantity || 10;
     const safeQuantityToAdd = Math.min(maxQuantity, Math.max(1, quantityToAdd));
     
@@ -193,6 +199,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             maxOrderQuantity: maxQuantity,
             price: item.price,
             quantity: safeQuantityToAdd,
+            selectedSize: item.selectedSize || null,
           }),
         });
 

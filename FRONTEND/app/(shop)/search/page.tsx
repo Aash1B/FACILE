@@ -571,52 +571,55 @@ function ProductCard({
         </div>
 
         <div className="p-3.5 flex-1 flex flex-col justify-between">
-          <div className="space-y-1">
-            <p className="text-[9px] font-bold text-apricot group-hover:text-warm-ivory/85 uppercase tracking-wider transition-colors">
-              {product.category}
-            </p>
-            {product.brand && (
-              <p className="text-[9px] font-semibold text-[#4a556a]/50 group-hover:text-warm-ivory/60 transition-colors">
-                {product.brand}
+          <div className="flex items-start justify-between gap-2 mt-3">
+            <div className="space-y-1 overflow-hidden">
+              <p className="text-[9px] font-bold text-apricot group-hover:text-warm-ivory/85 uppercase tracking-wider transition-colors">
+                {product.category}
               </p>
-            )}
-            <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
-              {product.name}
-            </h3>
-            <div className="flex items-center gap-1">
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={9}
-                    className={
-                      i < Math.floor(product.rating)
-                        ? "text-amber-400 fill-amber-400"
-                        : "text-natural/20"
-                    }
-                  />
-                ))}
-              </div>
-              <span className="text-[10px] font-bold text-[#4a556a] group-hover:text-warm-ivory transition-colors">{product.rating}</span>
-              <span className="text-[10px] text-natural/50 group-hover:text-warm-ivory/60 transition-colors">({product.reviews})</span>
+              {product.brand && (
+                <p className="text-[9px] font-semibold text-[#4a556a]/50 group-hover:text-warm-ivory/60 transition-colors">
+                  {product.brand}
+                </p>
+              )}
+              <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
+                {product.name}
+              </h3>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-natural/8 mt-3 space-y-2">
-            {/* Delivery badge */}
-            {product.deliveryDays != null && (
-              <div className="flex items-center gap-1 text-[9px] font-semibold text-fern/80 group-hover:text-warm-ivory/70 transition-colors">
-                <Clock size={9} />
-                {product.deliveryDays <= 2 ? "Express " : ""}Delivery in {product.deliveryDays} day{product.deliveryDays !== 1 ? "s" : ""}
+          <div className="flex items-center justify-between pt-3 border-t border-natural/8 mt-3">
+            <div className="space-y-2">
+              {/* Delivery badge */}
+              {product.deliveryDays != null && (
+                <div className="flex items-center gap-1 text-[9px] font-semibold text-fern/80 group-hover:text-warm-ivory/70 transition-colors">
+                  <Clock size={9} />
+                  {product.deliveryDays <= 2 ? "Express " : ""}Delivery in {product.deliveryDays} day{product.deliveryDays !== 1 ? "s" : ""}
+                </div>
+              )}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
+                  ₹{product.price.toLocaleString("en-IN")}
+                </span>
+                <span className="text-[10px] text-natural/45 group-hover:text-warm-ivory/60 line-through font-medium transition-colors">
+                  ₹{product.originalPrice.toLocaleString("en-IN")}
+                </span>
               </div>
-            )}
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
-                ₹{product.price.toLocaleString("en-IN")}
-              </span>
-              <span className="text-[10px] text-natural/45 group-hover:text-warm-ivory/60 line-through font-medium transition-colors">
-                ₹{product.originalPrice.toLocaleString("en-IN")}
-              </span>
+            </div>
+            
+            <div className="flex items-center gap-1 shrink-0">
+              <Star size={10} className={(product.reviews ?? 0) > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
+              {(product.reviews ?? 0) > 0 ? (
+                <>
+                  <span className="text-[10px] font-bold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
+                    {Number(product.rating ?? 0).toFixed(1)}
+                  </span>
+                  <span className="text-[10px] text-natural/50 group-hover:text-warm-ivory/60 transition-colors">
+                    ({product.reviews})
+                  </span>
+                </>
+              ) : (
+                <span className="text-[10px] text-natural/60 group-hover:text-warm-ivory/70 transition-colors">0</span>
+              )}
             </div>
           </div>
         </div>
@@ -888,7 +891,7 @@ function SearchContent() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         {/* Results Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">

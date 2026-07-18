@@ -14,7 +14,12 @@ public class ProductImageSchemaInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        jdbcTemplate.execute("ALTER TABLE products ALTER COLUMN image TYPE TEXT");
-        jdbcTemplate.execute("ALTER TABLE product_images ALTER COLUMN image_url TYPE TEXT");
+        try {
+            jdbcTemplate.execute("ALTER TABLE products ALTER COLUMN image TYPE TEXT");
+            jdbcTemplate.execute("ALTER TABLE product_images ALTER COLUMN image_url TYPE TEXT");
+        } catch (Exception e) {
+            System.err.println("Failed to execute image schema initializer: " + e.getMessage());
+            // Ignore failure, allow application to start
+        }
     }
 }

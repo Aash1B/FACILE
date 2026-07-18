@@ -465,7 +465,7 @@ export default function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-[#F4F4F0]/90 backdrop-blur-md border-b border-natural/25">
         {/* Tier 1: Main Header Area */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
 
             {/* Hamburger Menu (Left) */}
@@ -565,7 +565,7 @@ export default function Navbar() {
                           className="w-full py-1.5 px-2 hover:bg-warm-ivory text-apricot rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left"
                         >
                           <LogOut size={13} />
-                          Sign Out
+                          Logout
                         </button>
                       </div>
                     )}
@@ -589,7 +589,7 @@ export default function Navbar() {
 
         {/* Tier 2: Pills & Search */}
         <div className="bg-[#F4F4F0]/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
 
             {/* Desktop Layout: Single Row */}
             <div className="hidden md:flex items-center justify-between gap-4 py-2">
@@ -975,7 +975,7 @@ export default function Navbar() {
                     }}
                     className="py-1.5 px-3 bg-apricot/10 hover:bg-apricot/20 text-apricot rounded-xl text-xs font-bold transition-all cursor-pointer flex-shrink-0"
                   >
-                    Sign Out
+                    Logout
                   </button>
                 </div>
               ) : (

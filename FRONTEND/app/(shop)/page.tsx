@@ -337,7 +337,7 @@ function HomeContent() {
       )}
 
       {/* 1. Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-center" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           {/* Background Image positioned on the right */}
@@ -403,7 +403,7 @@ function HomeContent() {
       </section>
 
       {/* 2. Feature Highlights Bar */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
         <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           <div className="flex items-center gap-4">
@@ -449,7 +449,7 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
+      <section id="categories" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
@@ -553,7 +553,7 @@ function HomeContent() {
       </section>
 
       {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
+      <section id="best-sellers" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
             Best Selling Products
@@ -632,13 +632,21 @@ function HomeContent() {
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
+                    </div>
 
+                    {/* Price and Rating */}
+                    <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      </div>
+                      
                       {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
                         <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
                         {product.reviews > 0 ? (
                           <>
@@ -646,16 +654,8 @@ function HomeContent() {
                             <span>({product.reviews})</span>
                           </>
                         ) : (
-                          <span className="text-natural group-hover:text-warm-ivory/80">No reviews</span>
+                          <span className="text-natural group-hover:text-warm-ivory/80">0</span>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   </div>
@@ -679,7 +679,7 @@ function HomeContent() {
       </section>
 
       {recentProducts.length > 0 && (
-        <section id="recently-viewed" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <section id="recently-viewed" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
           </div>
@@ -691,16 +691,20 @@ function HomeContent() {
                     <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
                   </div>
                   <div className="space-y-2 p-4">
-                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{product.name}</h3>
-                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                      <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
-                      {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>No reviews</span>}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate text-sm font-bold text-[#4a556a]">{product.name}</h3>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
-                      {product.originalPrice != null && product.originalPrice > product.price && (
-                        <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
-                      )}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
+                        {product.originalPrice != null && product.originalPrice > product.price && (
+                          <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
+                        <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                        {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>0</span>}
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -716,7 +720,7 @@ function HomeContent() {
       )}
 
       {/* 5. Special Offer Banner */}
-      <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="special-offer" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="group bg-[#F4F4F0] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
 
           {/* Shimmer overlay on hover */}
@@ -761,7 +765,7 @@ function HomeContent() {
       </section>
 
       {/* 6. Customer Testimonials */}
-      <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="testimonials" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 

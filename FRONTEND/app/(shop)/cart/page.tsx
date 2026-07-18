@@ -23,6 +23,7 @@ interface CartItem {
   image?: string;
   price: number;
   quantity: number;
+  selectedSize?: string | null;
 }
 
 interface Cart {
@@ -42,12 +43,51 @@ export default function CartPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
+  const getGuestCartItems = (): CartItem[] => {
+    const saved = localStorage.getItem("facile_cart");
+    if (!saved) return [];
+    try {
+      const items = JSON.parse(saved);
+      return items.map((i: any) => ({
+        productId: i.id || i.productId,
+        productName: i.name || i.productName,
+        price: i.price,
+        image: i.image,
+        quantity: i.quantity,
+        selectedSize: i.selectedSize
+      }));
+    } catch {
+      return [];
+    }
+  };
+
+  const setGuestCartItems = (items: CartItem[]) => {
+    const toSave = items.map(i => ({
+      id: i.productId,
+      name: i.productName,
+      price: i.price,
+      image: i.image,
+      quantity: i.quantity,
+      brand: "Facile"
+    }));
+    localStorage.setItem("facile_cart", JSON.stringify(toSave));
+    const totalAmount = items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    setCart({ id: "guest", userId: "guest", items, totalAmount });
+    window.dispatchEvent(new Event('storage'));
+  };
+
   const fetchCart = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/cart/${user?.email}`);
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(data);
+      if (user?.email) {
+        const res = await fetch(`${API_BASE}/api/cart/${user.email}`);
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        setCart(data);
+      } else {
+        const items = getGuestCartItems();
+        const totalAmount = items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+        setCart({ id: "guest", userId: "guest", items, totalAmount });
+      }
       setError(null);
     } catch (err) {
       console.error("Failed to fetch cart:", err);
@@ -81,19 +121,30 @@ export default function CartPage() {
   const handleIncrease = async (item: CartItem) => {
     setPendingProductId(item.productId);
     try {
-      const res = await fetch(`${API_BASE}/api/cart/${user?.email}/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: item.productId,
-          productName: item.productName,
-          price: item.price,
-          quantity: 1
-        })
-      });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(data);
+      if (user?.email) {
+        const res = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: item.productId,
+            productName: item.productName,
+            price: item.price,
+            quantity: 1
+          })
+        });
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        setCart(data);
+      } else {
+        const items = getGuestCartItems();
+        const existing = items.find(i => i.productId === item.productId);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          items.push({ ...item, quantity: 1 });
+        }
+        setGuestCartItems(items);
+      }
     } catch (err) {
       console.error("Failed to increase quantity:", err);
       setError("Couldn't update quantity. Try again.");
@@ -105,29 +156,41 @@ export default function CartPage() {
   const handleDecrease = async (item: CartItem) => {
     setPendingProductId(item.productId);
     try {
-      const removeRes = await fetch(
-        `${API_BASE}/api/cart/${user?.email}/remove/${item.productId}`,
-        { method: "DELETE" }
-      );
-      if (!removeRes.ok) throw new Error(`Server responded with ${removeRes.status}`);
+      if (user?.email) {
+        const removeRes = await fetch(
+          `${API_BASE}/api/cart/${user.email}/remove/${item.productId}`,
+          { method: "DELETE" }
+        );
+        if (!removeRes.ok) throw new Error(`Server responded with ${removeRes.status}`);
 
-      if (item.quantity > 1) {
-        const addRes = await fetch(`${API_BASE}/api/cart/${user?.email}/add`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId: item.productId,
-            productName: item.productName,
-            price: item.price,
-            quantity: item.quantity - 1
-          })
-        });
-        if (!addRes.ok) throw new Error(`Server responded with ${addRes.status}`);
-        const data = await addRes.json();
-        setCart(data);
+        if (item.quantity > 1) {
+          const addRes = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId: item.productId,
+              productName: item.productName,
+              price: item.price,
+              quantity: item.quantity - 1
+            })
+          });
+          if (!addRes.ok) throw new Error(`Server responded with ${addRes.status}`);
+          const data = await addRes.json();
+          setCart(data);
+        } else {
+          const data = await removeRes.json();
+          setCart(data);
+        }
       } else {
-        const data = await removeRes.json();
-        setCart(data);
+        let items = getGuestCartItems();
+        const existing = items.find(i => i.productId === item.productId);
+        if (existing) {
+          existing.quantity -= 1;
+          if (existing.quantity <= 0) {
+            items = items.filter(i => i.productId !== item.productId);
+          }
+        }
+        setGuestCartItems(items);
       }
     } catch (err) {
       console.error("Failed to decrease quantity:", err);
@@ -140,12 +203,17 @@ export default function CartPage() {
   const handleRemove = async (productId: string) => {
     setPendingProductId(productId);
     try {
-      const res = await fetch(`${API_BASE}/api/cart/${user?.email}/remove/${productId}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(data);
+      if (user?.email) {
+        const res = await fetch(`${API_BASE}/api/cart/${user.email}/remove/${productId}`, {
+          method: "DELETE"
+        });
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        setCart(data);
+      } else {
+        const items = getGuestCartItems().filter(i => i.productId !== productId);
+        setGuestCartItems(items);
+      }
     } catch (err) {
       console.error("Failed to remove item:", err);
       setError("Couldn't remove item. Try again.");
@@ -157,12 +225,17 @@ export default function CartPage() {
   const handleSaveForLater = async (item: CartItem) => {
     setPendingProductId(item.productId);
     try {
-      const res = await fetch(`${API_BASE}/api/cart/${user?.email}/remove/${item.productId}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(data);
+      if (user?.email) {
+        const res = await fetch(`${API_BASE}/api/cart/${user.email}/remove/${item.productId}`, {
+          method: "DELETE"
+        });
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        setCart(data);
+      } else {
+        const items = getGuestCartItems().filter(i => i.productId !== item.productId);
+        setGuestCartItems(items);
+      }
       persistSaved([...savedItems, item]);
     } catch (err) {
       console.error("Failed to save item for later:", err);
@@ -175,19 +248,30 @@ export default function CartPage() {
   const handleMoveToCart = async (item: CartItem) => {
     setPendingProductId(item.productId);
     try {
-      const res = await fetch(`${API_BASE}/api/cart/${user?.email}/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: item.productId,
-          productName: item.productName,
-          price: item.price,
-          quantity: item.quantity
-        })
-      });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-      const data = await res.json();
-      setCart(data);
+      if (user?.email) {
+        const res = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: item.productId,
+            productName: item.productName,
+            price: item.price,
+            quantity: item.quantity
+          })
+        });
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        setCart(data);
+      } else {
+        const items = getGuestCartItems();
+        const existing = items.find(i => i.productId === item.productId);
+        if (existing) {
+          existing.quantity += item.quantity;
+        } else {
+          items.push({ ...item });
+        }
+        setGuestCartItems(items);
+      }
       persistSaved(savedItems.filter((s) => s.productId !== item.productId));
     } catch (err) {
       console.error("Failed to move item to cart:", err);
@@ -218,8 +302,8 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in" style={{ backgroundColor: "#faf3e3" }}>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-8 font-sans animate-fade-in" style={{ backgroundColor: "#faf3e3" }}>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-fern mb-8 tracking-wide">
           Your Shopping Bag {totalItems > 0 && `(${totalItems})`}
@@ -270,6 +354,9 @@ export default function CartPage() {
                           <div className="min-w-0">
                             <span className="text-[9px] font-bold text-natural uppercase tracking-wider block">Facile</span>
                             <h4 className="text-sm font-bold text-fern leading-snug">{item.productName}</h4>
+                            {item.selectedSize && (
+                              <p className="text-[10px] font-bold text-blue-600 mt-0.5 opacity-90">Size: {item.selectedSize}</p>
+                            )}
                             <p className="text-xs font-bold text-apricot mt-1">{formatPrice(item.price)}</p>
                           </div>
                         </div>
@@ -397,7 +484,7 @@ export default function CartPage() {
               </div>
 
               <Link
-                href="/cart/checkout"
+                href="/checkout"
                 className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all shadow-md ${
                   cart && cart.items.length > 0
                     ? "bg-fern hover:bg-fern/90 text-warm-ivory active:scale-98"
