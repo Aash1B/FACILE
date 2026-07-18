@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev:databases": "cross-env DOCKER_API_VERSION=1.45 docker compose up -d",
-    "dev:frontend": "next dev FRONTEND --webpack",
+    "dev:frontend": "node scripts/run-frontend-when-ready.js",
     "dev:backend-order": "cd order-cart-service && mvnw.cmd spring-boot:run",
     "dev:backend-payment": "cd payment-notification-service && mvnw.cmd spring-boot:run",
     "dev:backend-auth": "cd auth-user-service && mvnw.cmd spring-boot:run",
     "dev:backend-inventory": "node scripts/run-inventory.js",
+    "setup:voice": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-local-whisper.ps1",
     "dev": "npm run dev:databases && concurrently --kill-others-on-fail \"npm run dev:frontend\" \"npm run dev:backend-order\" \"npm run dev:backend-payment\" \"npm run dev:backend-auth\" \"npm run dev:backend-inventory\"",
     "build": "next build FRONTEND",
     "start": "next start FRONTEND",

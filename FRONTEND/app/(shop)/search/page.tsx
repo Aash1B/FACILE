@@ -639,6 +639,39 @@ function ProductCard({
 }
 
 // ─── SearchContent ────────────────────────────────────────────────────────────
+const SEARCH_INTENT_WORDS = new Set([
+  "show", "find", "search", "give", "want", "need", "looking", "look", "display",
+  "me", "my", "some", "best", "top", "good", "please", "product", "products",
+  "item", "items", "for", "the", "a", "an", "of", "in", "on", "with",
+  "mujhe", "mera", "meri", "dikhao", "dikhana", "chahiye", "karo", "karna",
+  "under", "below", "upto", "up", "to", "less", "than", "rupees", "rs",
+  "budget", "affordable", "cheap", "cheapest", "inexpensive", "lowest", "price",
+]);
+
+function normalizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/jewelry/g, "jewellery")
+    .replace(/\bsmart[\s-]*phones?\b/g, "smartphone")
+    .replace(/\bcell[\s-]*phones?\b/g, "smartphone")
+    .replace(/\bmobile[\s-]*phones?\b/g, "smartphone")
+    .replace(/\b(?:tshit|thsit|tshrit|tshrt)\b/g, "tshirt")
+    .replace(/t[\s-]*shirts?/g, "tshirt")
+    .replace(/[^a-z0-9&\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractSearchIntent(value: string) {
+  const normalized = normalizeSearchText(value);
+  const budgetMatch = normalized.match(/(?:under|below|less than|upto|up to)\s+(\d+)/);
+  const maxPrice = budgetMatch ? Number(budgetMatch[1]) : null;
+  const terms = normalized
+    .split(" ")
+    .filter((term) => term && !SEARCH_INTENT_WORDS.has(term) && !/^\d+$/.test(term));
+  return { terms, maxPrice };
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -747,15 +780,16 @@ function SearchContent() {
   };
 
   // ── Filtering Pipeline ──────────────────────────────────────────────────────
+  const searchIntent = extractSearchIntent(query);
+  const hasBudgetIntent = /\b(?:budget|affordable|cheap|cheapest|inexpensive|lowest price)\b/i.test(query);
   const queryFiltered = products.filter((p) => {
     if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      (p.brand || "").toLowerCase().includes(q)
+    if (searchIntent.maxPrice !== null && Number(p.price) > searchIntent.maxPrice) return false;
+    if (searchIntent.terms.length === 0) return true;
+    const searchableText = normalizeSearchText(
+      `${p.name} ${p.description} ${p.category} ${p.brand || ""} ${p.color || ""} ${p.size || ""}`
     );
+    return searchIntent.terms.every((term) => searchableText.includes(term));
   });
 
   // Derive min and max price limits dynamically from queryFiltered products
@@ -810,6 +844,7 @@ function SearchContent() {
         );
 
   const sortedProducts = [...deliveryFiltered].sort((a, b) => {
+    if (sortBy === "featured" && hasBudgetIntent) return a.price - b.price;
     if (sortBy === "price-asc") return a.price - b.price;
     if (sortBy === "price-desc") return b.price - a.price;
     if (sortBy === "rating") return b.rating - a.rating;

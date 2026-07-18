@@ -152,6 +152,14 @@ const CATEGORIES = [
   { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
+// Replace each image later when the final campaign artwork is ready.
+const HERO_SLIDES = [
+  { id: "hero-1", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-2", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-3", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-4", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+];
+
 type ApiProduct = {
   id: number | string;
   title: string;
@@ -223,7 +231,30 @@ function HomeContent() {
   const [products, setProducts] = useState<ProductCard[]>([]);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
+
+  useEffect(() => {
+    if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const interval = window.setInterval(() => {
+      setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
+    }, 5_000);
+    return () => window.clearInterval(interval);
+  }, [heroPaused, heroIndex]);
+
+  const scrollCategoriesLeft = () => {
+    setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
+  };
+  const scrollCategoriesRight = () => {
+    setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
+  };
+
+  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
+    const index = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
+    return { category: CATEGORIES[index], isActive: slot === 3, slot };
+  });
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -257,7 +288,66 @@ function HomeContent() {
               }
             });
             const choiceIds = new Set(Array.from(choicesByCategory.values()).map((product) => String(product.id)));
-            const mapped = (data as ApiProduct[]).map((p) => ({
+            const catalogue = data as ApiProduct[];
+            const cloudinaryCatalogue = catalogue.filter((product: any) =>
+              String(product.image || "").includes("res.cloudinary.com")
+            );
+            const scoreProducts = (items: ApiProduct[]) => [...items].sort((a, b) =>
+              Number(b.rating ?? 0) - Number(a.rating ?? 0)
+              || Number(b.reviews ?? 0) - Number(a.reviews ?? 0)
+            );
+            const categoryGroups = new Map<string, ApiProduct[]>();
+            cloudinaryCatalogue.forEach((product: any) => {
+              const key = String(product.category?.id ?? product.category?.name ?? "uncategorized");
+              categoryGroups.set(key, [...(categoryGroups.get(key) || []), product]);
+            });
+            categoryGroups.forEach((items, key) => categoryGroups.set(key, scoreProducts(items)));
+
+            const selected: ApiProduct[] = [];
+            const selectedIds = new Set<string>();
+            const addSelection = (product?: ApiProduct) => {
+              if (!product || selected.length >= 30 || selectedIds.has(String(product.id))) return false;
+              selected.push(product);
+              selectedIds.add(String(product.id));
+              return true;
+            };
+            const groups = Array.from(categoryGroups.values());
+
+            // Lead with up to ten real Cloudinary product photos, distributed
+            // across categories instead of allowing one department to dominate.
+            let cloudinaryAdded = true;
+            while (selected.length < 10 && cloudinaryAdded) {
+              cloudinaryAdded = false;
+              for (const group of groups) {
+                const product = group.find((item: any) =>
+                  String(item.image || "").includes("res.cloudinary.com")
+                  && !selectedIds.has(String(item.id))
+                );
+                if (addSelection(product)) cloudinaryAdded = true;
+                if (selected.length >= 10) break;
+              }
+            }
+
+            // Guarantee representation from every available category before
+            // filling the remaining homepage slots.
+            for (const group of groups) {
+              addSelection(group.find((item) => !selectedIds.has(String(item.id))));
+            }
+
+            while (selected.length < Math.min(30, cloudinaryCatalogue.length)) {
+              let addedThisRound = false;
+              for (const group of groups) {
+                const nextProduct = group.find((item) => !selectedIds.has(String(item.id)));
+                if (addSelection(nextProduct)) addedThisRound = true;
+                if (selected.length >= 30) break;
+              }
+              if (!addedThisRound) {
+                const fallback = scoreProducts(cloudinaryCatalogue).find((item) => !selectedIds.has(String(item.id)));
+                if (!addSelection(fallback)) break;
+              }
+            }
+
+            const mapped = selected.map((p) => ({
               id: "bs" + p.id,
               name: p.title,
               description: p.description || "",
@@ -338,14 +428,27 @@ function HomeContent() {
 
       {/* 1. Hero Section */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <section
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+        onFocusCapture={() => setHeroPaused(true)}
+        onBlurCapture={() => setHeroPaused(false)}
+        aria-roledescription="carousel"
+        aria-label="Featured FACILE collections"
+      >
         <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-center" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           {/* Background Image positioned on the right */}
-          <img
-            src="/hero_product_composition.png"
-            alt="Hero Background"
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0"
-          />
+          {HERO_SLIDES.map((slide, index) => (
+            <img
+              key={slide.id}
+              src={slide.image}
+              alt={index === heroIndex ? slide.alt : ""}
+              aria-hidden={index !== heroIndex}
+              className={`absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0 transition-opacity duration-700 ${index === heroIndex ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
 
           {/* Mobile Overlay: Blend image with #FAF3E3 */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
@@ -399,7 +502,22 @@ function HomeContent() {
               </p>
             </div>
           </div>
+
         </div>
+
+          <div className="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
+            {HERO_SLIDES.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                role="tab"
+                aria-selected={heroIndex === index}
+                aria-label={`Show slide ${index + 1}`}
+                onClick={() => setHeroIndex(index)}
+                className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${heroIndex === index ? "bg-[#4A5568]" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
+              />
+            ))}
+          </div>
       </section>
 
       {/* 2. Feature Highlights Bar */}

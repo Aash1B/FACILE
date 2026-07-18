@@ -14,8 +14,24 @@ public class InventorySalesSchemaInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        jdbcTemplate.execute(
-                "ALTER TABLE inventories ADD COLUMN IF NOT EXISTS sold INTEGER NOT NULL DEFAULT 0"
+        Boolean soldColumnExists = jdbcTemplate.queryForObject(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'inventories'
+                      AND column_name = 'sold'
+                )
+                """,
+                Boolean.class
         );
+
+        // ADD COLUMN also locks the table, so only execute it for an old schema.
+        if (!Boolean.TRUE.equals(soldColumnExists)) {
+            jdbcTemplate.execute(
+                    "ALTER TABLE inventories ADD COLUMN sold INTEGER NOT NULL DEFAULT 0"
+            );
+        }
     }
 }

@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
 import {
-  Menu,
+  BotMessageSquare,
   Heart,
   ShoppingCart,
   User,
@@ -26,7 +27,9 @@ import {
   MapPin,
   Info,
   Mail,
-  HelpCircle
+  HelpCircle,
+  Mic,
+  MicOff
 } from "lucide-react";
 
 type StoreCategory = {
@@ -74,7 +77,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlSearch = searchParams ? searchParams.get("search") || "" : "";
+  const urlSearch = searchParams ? searchParams.get("q") || "" : "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [allProducts, setAllProducts] = useState<any[]>(FALLBACK_PRODUCTS);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -92,6 +95,20 @@ export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
 
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSearchSupported, setVoiceSearchSupported] = useState(true);
+  const [voiceSearchMessage, setVoiceSearchMessage] = useState("");
+  const localVoiceRecordingRef = useRef<LocalVoiceRecording | null>(null);
+  const localVoiceTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setVoiceSearchSupported(Boolean(navigator.mediaDevices?.getUserMedia));
+
+    return () => {
+      if (localVoiceTimeoutRef.current) window.clearTimeout(localVoiceTimeoutRef.current);
+      localVoiceRecordingRef.current?.stop().catch(() => undefined);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -245,6 +262,158 @@ export default function Navbar() {
     } else {
       router.push("/");
     }
+  };
+
+  const transcribeLocalVoiceSearch = async () => {
+    const recording = localVoiceRecordingRef.current;
+    if (!recording) return;
+    localVoiceRecordingRef.current = null;
+    if (localVoiceTimeoutRef.current) {
+      window.clearTimeout(localVoiceTimeoutRef.current);
+      localVoiceTimeoutRef.current = null;
+    }
+    setIsListening(false);
+    setVoiceSearchMessage("Transcribing locally...");
+
+    try {
+      const audio = await recording.stop();
+      const formData = new FormData();
+      formData.append("audio", audio, "voice-search.wav");
+      const response = await fetch("/api/voice-search", { method: "POST", body: formData });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Local transcription failed.");
+      const transcript = String(result.transcript || "").trim();
+      if (!transcript) throw new Error("No speech was detected. Please try again.");
+      setSearchQuery(transcript);
+      saveToHistory(transcript);
+      setVoiceSearchMessage(`Searching for "${transcript}"`);
+      router.push(`/search?q=${encodeURIComponent(transcript)}`);
+      window.setTimeout(() => setVoiceSearchMessage(""), 1800);
+    } catch (error) {
+      setVoiceSearchMessage(error instanceof Error ? error.message : "Local transcription failed. Please try again.");
+    }
+  };
+
+  const handleVoiceSearch = async () => {
+    if (localVoiceRecordingRef.current) {
+      await transcribeLocalVoiceSearch();
+      return;
+    }
+
+    if (isListening) {
+      await transcribeLocalVoiceSearch();
+      return;
+    }
+
+    try {
+      localVoiceRecordingRef.current = await startLocalVoiceRecording();
+      setIsListening(true);
+      setShowSuggestions(false);
+      setVoiceSearchMessage("Listening in English or Hinglish - speak now, or tap the microphone to finish.");
+      localVoiceTimeoutRef.current = window.setTimeout(() => {
+        void transcribeLocalVoiceSearch();
+      }, 6000);
+      return;
+    } catch (error) {
+      const errorName = error instanceof DOMException ? error.name : "";
+      setVoiceSearchMessage(
+        errorName === "NotFoundError"
+          ? "No microphone was found on this device."
+          : "Microphone permission is blocked. Allow it in site settings and try again."
+      );
+      return;
+    }
+
+    /* Legacy Web Speech implementation retained for reference. Local Whisper is
+       now used above because browser speech providers can return network errors.
+    const browserWindow = window as typeof window & {
+      SpeechRecognition?: new () => any;
+      webkitSpeechRecognition?: new () => any;
+    };
+    const Recognition = browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition;
+    if (!Recognition) {
+      setVoiceSearchSupported(false);
+      setVoiceSearchMessage("Voice search needs Chrome, Edge, or another browser with speech recognition support.");
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      setVoiceSearchMessage("Microphone access requires HTTPS or localhost. Open FACILE using a secure address.");
+      return;
+    }
+
+    // Ask for microphone access explicitly so permission failures are immediate
+    // and understandable instead of silently failing inside speech recognition.
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStream.getTracks().forEach((track) => track.stop());
+      } catch (error) {
+        const errorName = error instanceof DOMException ? error.name : "";
+        setVoiceSearchMessage(
+          errorName === "NotFoundError"
+            ? "No microphone was found on this device."
+            : "Microphone permission is blocked. Allow it in the browser’s site settings and try again."
+        );
+        return;
+      }
+    }
+
+    const recognition = new Recognition();
+    speechRecognitionRef.current = recognition;
+    recognition.lang = voiceNetworkRetryRef.current ? "en-US" : "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceSearchMessage("Listening…");
+      setShowSuggestions(false);
+    };
+    recognition.onresult = (event: any) => {
+      voiceNetworkRetryRef.current = false;
+      const transcript = String(event.results?.[0]?.[0]?.transcript || "").trim();
+      if (!transcript) return;
+      setSearchQuery(transcript);
+      saveToHistory(transcript);
+      setVoiceSearchMessage(`Searching for “${transcript}”`);
+      router.push(`/search?q=${encodeURIComponent(transcript)}`);
+      window.setTimeout(() => setVoiceSearchMessage(""), 1800);
+    };
+    recognition.onerror = (event: any) => {
+      if (event.error === "network" && !voiceNetworkRetryRef.current) {
+        voiceNetworkRetryRef.current = true;
+        setIsListening(false);
+        speechRecognitionRef.current = null;
+        setVoiceSearchMessage("Connecting to voice recognitionâ€¦");
+        window.setTimeout(() => handleVoiceSearch(), 500);
+        return;
+      }
+      voiceNetworkRetryRef.current = false;
+      const messages: Record<string, string> = {
+        "not-allowed": "Microphone permission is blocked. Allow it in site settings and try again.",
+        "service-not-allowed": "Speech recognition is blocked by this browser.",
+        "no-speech": "I couldn’t hear anything. Please try again.",
+        "audio-capture": "No microphone was found.",
+        network: "The browserâ€™s speech service is unreachable. Check your connection or use Chrome/Edge.",
+      };
+      setVoiceSearchMessage(messages[event.error] || "Voice search could not start. Please try again.");
+    };
+    recognition.onend = () => {
+      if (speechRecognitionRef.current === recognition) {
+        setIsListening(false);
+        speechRecognitionRef.current = null;
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      setVoiceSearchMessage("Voice search is already active.");
+    }
+    */
   };
 
   const query = searchQuery.trim();
@@ -468,17 +637,17 @@ export default function Navbar() {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
 
-            {/* Hamburger Menu (Left) */}
+            {/* FACILE shopping assistant (Left) */}
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  console.log("Hamburger button clicked! Setting isMobileMenuOpen to true.");
-                  setIsMobileMenuOpen(true);
+                  window.dispatchEvent(new Event("facile:open-chat"));
                 }}
-                className="p-2 -ml-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
-                aria-label="Open Menu"
+                className="group relative p-2 -ml-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
+                aria-label="Open FACILE shopping assistant"
               >
-                <Menu size={22} className="stroke-[2px]" />
+                <BotMessageSquare size={23} className="stroke-[2px] transition-transform group-hover:scale-105" />
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full border border-[#F4F4F0] bg-emerald-500" />
               </button>
             </div>
 
@@ -646,14 +815,23 @@ export default function Navbar() {
                       setShowSuggestions(true);
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    className="w-full h-8.5 pl-4 pr-10 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                    className="w-full h-8.5 pl-11 pr-11 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black hover:text-apricot transition-colors"
+                    className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                     aria-label="Submit Search"
                   >
-                    <Search size={15} />
+                    <Search size={15} strokeWidth={2.2} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                      className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                    aria-label={isListening ? "Stop voice search" : "Search by voice"}
+                    title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
+                  >
+                    {voiceSearchSupported ? <Mic size={15} strokeWidth={2} /> : <MicOff size={15} strokeWidth={2} />}
                   </button>
 
                   {/* Suggestions Dropdown */}
@@ -698,19 +876,30 @@ export default function Navbar() {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
-                  className="w-full h-8.5 pl-4 pr-10 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                  className="w-full h-8.5 pl-11 pr-11 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:text-apricot transition-colors"
+                  className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                   aria-label="Submit Search"
                 >
-                  <Search size={14} />
+                  <Search size={15} strokeWidth={2.2} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                  aria-label={isListening ? "Stop voice search" : "Search by voice"}
+                  title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
+                >
+                  {voiceSearchSupported ? <Mic size={15} strokeWidth={2} /> : <MicOff size={15} strokeWidth={2} />}
                 </button>
 
                 {/* Suggestions Dropdown */}
                 {renderSearchSuggestions(true)}
               </form>
+
+              <span className="sr-only" role="status" aria-live="polite">{voiceSearchMessage}</span>
 
               {/* Scrollable Category Pills (Not pushed by Search) */}
               <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth py-1 px-1">
@@ -837,6 +1026,27 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
+      {voiceSearchMessage && (
+        <div
+          className={`fixed left-1/2 top-[148px] z-[70] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-2xl border px-4 py-2.5 text-[11px] font-semibold shadow-xl md:top-[112px] ${isListening ? "border-[#4a556a]/15 bg-[#4a556a] text-white" : "border-[#870339]/15 bg-white text-[#4a556a]"}`}
+          role="status"
+          aria-live="polite"
+        >
+          {isListening ? <Mic size={15} className="animate-pulse" /> : <MicOff size={15} className="text-[#870339]" />}
+          <span>{voiceSearchMessage}</span>
+          {!isListening && (
+            <button
+              type="button"
+              onClick={() => setVoiceSearchMessage("")}
+              className="ml-1 rounded-full p-1 hover:bg-black/5"
+              aria-label="Dismiss voice-search message"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
