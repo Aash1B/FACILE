@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -179,5 +180,63 @@ public class OrderService {
         Order order = getOrderById(orderId);
         order.setStatus(newStatus);
         return orderRepository.save(order);
+    }
+
+    public Map<String, Object> requestTracking(String orderId, String userId) {
+        Order order = getOrderById(orderId);
+        if (userId == null || userId.isBlank() || !userId.equalsIgnoreCase(order.getUserId())) {
+            throw new IllegalArgumentException("This order does not belong to the signed-in user");
+        }
+
+        List<TrackingEvent> history = buildTrackingHistory(order);
+        order.setTrackingHistory(history);
+        order.setTrackingRequestedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        boolean emailSent = false;
+        try {
+            Map<String, Object> notification = new LinkedHashMap<>();
+            notification.put("email", userId);
+            notification.put("orderId", order.getId());
+            notification.put("status", order.getStatus().name());
+            notification.put("history", history);
+            new RestTemplate().postForEntity(
+                    "http://localhost:8084/notifications/tracking",
+                    notification,
+                    Map.class
+            );
+            emailSent = true;
+        } catch (Exception exception) {
+            System.err.println("[Order Tracking] Email delivery failed: " + exception.getMessage());
+        }
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("order", order);
+        response.put("history", history);
+        response.put("emailSent", emailSent);
+        response.put("message", emailSent
+                ? "Tracking history was emailed successfully."
+                : "Tracking is available, but the email service is currently unavailable.");
+        return response;
+    }
+
+    private List<TrackingEvent> buildTrackingHistory(Order order) {
+        LocalDateTime created = order.getCreatedAt() == null ? LocalDateTime.now() : order.getCreatedAt();
+        OrderStatus current = order.getStatus() == null ? OrderStatus.PENDING : order.getStatus();
+        List<TrackingEvent> events = new ArrayList<>();
+        events.add(new TrackingEvent("PENDING", "Order placed and awaiting confirmation", created, true));
+
+        if (current == OrderStatus.CANCELLED) {
+            events.add(new TrackingEvent("CANCELLED", "Order was cancelled", created.plusHours(1), true));
+            return events;
+        }
+
+        boolean confirmed = current == OrderStatus.CONFIRMED || current == OrderStatus.SHIPPED || current == OrderStatus.DELIVERED;
+        boolean shipped = current == OrderStatus.SHIPPED || current == OrderStatus.DELIVERED;
+        boolean delivered = current == OrderStatus.DELIVERED;
+        events.add(new TrackingEvent("CONFIRMED", "Order confirmed and being prepared", confirmed ? created.plusHours(1) : null, confirmed));
+        events.add(new TrackingEvent("SHIPPED", "Package handed to the delivery partner", shipped ? created.plusDays(1) : null, shipped));
+        events.add(new TrackingEvent("DELIVERED", "Package delivered to the selected address", delivered ? created.plusDays(3) : null, delivered));
+        return events;
     }
 }

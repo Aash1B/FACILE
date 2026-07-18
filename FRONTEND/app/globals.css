@@ -309,3 +309,28 @@ span.text-slate-grey,
   color: #4A5568 !important;
 }
 
+/* ─── Cart Layout Shift (Fixes React Hydration error) ────────── */
+body.cart-expanded main,
+body.cart-expanded header,
+body.cart-expanded footer {
+  padding-right: 180px !important;
+  transition: padding-right 0.3s ease-in-out;
+}
+
+body.cart-collapsed main,
+body.cart-collapsed header,
+body.cart-collapsed footer {
+  padding-right: 48px !important;
+  transition: padding-right 0.3s ease-in-out;
+}
+
+@media (max-width: 767px) {
+  body.cart-expanded main,
+  body.cart-expanded header,
+  body.cart-expanded footer,
+  body.cart-collapsed main,
+  body.cart-collapsed header,
+  body.cart-collapsed footer {
+    padding-right: 0px !important;
+  }
+}

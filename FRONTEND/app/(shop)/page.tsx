@@ -152,6 +152,14 @@ const CATEGORIES = [
   { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
+// Replace each image later when the final campaign artwork is ready.
+const HERO_SLIDES = [
+  { id: "hero-1", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-2", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-3", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  { id: "hero-4", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+];
+
 type ApiProduct = {
   id: number | string;
   title: string;
@@ -223,7 +231,30 @@ function HomeContent() {
   const [products, setProducts] = useState<ProductCard[]>([]);
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
+
+  useEffect(() => {
+    if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const interval = window.setInterval(() => {
+      setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
+    }, 5_000);
+    return () => window.clearInterval(interval);
+  }, [heroPaused, heroIndex]);
+
+  const scrollCategoriesLeft = () => {
+    setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
+  };
+  const scrollCategoriesRight = () => {
+    setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
+  };
+
+  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
+    const index = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
+    return { category: CATEGORIES[index], isActive: slot === 3, slot };
+  });
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -257,7 +288,66 @@ function HomeContent() {
               }
             });
             const choiceIds = new Set(Array.from(choicesByCategory.values()).map((product) => String(product.id)));
-            const mapped = (data as ApiProduct[]).map((p) => ({
+            const catalogue = data as ApiProduct[];
+            const cloudinaryCatalogue = catalogue.filter((product: any) =>
+              String(product.image || "").includes("res.cloudinary.com")
+            );
+            const scoreProducts = (items: ApiProduct[]) => [...items].sort((a, b) =>
+              Number(b.rating ?? 0) - Number(a.rating ?? 0)
+              || Number(b.reviews ?? 0) - Number(a.reviews ?? 0)
+            );
+            const categoryGroups = new Map<string, ApiProduct[]>();
+            cloudinaryCatalogue.forEach((product: any) => {
+              const key = String(product.category?.id ?? product.category?.name ?? "uncategorized");
+              categoryGroups.set(key, [...(categoryGroups.get(key) || []), product]);
+            });
+            categoryGroups.forEach((items, key) => categoryGroups.set(key, scoreProducts(items)));
+
+            const selected: ApiProduct[] = [];
+            const selectedIds = new Set<string>();
+            const addSelection = (product?: ApiProduct) => {
+              if (!product || selected.length >= 30 || selectedIds.has(String(product.id))) return false;
+              selected.push(product);
+              selectedIds.add(String(product.id));
+              return true;
+            };
+            const groups = Array.from(categoryGroups.values());
+
+            // Lead with up to ten real Cloudinary product photos, distributed
+            // across categories instead of allowing one department to dominate.
+            let cloudinaryAdded = true;
+            while (selected.length < 10 && cloudinaryAdded) {
+              cloudinaryAdded = false;
+              for (const group of groups) {
+                const product = group.find((item: any) =>
+                  String(item.image || "").includes("res.cloudinary.com")
+                  && !selectedIds.has(String(item.id))
+                );
+                if (addSelection(product)) cloudinaryAdded = true;
+                if (selected.length >= 10) break;
+              }
+            }
+
+            // Guarantee representation from every available category before
+            // filling the remaining homepage slots.
+            for (const group of groups) {
+              addSelection(group.find((item) => !selectedIds.has(String(item.id))));
+            }
+
+            while (selected.length < Math.min(30, cloudinaryCatalogue.length)) {
+              let addedThisRound = false;
+              for (const group of groups) {
+                const nextProduct = group.find((item) => !selectedIds.has(String(item.id)));
+                if (addSelection(nextProduct)) addedThisRound = true;
+                if (selected.length >= 30) break;
+              }
+              if (!addedThisRound) {
+                const fallback = scoreProducts(cloudinaryCatalogue).find((item) => !selectedIds.has(String(item.id)));
+                if (!addSelection(fallback)) break;
+              }
+            }
+
+            const mapped = selected.map((p) => ({
               id: "bs" + p.id,
               name: p.title,
               description: p.description || "",
@@ -337,15 +427,28 @@ function HomeContent() {
       )}
 
       {/* 1. Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <section
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+        onFocusCapture={() => setHeroPaused(true)}
+        onBlurCapture={() => setHeroPaused(false)}
+        aria-roledescription="carousel"
+        aria-label="Featured FACILE collections"
+      >
         <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-center" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           {/* Background Image positioned on the right */}
-          <img
-            src="/hero_product_composition.png"
-            alt="Hero Background"
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0"
-          />
+          {HERO_SLIDES.map((slide, index) => (
+            <img
+              key={slide.id}
+              src={slide.image}
+              alt={index === heroIndex ? slide.alt : ""}
+              aria-hidden={index !== heroIndex}
+              className={`absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0 transition-opacity duration-700 ${index === heroIndex ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
 
           {/* Mobile Overlay: Blend image with #FAF3E3 */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
@@ -399,11 +502,26 @@ function HomeContent() {
               </p>
             </div>
           </div>
+
         </div>
+
+          <div className="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
+            {HERO_SLIDES.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                role="tab"
+                aria-selected={heroIndex === index}
+                aria-label={`Show slide ${index + 1}`}
+                onClick={() => setHeroIndex(index)}
+                className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${heroIndex === index ? "bg-[#4A5568]" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
+              />
+            ))}
+          </div>
       </section>
 
       {/* 2. Feature Highlights Bar */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
         <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           <div className="flex items-center gap-4">
@@ -449,7 +567,7 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
+      <section id="categories" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
@@ -553,7 +671,7 @@ function HomeContent() {
       </section>
 
       {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
+      <section id="best-sellers" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
             Best Selling Products
@@ -632,13 +750,21 @@ function HomeContent() {
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
+                    </div>
 
+                    {/* Price and Rating */}
+                    <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      </div>
+                      
                       {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
                         <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
                         {product.reviews > 0 ? (
                           <>
@@ -646,16 +772,8 @@ function HomeContent() {
                             <span>({product.reviews})</span>
                           </>
                         ) : (
-                          <span className="text-natural group-hover:text-warm-ivory/80">No reviews</span>
+                          <span className="text-natural group-hover:text-warm-ivory/80">0</span>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   </div>
@@ -679,7 +797,7 @@ function HomeContent() {
       </section>
 
       {recentProducts.length > 0 && (
-        <section id="recently-viewed" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <section id="recently-viewed" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
           </div>
@@ -691,16 +809,20 @@ function HomeContent() {
                     <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
                   </div>
                   <div className="space-y-2 p-4">
-                    <h3 className="truncate text-xs font-bold text-[#4a556a]">{product.name}</h3>
-                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural">
-                      <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
-                      {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>No reviews</span>}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate text-sm font-bold text-[#4a556a]">{product.name}</h3>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
-                      {product.originalPrice != null && product.originalPrice > product.price && (
-                        <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
-                      )}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
+                        {product.originalPrice != null && product.originalPrice > product.price && (
+                          <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
+                        <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                        {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>0</span>}
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -716,7 +838,7 @@ function HomeContent() {
       )}
 
       {/* 5. Special Offer Banner */}
-      <section id="special-offer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="special-offer" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="group bg-[#F4F4F0] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
 
           {/* Shimmer overlay on hover */}
@@ -761,7 +883,7 @@ function HomeContent() {
       </section>
 
       {/* 6. Customer Testimonials */}
-      <section id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="testimonials" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 

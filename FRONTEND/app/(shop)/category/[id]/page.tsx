@@ -527,7 +527,7 @@ export default function CategoryPage() {
         </div>
       )}
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {(!subcategoryId && !isShoesFilter) ? (
           <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-6">
             <ArrowLeft size={15} /> Back to categories
@@ -540,7 +540,7 @@ export default function CategoryPage() {
 
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         {(!subcategoryId && !isShoesFilter) ? (
           /* Render grid of subcategories */
           loading ? (
@@ -787,16 +787,31 @@ export default function CategoryPage() {
                               </div>
 
                               <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div className="space-y-1">
-                                  {product.brand && (
-                                    <p className="text-[9px] font-semibold text-[#4a556a]/50 group-hover:text-white/60 transition-colors">
-                                      {product.brand}
-                                    </p>
-                                  )}
-                                  <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-white leading-snug line-clamp-2 transition-colors">
-                                    {product.title}
-                                  </h3>
-                                  <div className="flex items-center gap-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="space-y-1 overflow-hidden">
+                                    {product.brand && (
+                                      <p className="text-[9px] font-semibold text-[#4a556a]/50 group-hover:text-white/60 transition-colors">
+                                        {product.brand}
+                                      </p>
+                                    )}
+                                    <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-white leading-snug line-clamp-2 transition-colors">
+                                      {product.title}
+                                    </h3>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-3 border-t border-natural/8 mt-3">
+                                  <div className="flex items-baseline gap-1.5">
+                                    <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-white transition-colors">
+                                      ₹{price.toLocaleString("en-IN")}
+                                    </span>
+                                    {mrp > price && (
+                                      <span className="text-[10px] text-natural/45 group-hover:text-white/50 line-through font-medium transition-colors">
+                                        ₹{mrp.toLocaleString("en-IN")}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
                                     <Star size={10} className={(product.reviews ?? 0) > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
                                     {(product.reviews ?? 0) > 0 ? (
                                       <>
@@ -808,20 +823,7 @@ export default function CategoryPage() {
                                         </span>
                                       </>
                                     ) : (
-                                      <span className="text-[10px] text-natural/60 group-hover:text-white/70 transition-colors">No reviews</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="pt-3 border-t border-natural/8 mt-3">
-                                  <div className="flex items-baseline gap-1.5">
-                                    <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-white transition-colors">
-                                      ₹{price.toLocaleString("en-IN")}
-                                    </span>
-                                    {mrp > price && (
-                                      <span className="text-[10px] text-natural/45 group-hover:text-white/50 line-through font-medium transition-colors">
-                                        ₹{mrp.toLocaleString("en-IN")}
-                                      </span>
+                                      <span className="text-[10px] text-natural/60 group-hover:text-white/70 transition-colors">0</span>
                                     )}
                                   </div>
                                 </div>

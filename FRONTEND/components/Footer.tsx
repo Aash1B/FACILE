@@ -80,10 +80,10 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-fern text-warm-ivory border-t border-natural/30 select-none">
+    <footer className="bg-fern text-warm-ivory border-t border-natural/30 relative z-50 select-none">
 
       {/* Newsletter / Headline Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-natural/20">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-natural/20">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
           <div className="max-w-md space-y-2">
             <h3 className="text-xl sm:text-2xl font-serif font-bold tracking-wide flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function Footer() {
       </div>
 
       {/* Main Link Directory */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10">
 
           {/* Brand Info (Col span 4) */}
@@ -186,7 +186,7 @@ export default function Footer() {
 
       {/* Bottom Footer Section */}
       <div className="bg-[#363827] text-warm-ivory/60 text-[10px] font-bold border-t border-natural/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
 
           <div className="flex items-center gap-1.5">
             <span>© {new Date().getFullYear()} facile. Made with</span>

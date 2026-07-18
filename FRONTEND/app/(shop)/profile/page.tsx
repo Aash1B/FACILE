@@ -23,8 +23,15 @@ import {
   Gift,
   WalletCards,
   Box,
-  Star
+  Star,
+  Truck
 } from "lucide-react";
+interface TrackingEvent {
+  status: string;
+  message: string;
+  occurredAt?: string | number[] | null;
+  completed: boolean;
+}
 interface OrderItem {
   productId: string;
   productName: string;
@@ -40,6 +47,7 @@ interface Order {
   status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   createdAt: string | number[];
   shippingAddress: string;
+  trackingHistory?: TrackingEvent[];
 }
 
 const formatPrice = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
@@ -71,7 +79,7 @@ function ProfileContent() {
   const { user, logout, isLoading, forgotPassword, setupMfa, enableMfa, disableMfa, getSessions, revokeSession, getAuditLogs, deleteAccount } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews" | "saved_upi">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "orders" | "tracking" | "addresses" | "gift_cards" | "saved_cards" | "security" | "reviews" | "saved_upi">("profile");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Reviews State
@@ -179,7 +187,7 @@ function ProfileContent() {
   useEffect(() => {
     if (searchParams) {
       const tab = searchParams.get("tab");
-      if (tab === "profile" || tab === "orders" || tab === "addresses" || tab === "gift_cards" || tab === "saved_cards" || tab === "security" || tab === "reviews") {
+      if (tab === "profile" || tab === "orders" || tab === "tracking" || tab === "addresses" || tab === "gift_cards" || tab === "saved_cards" || tab === "security" || tab === "reviews") {
         setActiveTab(tab as any);
       }
     }
@@ -251,7 +259,7 @@ function ProfileContent() {
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
 
   useEffect(() => {
-    if (activeTab === "orders" && user?.email) {
+    if ((activeTab === "orders" || activeTab === "tracking") && user?.email) {
       fetchPaymentHistory();
     }
   }, [activeTab, user]);
@@ -276,9 +284,11 @@ function ProfileContent() {
   // Order History state variables
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [trackingNotices, setTrackingNotices] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (activeTab === "orders" && user?.email) {
+    if ((activeTab === "orders" || activeTab === "tracking") && user?.email) {
       fetchOrders();
     }
   }, [activeTab, user]);
@@ -286,7 +296,7 @@ function ProfileContent() {
   const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const res = await fetch(`http://localhost:8081/api/orders/${user?.email}`);
+      const res = await fetch(`/api/orders/${encodeURIComponent(user?.email || "")}`);
       if (res.ok) {
         const data = await res.json();
         setOrdersList(Array.isArray(data) ? data : []);
@@ -295,6 +305,29 @@ function ProfileContent() {
       console.error("Failed to fetch order history:", e);
     } finally {
       setIsLoadingOrders(false);
+    }
+  };
+
+  const handleTrackOrder = async (orderId: string) => {
+    if (!user?.email || trackingOrderId) return;
+    setTrackingOrderId(orderId);
+    setTrackingNotices((current) => ({ ...current, [orderId]: "Preparing the latest tracking history..." }));
+    try {
+      const response = await fetch(`/api/orders/${orderId}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.email }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Tracking could not be requested.");
+      setOrdersList((current) => current.map((order) => order.id === orderId
+        ? { ...order, trackingHistory: result.history || result.order?.trackingHistory || [] }
+        : order));
+      setTrackingNotices((current) => ({ ...current, [orderId]: result.message || "Tracking history is ready." }));
+    } catch (error) {
+      setTrackingNotices((current) => ({ ...current, [orderId]: error instanceof Error ? error.message : "Tracking is temporarily unavailable." }));
+    } finally {
+      setTrackingOrderId(null);
     }
   };
   
@@ -463,8 +496,8 @@ function ProfileContent() {
   };
 
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-12 font-sans bg-[#F4F4F0]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen py-10 font-sans bg-[#F4F4F0]">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Modern Hero Section */}
         <motion.div 
@@ -493,9 +526,9 @@ function ProfileContent() {
           >
             
             {/* Premium Account Summary Card */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-natural/10 flex flex-col items-center relative overflow-hidden transition-all duration-300 hover:shadow-md">
+            <div className="bg-[#E6E6FA] rounded-3xl p-6 shadow-sm border border-natural/10 flex flex-col items-center relative overflow-hidden transition-all duration-300 hover:shadow-md">
               <div className="relative inline-block mt-4 mb-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-warm-ivory to-warm-ivory/50 text-fern rounded-full flex items-center justify-center font-serif text-3xl font-bold uppercase shadow-sm overflow-hidden">
+                  <div className="w-24 h-24 bg-warm-ivory text-fern rounded-full flex items-center justify-center font-serif text-3xl font-bold uppercase shadow-sm overflow-hidden">
                     {profilePhoto
                       ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                       : (profileName ? profileName.slice(0, 2) : "US")
@@ -534,8 +567,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("profile")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "profile" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <User size={18} strokeWidth={activeTab === "profile" ? 2.5 : 2} />
@@ -546,8 +579,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("orders")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "orders" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <ShoppingBag size={18} strokeWidth={activeTab === "orders" ? 2.5 : 2} />
@@ -555,11 +588,23 @@ function ProfileContent() {
               </button>
 
               <button
+                onClick={() => setActiveTab("tracking")}
+                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                  activeTab === "tracking"
+                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-white/60 hover:text-fern"
+                }`}
+              >
+                <Truck size={18} strokeWidth={activeTab === "tracking" ? 2.5 : 2} />
+                Track Order
+              </button>
+
+              <button
                 onClick={() => setActiveTab("addresses")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "addresses" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <MapPin size={18} strokeWidth={activeTab === "addresses" ? 2.5 : 2} />
@@ -574,8 +619,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("gift_cards")}
                 className={`flex justify-between items-center px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "gift_cards" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -589,8 +634,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("saved_cards")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "saved_cards" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <WalletCards size={18} strokeWidth={activeTab === "saved_cards" ? 2.5 : 2} />
@@ -601,8 +646,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("security")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "security" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <Lock size={18} strokeWidth={activeTab === "security" ? 2.5 : 2} />
@@ -617,8 +662,8 @@ function ProfileContent() {
                 onClick={() => setActiveTab("reviews")}
                 className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "reviews" 
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
+                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
                 }`}
               >
                 <Star size={18} strokeWidth={activeTab === "reviews" ? 2.5 : 2} />
@@ -636,7 +681,7 @@ function ProfileContent() {
               
               <button
                 onClick={logout}
-                className="hidden lg:flex items-center justify-center gap-2 w-full py-4 bg-[#4A5568] hover:bg-white text-white hover:text-[#4A5568] text-xs font-bold rounded-2xl transition-all duration-300 cursor-pointer shadow-sm hover:shadow border border-transparent hover:border-[#4A5568]"
+                className="hidden lg:flex items-center justify-center gap-2 w-full py-4 bg-[#4A5568] hover:bg-[#E6E6FA] text-white hover:text-[#4A5568] text-xs font-bold rounded-2xl transition-all duration-300 cursor-pointer shadow-sm hover:shadow border border-transparent hover:border-[#4A5568]"
               >
                 Logout
               </button>
@@ -661,7 +706,8 @@ function ProfileContent() {
               >
                 {/* Tab 1: Profile Settings */}
                 {activeTab === "profile" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
                     <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
@@ -678,12 +724,14 @@ function ProfileContent() {
                           value={profileName}
                           onChange={(e) => setProfileName(e.target.value)}
                           required
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#E6E6FA] focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Full Name"
                         />
                         <label 
                           htmlFor="fullName" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#E6E6FA] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#E6E6FA] peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           FULL NAME
                         </label>
@@ -697,12 +745,14 @@ function ProfileContent() {
                           value={profileEmail}
                           onChange={(e) => setProfileEmail(e.target.value)}
                           required
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#E6E6FA] focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Email Address"
                         />
                         <label 
                           htmlFor="emailAddress" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#E6E6FA] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#E6E6FA] peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           EMAIL ADDRESS
                         </label>
@@ -718,12 +768,14 @@ function ProfileContent() {
                           id="phoneNumber"
                           value={profilePhone}
                           onChange={(e) => setProfilePhone(e.target.value)}
-                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#E6E6FA] focus:shadow-sm placeholder-transparent"
+                          className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
                           placeholder="Phone Number"
                         />
                         <label 
                           htmlFor="phoneNumber" 
-                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-white peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-white peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#E6E6FA] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#E6E6FA] peer-valid:px-1 pointer-events-none"
+                          className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
                         >
                           PHONE NUMBER
                         </label>
@@ -732,14 +784,16 @@ function ProfileContent() {
                       {/* Premium Select for Region */}
                       <div className="relative group">
                         <select 
-                          className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
+                          className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#E6E6FA] focus:shadow-sm appearance-none cursor-pointer"
+                          className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
                           defaultValue="India"
                         >
                           <option value="India">India (INR)</option>
                           <option value="US">United States (USD)</option>
                           <option value="UK">United Kingdom (GBP)</option>
                         </select>
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1 pointer-events-none">
+                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1 pointer-events-none">
+                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
                           PREFERRED REGION
                         </label>
                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
@@ -802,7 +856,7 @@ function ProfileContent() {
                         exit={{ opacity: 0, y: -20 }}
                         className="fixed bottom-8 right-8 flex items-center gap-3 bg-fern text-white p-4 rounded-2xl shadow-xl z-50"
                       >
-                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                        <div className="w-6 h-6 bg-[#E6E6FA]/20 rounded-full flex items-center justify-center">
                           <Check size={12} className="stroke-[3px]" />
                         </div>
                         <p className="text-sm font-semibold pr-2">Profile details updated successfully.</p>
@@ -812,9 +866,57 @@ function ProfileContent() {
                 </div>
               )}
 
+              {activeTab === "tracking" && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-6">
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold text-fern">Track Your Orders</h2>
+                    <p className="text-xs text-natural font-medium mt-1">Select any order to view its progress and email the tracking history to {user?.email}.</p>
+                  </div>
+                  {isLoadingOrders ? (
+                    <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-fern border-t-transparent rounded-full animate-spin" /></div>
+                  ) : ordersList.length === 0 ? (
+                    <div className="text-center py-14 border border-dashed border-natural/30 rounded-3xl text-sm text-natural">No orders are available to track.</div>
+                  ) : (
+                    <div className="space-y-5">
+                      {ordersList.map((order) => {
+                        const history = order.trackingHistory || [];
+                        const statusStyle = ORDER_STATUS_STYLES[order.status] ?? ORDER_STATUS_STYLES.PENDING;
+                        return (
+                          <article key={order.id} className="rounded-3xl border-2 border-natural/10 p-5 sm:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-natural">Order #{order.id.slice(-8).toUpperCase()}</p>
+                                <p className="mt-1 text-sm font-bold text-fern">{formatOrderDate(order.createdAt)} · {formatPrice(order.totalAmount)}</p>
+                              </div>
+                              <span className={`self-start inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}><span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />{statusStyle.label}</span>
+                            </div>
+                            {history.length > 0 && (
+                              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                {history.map((event) => (
+                                  <div key={event.status} className={`rounded-2xl border p-4 ${event.completed ? "border-green-200 bg-green-50" : "border-natural/10 bg-[#F4F4F0]/60"}`}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-fern">{event.status}</p>
+                                    <p className="mt-1 text-xs font-medium text-natural">{event.message}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <p className="text-[11px] font-semibold text-natural">{trackingNotices[order.id] || "Click Track & Email to request the latest history."}</p>
+                              <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="shrink-0 rounded-xl bg-fern px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-apricot disabled:cursor-wait disabled:opacity-60">
+                                {trackingOrderId === order.id ? "Preparing..." : "Track & Email"}
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Tab 2: Order History */}
               {activeTab === "orders" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Your Orders</h2>
                     <p className="text-xs text-natural font-medium mt-1">Track shipping details and history of previous orders.</p>
@@ -837,7 +939,7 @@ function ProfileContent() {
                         return (
                           <div
                             key={order.id}
-                            className="bg-white border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-fern/20 group"
+                            className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-fern/20 group"
                           >
                             <div
                               onClick={() => toggleOrder(order.id)}
@@ -888,7 +990,7 @@ function ProfileContent() {
                                       <h4 className="text-xs font-bold uppercase tracking-widest text-fern mb-4">Order Items</h4>
                                       <div className="space-y-4">
                                         {order.items.map((item, idx) => (
-                                          <div key={idx} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-natural/10 shadow-sm">
+                                          <div key={idx} className="flex justify-between items-center bg-[#E6E6FA] p-4 rounded-2xl border border-natural/10 shadow-sm">
                                             <div className="flex items-center gap-4">
                                               <div className="w-16 h-16 bg-[#F4F4F0] rounded-xl flex items-center justify-center text-natural/40">
                                                 <ShoppingBag size={20} />
@@ -910,14 +1012,17 @@ function ProfileContent() {
                                         <p className="text-sm font-semibold text-fern">{order.shippingAddress}</p>
                                       </div>
                                       <div className="flex gap-3">
-                                        <button className="px-5 py-2.5 bg-white border-2 border-natural/20 text-fern text-xs font-bold uppercase tracking-widest rounded-xl hover:border-fern transition-colors">
+                                        <button className="px-5 py-2.5 bg-[#E6E6FA] border-2 border-natural/20 text-fern text-xs font-bold uppercase tracking-widest rounded-xl hover:border-fern transition-colors">
                                           Invoice
                                         </button>
-                                        <button className="px-5 py-2.5 bg-fern text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-apricot transition-colors shadow-sm">
-                                          Track Order
+                                        <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="px-5 py-2.5 bg-fern text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-apricot transition-colors shadow-sm disabled:cursor-wait disabled:opacity-60">
+                                          {trackingOrderId === order.id ? "Sending..." : "Track Order"}
                                         </button>
                                       </div>
                                     </div>
+                                    {trackingNotices[order.id] && (
+                                      <p className="rounded-xl bg-white px-4 py-3 text-xs font-semibold text-fern border border-natural/10" role="status">{trackingNotices[order.id]}</p>
+                                    )}
                                   </div>
                                 </motion.div>
                               )}
@@ -942,7 +1047,7 @@ function ProfileContent() {
                         </div>
                       ) : (
                         paymentsHistory.map((payment) => (
-                          <div key={payment.id} className="bg-white border border-natural/10 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
+                          <div key={payment.id} className="bg-[#E6E6FA] border border-natural/10 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
                             <div className="flex items-center gap-6">
                               <div className="w-12 h-12 bg-[#F4F4F0] rounded-full flex items-center justify-center text-fern">
                                 <CreditCard size={18} />
@@ -970,7 +1075,7 @@ function ProfileContent() {
 
               {/* Tab 3: Shipping Addresses */}
               {activeTab === "addresses" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className="font-serif text-2xl font-bold text-fern">Manage Address</h2>
@@ -1017,7 +1122,7 @@ function ProfileContent() {
                               placeholder="Label (e.g. Home, Office)"
                               value={newAddr.label}
                               onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
                             <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">LABEL</label>
                           </div>
@@ -1028,7 +1133,7 @@ function ProfileContent() {
                               placeholder="Recipient's Name"
                               value={newAddr.name}
                               onChange={(e) => setNewAddr({ ...newAddr, name: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
                             <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">CONTACT NAME</label>
                           </div>
@@ -1041,7 +1146,7 @@ function ProfileContent() {
                             placeholder="Building, street, apartment"
                             value={newAddr.street}
                             onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
-                            className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                            className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                           />
                           <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">STREET ADDRESS</label>
                         </div>
@@ -1054,7 +1159,7 @@ function ProfileContent() {
                               placeholder="City, State, ZIP"
                               value={newAddr.city}
                               onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
                             <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">CITY, STATE - ZIP</label>
                           </div>
@@ -1064,7 +1169,7 @@ function ProfileContent() {
                               placeholder="Phone Number"
                               value={newAddr.phone}
                               onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
                             <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">PHONE NUMBER</label>
                           </div>
@@ -1085,7 +1190,7 @@ function ProfileContent() {
                     {addresses.map((addr, index) => (
                       <div 
                         key={addr.id}
-                        className="bg-white border-2 border-natural/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 group flex flex-col justify-between"
+                        className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 group flex flex-col justify-between"
                       >
                         <div className="space-y-4">
                           <div className="flex justify-between items-start">
@@ -1148,13 +1253,13 @@ function ProfileContent() {
 
               {/* Tab: Gift Cards */}
               {activeTab === "gift_cards" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-[#F4F4F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Gift Cards</h2>
                     <p className="text-xs text-natural font-medium mt-1">Manage and purchase FACILE gift cards.</p>
                   </div>
 
-                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-white shadow-sm transition-all hover:shadow-md">
+                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#E6E6FA] shadow-sm transition-all hover:shadow-md">
                     <div className="p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-natural/10 gap-4">
                       <div>
                         <h3 className="font-bold text-sm text-fern uppercase tracking-widest">FACILE Gift Card</h3>
@@ -1168,7 +1273,7 @@ function ProfileContent() {
                     <div className="p-6 sm:p-8 bg-[#F4F4F0]/50 border-b border-natural/10 flex flex-col gap-6">
                       <button 
                         onClick={() => setShowAddGiftCard(!showAddGiftCard)}
-                        className="h-10 px-6 bg-white border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-xs"
+                        className="h-10 px-6 bg-[#E6E6FA] border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-xs"
                       >
                         <Plus size={16} className={showAddGiftCard ? "rotate-45 transition-transform" : "transition-transform"} /> 
                         {showAddGiftCard ? "Cancel" : "Add A Gift Card"}
@@ -1189,9 +1294,9 @@ function ProfileContent() {
                                 value={giftCode} 
                                 onChange={(event) => setGiftCode(event.target.value.replace(/\D/g, "").slice(0,16))} 
                                 placeholder="16-digit card number" 
-                                className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
+                                className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-white transition-colors">CARD NUMBER</label>
+                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-[#E6E6FA] transition-colors">CARD NUMBER</label>
                             </div>
                             <div className="relative group md:col-span-1">
                               <input 
@@ -1201,9 +1306,9 @@ function ProfileContent() {
                                 value={giftPin} 
                                 onChange={(event) => setGiftPin(event.target.value.replace(/\D/g, "").slice(0,3))} 
                                 placeholder="3-digit PIN" 
-                                className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
+                                className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-white transition-colors">PIN</label>
+                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-[#E6E6FA] transition-colors">PIN</label>
                             </div>
                             <button 
                               disabled={giftBusy || giftCode.length !== 16 || giftPin.length !== 3} 
@@ -1220,7 +1325,6 @@ function ProfileContent() {
                     <div className="p-6 sm:p-8">
                       <div className="flex justify-between items-center mb-8">
                         <h3 className="font-bold text-sm text-fern uppercase tracking-widest">Buy a FACILE Gift Card</h3>
-                        <p className="text-[10px] text-natural font-medium italic">Issued by Qwikcilver</p>
                       </div>
                       
                       <div className="flex gap-8 border-b-2 border-natural/10 mb-8 text-xs font-bold uppercase tracking-widest">
@@ -1236,9 +1340,9 @@ function ProfileContent() {
                               placeholder="Receiver's Email ID *" 
                               value={receiverEmail}
                               onChange={(e) => setReceiverEmail(e.target.value)}
-                              className="w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">RECEIVER'S EMAIL</label>
+                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">RECEIVER'S EMAIL</label>
                           </div>
                           <div className="relative group">
                             <input 
@@ -1246,37 +1350,39 @@ function ProfileContent() {
                               placeholder="Receiver's Name *" 
                               value={receiverName}
                               onChange={(e) => setReceiverName(e.target.value)}
-                              className="w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">RECEIVER'S NAME</label>
+                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">RECEIVER'S NAME</label>
                           </div>
                           
                           <div className="flex gap-4">
                             <div className="flex-1 relative group">
-                              <select 
+                              <input 
+                                type="number"
+                                list="gift-card-values"
+                                placeholder="Enter value"
                                 value={giftCardValue || ""}
                                 onChange={(e) => setGiftCardValue(Number(e.target.value))}
-                                className="w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all appearance-none cursor-pointer"
-                              >
-                                <option value="" disabled>Select Value</option>
-                                <option value={500}>₹ 500</option>
-                                <option value={1000}>₹ 1,000</option>
-                                <option value={5000}>₹ 5,000</option>
-                                <option value={10000}>₹ 10,000</option>
-                              </select>
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">CARD VALUE (₹)</label>
-                              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" />
+                                className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
+                              />
+                              <datalist id="gift-card-values">
+                                <option value="500">₹ 500</option>
+                                <option value="1000">₹ 1,000</option>
+                                <option value="5000">₹ 5,000</option>
+                                <option value="10000">₹ 10,000</option>
+                              </datalist>
+                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">CARD VALUE (₹)</label>
                             </div>
                             <div className="w-28 relative group">
                               <input 
                                 type="number" 
                                 min="1"
-                                max="10"
+                                max="5"
                                 value={giftCardQty}
-                                onChange={(e) => setGiftCardQty(Math.max(1, Number(e.target.value)))}
-                                className="w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                                onChange={(e) => setGiftCardQty(Math.min(5, Math.max(1, Number(e.target.value))))}
+                                className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">QUANTITY</label>
+                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">QUANTITY</label>
                             </div>
                           </div>
 
@@ -1286,9 +1392,9 @@ function ProfileContent() {
                               placeholder="Gifter's Name (Optional)" 
                               value={gifterName}
                               onChange={(e) => setGifterName(e.target.value)}
-                              className="w-full h-14 px-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">GIFTER'S NAME</label>
+                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">GIFTER'S NAME</label>
                           </div>
                           
                           <div className="relative group">
@@ -1298,9 +1404,9 @@ function ProfileContent() {
                               value={personalGiftMessage}
                               onChange={(e) => setPersonalGiftMessage(e.target.value)}
                               maxLength={100}
-                              className="w-full p-4 bg-white border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all resize-none min-h-[100px]" 
+                              className="w-full p-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all resize-none min-h-[100px]" 
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">GIFT MESSAGE</label>
+                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">GIFT MESSAGE</label>
                           </div>
                           
                           <button 
@@ -1349,7 +1455,7 @@ function ProfileContent() {
                               <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3 bg-red-200" />
                             </div>
                             <div className="w-10 h-18 bg-gradient-to-t from-teal-500 to-teal-300 rounded-lg shadow-lg relative overflow-hidden group-hover:-translate-y-3 transition-transform duration-500 delay-200">
-                              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-2 bg-white/40" />
+                              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-2 bg-[#E6E6FA]/40" />
                             </div>
                           </div>
                         </div>
@@ -1361,13 +1467,13 @@ function ProfileContent() {
 
               {/* Tab: Saved Cards */}
               {activeTab === "saved_cards" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Saved Cards</h2>
                     <p className="text-xs text-natural font-medium mt-1">Manage your saved credit and debit cards for faster checkout.</p>
                   </div>
 
-                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-white shadow-sm">
+                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#E6E6FA] shadow-sm">
                     <div className="p-6 flex justify-between items-center border-b border-natural/10 bg-[#F4F4F0]/50">
                       <h3 className="font-bold text-sm text-fern uppercase tracking-widest">Payment Methods</h3>
                       <span className="text-[10px] font-bold text-natural uppercase tracking-widest">{savedCards.length}/5 Cards Saved</span>
@@ -1375,7 +1481,7 @@ function ProfileContent() {
                     <div className="p-6 sm:p-8">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {savedCards.map(card => (
-                          <div key={card.id} className="border-2 border-natural/10 rounded-2xl p-6 flex justify-between items-start hover:border-fern/30 hover:shadow-md transition-all cursor-pointer bg-white group">
+                          <div key={card.id} className="border-2 border-natural/10 rounded-2xl p-6 flex justify-between items-start hover:border-fern/30 hover:shadow-md transition-all cursor-pointer bg-[#E6E6FA] group">
                             <div className="space-y-4">
                               <div className="w-14 h-9 bg-gradient-to-br from-blue-800 to-blue-900 rounded-lg flex items-center justify-center text-white text-[10px] font-bold italic shadow-sm">
                                 {card.type}
@@ -1395,7 +1501,7 @@ function ProfileContent() {
                       <button 
                         onClick={handleAddCard}
                         disabled={savedCards.length >= 5}
-                        className="h-12 px-8 bg-white border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-sm w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-12 px-8 bg-[#E6E6FA] border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-sm w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus size={16} /> Add New Card
                       </button>
@@ -1406,7 +1512,7 @@ function ProfileContent() {
 
               {/* Tab: Saved UPI */}
               {activeTab === "saved_upi" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Saved UPI</h2>
                     <p className="text-xs text-natural font-medium mt-1">Manage your saved UPI IDs.</p>
@@ -1421,7 +1527,7 @@ function ProfileContent() {
 
               {/* Tab 5: Security */}
               {activeTab === "security" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-10 animate-fade-in">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-10 animate-fade-in">
                   {/* Password Change Form */}
                   <div className="space-y-6">
                     <div>
@@ -1432,43 +1538,7 @@ function ProfileContent() {
                     <form onSubmit={handlePasswordUpdate} className="space-y-6 max-w-xl">
                       <div className="relative group">
                         <input type="email" readOnly value={user.email} className="peer w-full h-14 px-4 bg-[#F4F4F0] border-2 border-natural/5 text-sm font-medium text-fern rounded-2xl cursor-not-allowed text-opacity-70 outline-none" />
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">EMAIL ADDRESS</label>
-                      </div>
-                      
-                      <div className="relative group">
-                        <input 
-                          type="password" 
-                          hidden
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Current Password"
-                          className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:shadow-sm"
-                        />
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">CURRENT PASSWORD</label>
-                      </div>
-
-                      <div className="relative group">
-                        <input 
-                          type="password" 
-                          hidden
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="New Password (Min 8 characters)"
-                          className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:shadow-sm"
-                        />
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">NEW PASSWORD</label>
-                      </div>
-
-                      <div className="relative group">
-                        <input 
-                          type="password" 
-                          hidden
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Confirm New Password"
-                          className="peer w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:shadow-sm"
-                        />
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-white px-1">CONFIRM PASSWORD</label>
+                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">EMAIL ADDRESS</label>
                       </div>
 
                       <button
@@ -1487,7 +1557,7 @@ function ProfileContent() {
                           exit={{ opacity: 0, y: -10 }}
                           className="flex items-center gap-3 bg-fern text-white p-4 rounded-2xl shadow-md max-w-xl"
                         >
-                          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                          <div className="w-6 h-6 bg-[#E6E6FA]/20 rounded-full flex items-center justify-center">
                             <Check size={12} className="stroke-[3px]" />
                           </div>
                           <p className="text-sm font-semibold">Password updated successfully!</p>
@@ -1519,7 +1589,7 @@ function ProfileContent() {
                         <button 
                           type="button" 
                           onClick={handleDisableMfa}
-                          className="h-12 px-6 bg-white border-2 border-apricot/30 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm self-start sm:self-center w-full sm:w-auto"
+                          className="h-12 px-6 bg-[#E6E6FA] border-2 border-apricot/30 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm self-start sm:self-center w-full sm:w-auto"
                         >
                           Disable 2FA
                         </button>
@@ -1553,13 +1623,13 @@ function ProfileContent() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="border-2 border-natural/10 rounded-3xl p-6 sm:p-8 bg-white shadow-sm space-y-6 max-w-2xl overflow-hidden"
+                              className="border-2 border-natural/10 rounded-3xl p-6 sm:p-8 bg-[#E6E6FA] shadow-sm space-y-6 max-w-2xl overflow-hidden"
                             >
                               <h4 className="text-sm font-bold text-fern uppercase tracking-widest">MFA Setup instructions</h4>
                               
                               <div className="flex flex-col sm:flex-row items-center gap-8 py-6 px-8 bg-[#F4F4F0]/50 rounded-2xl border border-natural/5">
                                 {/* QR Code using Google Charts API */}
-                                <div className="p-4 bg-white rounded-2xl shadow-sm">
+                                <div className="p-4 bg-[#E6E6FA] rounded-2xl shadow-sm">
                                   <img 
                                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaSecretData.qrCodeUrl)}`}
                                     alt="Scan this TOTP QR Code"
@@ -1568,7 +1638,7 @@ function ProfileContent() {
                                 </div>
                                 <div className="space-y-3 text-center sm:text-left">
                                   <p className="text-[10px] text-natural uppercase tracking-widest font-bold">Manual Setup Key</p>
-                                  <code className="text-sm font-mono font-bold text-fern bg-white border border-natural/10 px-4 py-3 rounded-xl block shadow-sm select-all">
+                                  <code className="text-sm font-mono font-bold text-fern bg-[#E6E6FA] border border-natural/10 px-4 py-3 rounded-xl block shadow-sm select-all">
                                     {mfaSecretData.secret}
                                   </code>
                                   <p className="text-[10px] text-natural/70 font-medium max-w-[200px]">Scan the QR code or enter this key in your authenticator app.</p>
@@ -1585,7 +1655,7 @@ function ProfileContent() {
                                     placeholder="123456"
                                     value={mfaSetupCode}
                                     onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, ""))}
-                                    className="w-full h-14 px-4 bg-white border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-[0.2em] text-fern text-center rounded-2xl focus:outline-none focus:shadow-sm transition-all"
+                                    className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-[0.2em] text-fern text-center rounded-2xl focus:outline-none focus:shadow-sm transition-all"
                                   />
                                   <button 
                                     type="submit"
@@ -1619,7 +1689,7 @@ function ProfileContent() {
                       {sessionsList.map((session) => (
                         <div 
                           key={session.id}
-                          className="border-2 border-natural/10 rounded-3xl p-6 bg-white shadow-sm flex flex-col justify-between gap-6 hover:shadow-md transition-shadow group"
+                          className="border-2 border-natural/10 rounded-3xl p-6 bg-[#E6E6FA] shadow-sm flex flex-col justify-between gap-6 hover:shadow-md transition-shadow group"
                         >
                           <div className="space-y-4">
                             <div className="flex items-start gap-4">
@@ -1643,7 +1713,7 @@ function ProfileContent() {
                           </div>
                           <button 
                             onClick={() => handleRevokeSession(session.id)}
-                            className="h-12 w-full bg-white border-2 border-apricot/20 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer"
+                            className="h-12 w-full bg-[#E6E6FA] border-2 border-apricot/20 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer"
                           >
                             Revoke Access
                           </button>
@@ -1666,7 +1736,7 @@ function ProfileContent() {
                       <p className="text-xs text-natural font-medium mt-1">Historical log of security activities for verification.</p>
                     </div>
 
-                    <div className="border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm bg-white">
+                    <div className="border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm bg-[#E6E6FA]">
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
@@ -1701,7 +1771,7 @@ function ProfileContent() {
 
               {/* Tab: Reviews */}
               {activeTab === "reviews" && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">My Reviews & Ratings</h2>
                     <p className="text-xs text-natural font-medium mt-1">Manage the feedback you've left on products you purchased.</p>
@@ -1714,7 +1784,7 @@ function ProfileContent() {
                   ) : userReviews.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {userReviews.map((review) => (
-                        <div key={review.id} className="bg-white border-2 border-natural/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+                        <div key={review.id} className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
                           <div className="space-y-4">
                             <div className="flex justify-between items-start gap-4 border-b border-natural/10 pb-4">
                               <div className="space-y-2">
@@ -1736,7 +1806,7 @@ function ProfileContent() {
                           
                           {review.product && (
                             <div className="mt-6 pt-4 border-t border-natural/10 flex items-center gap-4 bg-[#F4F4F0]/50 p-3 rounded-2xl group-hover:bg-[#F4F4F0] transition-colors">
-                              <div className="w-14 h-14 bg-white rounded-xl overflow-hidden shrink-0 shadow-sm border border-natural/10 flex items-center justify-center">
+                              <div className="w-14 h-14 bg-[#E6E6FA] rounded-xl overflow-hidden shrink-0 shadow-sm border border-natural/10 flex items-center justify-center">
                                 {review.product.imageUrl ? (
                                   <img src={review.product.imageUrl} alt={review.product.name} className="w-full h-full object-cover" />
                                 ) : (

@@ -175,7 +175,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24">
+    <div className="bg-[#F4F4F0] text-[#4a556a] font-sans min-h-screen py-8 pb-24">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#4a556a] text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
@@ -184,7 +184,7 @@ export default function WishlistPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Navigation */}
         <div className="mb-8 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-[#4a556a] hover:text-[#4a556a]/80 transition-colors">
@@ -250,24 +250,24 @@ export default function WishlistPage() {
 
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
-
-                      {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors">
-                        <Star size={11} className="text-amber-400 fill-amber-400" />
-                        <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating}</span>
-                        <span>({product.reviews})</span>
-                      </div>
                     </div>
 
-                    {/* Price */}
-                    <div className="space-y-3 pt-3 border-t border-natural/10 mt-3">
+                    {/* Price and Rating */}
+                    <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
                         <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                      </div>
+                      
+                      {/* Stars and reviews */}
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
+                        <Star size={11} className="text-amber-400 fill-amber-400" />
+                        <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating}</span>
+                        <span>({product.reviews})</span>
                       </div>
                     </div>
                   </div>
