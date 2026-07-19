@@ -135,7 +135,7 @@ export default function Navbar() {
   const saveToHistory = (query: string) => {
     const trimmed = query.trim();
     if (!trimmed) return;
-    
+
     // Capitalize query to Title Case for consistency (e.g., "shoes" -> "Shoes")
     const formatted = trimmed
       .split(/\s+/)
@@ -634,7 +634,7 @@ export default function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-40 w-full shadow-sm bg-[#F4F4F0]/90 backdrop-blur-md border-b border-natural/25">
         {/* Tier 1: Main Header Area */}
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
 
             {/* FACILE shopping assistant (Left) */}
@@ -643,54 +643,49 @@ export default function Navbar() {
                 onClick={() => {
                   window.dispatchEvent(new Event("facile:open-chat"));
                 }}
-                className="group relative p-2 -ml-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
+                className="group relative p-2 -ml-2 mt-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
                 aria-label="Open FACILE shopping assistant"
               >
-                <BotMessageSquare size={23} className="stroke-[2px] transition-transform group-hover:scale-105" />
-                <span className="absolute right-1 top-1 h-2 w-2 rounded-full border border-[#F4F4F0] bg-emerald-500" />
+                <BotMessageSquare size={44} className="stroke-[2px] transition-transform group-hover:scale-105" />
+                <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
               </button>
             </div>
 
             {/* Logo "facile" (Center) */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex justify-center">
+            <div className="absolute left-1/2 -translate-x-1/2 flex justify-center ml-8 mt-2">
               <Link
                 href="/"
-                className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a] select-none"
+                className="font-antic font-normal text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
               >
-                facile
+                FACILE
               </Link>
             </div>
 
             {/* Right Links & Icons */}
-            <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto">
+            <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto mt-2">
 
               {/* Favorite Icon */}
               <Link
                 href="/wishlist"
-                className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
+                className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Favorites"
               >
                 <Heart
-                  size={22}
+                  size={36}
                   className={`stroke-[2px] transition-transform group-hover:scale-110`}
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
-                {isMounted && totalFavorites > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
-                    {totalFavorites}
-                  </span>
-                )}
               </Link>
 
               {/* Shopping Cart Icon */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
+                className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Shopping Cart"
               >
-                <ShoppingCart size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                <ShoppingCart size={36} className="stroke-[2px] transition-transform group-hover:scale-110" />
                 {isMounted && totalCartItems > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#E8437F] text-[9px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#5271FF] text-[10px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
                   </span>
                 )}
@@ -702,11 +697,11 @@ export default function Navbar() {
                   <>
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
-                      className="p-2 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                      className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                       aria-label="Profile Menu"
                     >
-                      <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#E8437F]" />
-                      <span className="hidden lg:inline text-xs font-bold truncate max-w-[80px]">
+                      <User size={36} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
+                      <span className="hidden lg:inline text-sm font-bold truncate max-w-[100px]">
                         {user.name}
                       </span>
                     </button>
@@ -742,11 +737,11 @@ export default function Navbar() {
                 ) : (
                   <Link
                     href="/login"
-                    className="p-2 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                    className="p-2.5 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                     aria-label="Profile"
                   >
-                    <User size={22} className="stroke-[2px] transition-transform group-hover:scale-110" />
-                    <span className="hidden lg:inline text-xs font-bold text-black">
+                    <User size={30} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                    <span className="hidden lg:inline text-sm font-bold text-black">
                       Guest
                     </span>
                   </Link>
@@ -758,7 +753,7 @@ export default function Navbar() {
 
         {/* Tier 2: Pills & Search */}
         <div className="bg-[#F4F4F0]/50">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 relative">
 
             {/* Desktop Layout: Single Row */}
             <div className="hidden md:flex items-center justify-between gap-4 py-2">
@@ -804,7 +799,7 @@ export default function Navbar() {
               </div>
 
               {/* Center Search Pill */}
-              <div className="flex-1 max-w-md min-w-[200px]">
+              <div className="flex-1 max-w-xl min-w-[200px]">
                 <form ref={searchContainerRef} onSubmit={handleSearchSubmit} className="relative">
                   <input
                     type="text"
@@ -827,7 +822,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                      className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                    className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
                     aria-label={isListening ? "Stop voice search" : "Search by voice"}
                     title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
                   >
@@ -1064,8 +1059,10 @@ export default function Navbar() {
           <div className="relative w-full max-w-xs bg-[#F4F4F0] text-black flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
             {/* Header */}
             <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
-              <span className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a] select-none">
-                facile
+              <span 
+                className="font-antic font-normal text-3xl text-[#4a556a] tracking-[0.02em] select-none"
+              >
+                FACILE
               </span>
               <button
                 onClick={() => {

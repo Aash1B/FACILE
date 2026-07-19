@@ -455,7 +455,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[2560px] mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
         {/* Navigation path & back link */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link href="/" className="inline-flex items-center gap-2 text-fern/80 hover:text-fern font-bold text-xs group transition-all">
@@ -741,8 +741,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
                     {isFav ? "Wishlisted" : "Wishlist"}
                   </button>
-                  <button onClick={handleSaveForLater} className="h-12 border border-natural/25 hover:border-[#E8437F] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
-                    <Bookmark size={14} className={isSavedForLater ? "fill-[#E8437F] text-[#E8437F]" : "text-[#4A5568]"} />
+                  <button onClick={handleSaveForLater} className="h-12 border border-natural/25 hover:border-[#5271FF] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
+                    <Bookmark size={14} className={isSavedForLater ? "fill-[#5271FF] text-[#5271FF]" : "text-[#4A5568]"} />
                     {isSavedForLater ? "Saved" : "Save for Later"}
                   </button>
                 </div>

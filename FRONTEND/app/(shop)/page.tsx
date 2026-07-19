@@ -154,10 +154,26 @@ const CATEGORIES = [
 
 // Replace each image later when the final campaign artwork is ready.
 const HERO_SLIDES = [
-  { id: "hero-1", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
-  { id: "hero-2", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
-  { id: "hero-3", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
-  { id: "hero-4", image: "/hero_product_composition.png", alt: "FACILE featured collection" },
+  {
+    id: "hero-1", image: "/banner-shirts.png", alt: "Shirts - Up To 35% Off", link: "/category/tops-and-tshirts",
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#425435] text-white hover:bg-[#324028] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonStyle: { right: '14.5%', bottom: '18%', width: 'auto', height: 'auto' }
+  },
+  {
+    id: "hero-3", image: "/banner-sportswear.png", alt: "Health & Wellness - Self Care Starts Here", link: "/category/health-wellness",
+    buttonConfig: { text: "+ Explore", icon: false, className: "text-[#1d2b44] hover:text-[#4a556a] font-semibold text-xl md:text-2xl px-6 py-2 shadow-none hover:shadow-none bg-[#EFEBE8]" },
+    buttonStyle: { left: '4.5%', bottom: '23%', width: 'auto', height: 'auto' }
+  },
+  {
+    id: "hero-2", image: "/banner-health.png", alt: "Sportswear - 40-70% Off", link: "/category/5",
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a31a22] text-white hover:bg-[#85131a] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonStyle: { right: '19.3%', bottom: '14%', width: 'auto', height: 'auto' }
+  },
+  {
+    id: "hero-4", image: "/banner-fashion.png", alt: "Fashion Forward - New Arrivals", link: "/category/2",
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a38058] text-white hover:bg-[#8c6d4a] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonStyle: { left: '3.9%', bottom: '16%', width: 'auto', height: 'auto' }
+  },
 ];
 
 type ApiProduct = {
@@ -233,16 +249,22 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
+  const [isFirstHeroRotation, setIsFirstHeroRotation] = useState(true);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
 
   useEffect(() => {
     if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const interval = window.setInterval(() => {
+    
+    const timeoutDuration = isFirstHeroRotation ? 500 : 2500;
+    
+    const timer = window.setTimeout(() => {
       setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
-    }, 5_000);
-    return () => window.clearInterval(interval);
-  }, [heroPaused, heroIndex]);
+      if (isFirstHeroRotation) setIsFirstHeroRotation(false);
+    }, timeoutDuration);
+
+    return () => window.clearTimeout(timer);
+  }, [heroPaused, heroIndex, isFirstHeroRotation]);
 
   const scrollCategoriesLeft = () => {
     setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
@@ -421,15 +443,14 @@ function HomeContent() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
-          <Check size={16} className="text-[#E8A1C4] stroke-[3px]" />
+          <Check size={16} className="text-[#5271FF] stroke-[3px]" />
           {toastMessage}
         </div>
       )}
 
       {/* 1. Hero Section */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <section
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
         onFocusCapture={() => setHeroPaused(true)}
@@ -437,95 +458,63 @@ function HomeContent() {
         aria-roledescription="carousel"
         aria-label="Featured FACILE collections"
       >
-        <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-center" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
+        <div className="bg-warm-ivory border border-natural/15 rounded-[24px] sm:rounded-[32px] relative overflow-hidden w-full flex items-center shadow-lg group transition-opacity">
 
-          {/* Background Image positioned on the right */}
+          {/* Full-width Background Images with Individual Overlays */}
           {HERO_SLIDES.map((slide, index) => (
-            <img
+            <div
               key={slide.id}
-              src={slide.image}
-              alt={index === heroIndex ? slide.alt : ""}
+              className={`w-full h-auto transition-opacity duration-700 ${index === heroIndex ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"} ${index === 0 ? "relative block" : "absolute inset-0"}`}
               aria-hidden={index !== heroIndex}
-              className={`absolute right-0 top-0 bottom-0 w-full sm:w-[58%] h-full object-cover object-right select-none z-0 transition-opacity duration-700 ${index === heroIndex ? "opacity-100" : "opacity-0"}`}
-            />
+            >
+              <img
+                src={slide.image}
+                alt={index === heroIndex ? slide.alt : ""}
+                className="w-full h-auto select-none"
+              />
+              {/* Overlay with Button per slide */}
+              <Link
+                href={slide.link}
+                className={`flex items-center justify-center absolute z-10 cursor-pointer rounded-lg ${index === heroIndex ? "pointer-events-auto" : "pointer-events-none hidden"}`}
+                style={slide.buttonStyle}
+                aria-label={`Shop ${slide.alt}`}
+                tabIndex={index === heroIndex ? 0 : -1}
+              >
+                {slide.buttonConfig ? (
+                  <div className={`flex items-center gap-2 font-medium transition-all ${slide.buttonConfig.className} ${slide.buttonConfig.text === "+ Explore" ? "" : "shadow-sm hover:shadow-md"}`}>
+                    {slide.buttonConfig.text}
+                    {slide.buttonConfig.icon && <ArrowRight size={20} />}
+                  </div>
+                ) : (
+                  <span className="sr-only">Explore Collection</span>
+                )}
+              </Link>
+            </div>
           ))}
-
-          {/* Mobile Overlay: Blend image with #FAF3E3 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
-          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
-          <div
-            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
-            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
-          />
-
-          {/* Hero Content Area */}
-          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
-              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
-              <span>NEW ARRIVALS</span>
-            </div>
-
-            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
-              Discover The Best Products for You
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
-              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
-              <a
-                href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
-              >
-                Shop Now
-                <ArrowRight size={14} />
-              </a>
-              <a
-                href="#special-offer"
-                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
-              >
-                Explore Deals
-              </a>
-            </div>
-
-            {/* Social Proof */}
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
-              <div className="flex -space-x-2">
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
-              </div>
-              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
-                Trusted by 10,000+ Happy Customers
-              </p>
-            </div>
-          </div>
-
         </div>
 
-          <div className="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
-            {HERO_SLIDES.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                role="tab"
-                aria-selected={heroIndex === index}
-                aria-label={`Show slide ${index + 1}`}
-                onClick={() => setHeroIndex(index)}
-                className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${heroIndex === index ? "bg-[#4A5568]" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
-              />
-            ))}
-          </div>
+        {/* Carousel Indicators */}
+        <div className="mt-4 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
+          {HERO_SLIDES.map((slide, index) => (
+            <button
+              key={slide.id}
+              type="button"
+              role="tab"
+              aria-selected={heroIndex === index}
+              aria-label={`Show slide ${index + 1}`}
+              onClick={() => setHeroIndex(index)}
+              className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all duration-300 ${heroIndex === index ? "bg-[#4A5568] w-6" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
+            />
+          ))}
+        </div>
       </section>
 
       {/* 2. Feature Highlights Bar */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
+      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
         <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#5271FF] flex-shrink-0">
               <Truck size={22} />
             </div>
             <div>
@@ -535,7 +524,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#5271FF] flex-shrink-0">
               <ShieldCheck size={22} />
             </div>
             <div>
@@ -545,7 +534,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#5271FF] flex-shrink-0">
               <RefreshCw size={22} />
             </div>
             <div>
@@ -555,7 +544,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#E8A1C4] flex-shrink-0">
+            <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#5271FF] flex-shrink-0">
               <Headset size={22} />
             </div>
             <div>
@@ -567,7 +556,7 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
+      <section id="categories" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
@@ -579,14 +568,14 @@ function HomeContent() {
           <button className="swiper-button-prev-custom absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronLeft size={20} />
           </button>
-          
+
           <button className="swiper-button-next-custom absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronRight size={20} />
           </button>
 
-          <motion.div 
-            initial="hidden" 
-            whileInView="visible" 
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={{
               hidden: { opacity: 0 },
@@ -625,30 +614,26 @@ function HomeContent() {
                     }}>
                       <Link
                         href={`/category/${category.id.replace("c", "")}`}
-                        className={`flex flex-col items-center justify-start gap-4 focus:outline-none transition-all duration-[450ms] ease-in-out group ${
-                          isActive 
-                            ? "scale-[1.15] -translate-y-[4px]" 
-                            : "scale-[0.88] opacity-80 grayscale-[8%] hover:scale-[0.93] hover:-translate-y-1"
-                        }`}
+                        className={`flex flex-col items-center justify-start gap-4 focus:outline-none transition-all duration-[450ms] ease-in-out group ${isActive
+                          ? "scale-[1.15] -translate-y-[4px]"
+                          : "scale-[0.88] opacity-80 grayscale-[8%] hover:scale-[0.93] hover:-translate-y-1"
+                          }`}
                       >
-                        <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${
-                          isActive 
-                            ? `shadow-[0_12px_30px_rgba(232,67,127,0.25)] bg-white ${category.bgColor}` 
-                            : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
-                        }`}>
+                        <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${isActive
+                          ? `shadow-[0_12px_30px_rgba(82,113,255,0.25)] bg-white ${category.bgColor}`
+                          : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
+                          }`}>
                           <img
                             src={category.image}
                             alt={category.label}
-                            className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${
-                              isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
-                            }`}
+                            className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
+                              }`}
                           />
                         </div>
-                        <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${
-                          isActive 
-                            ? "text-[#E8437F] drop-shadow-sm" 
-                            : "text-[#4a556a] group-hover:text-[#1A202C]"
-                        }`}>
+                        <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
+                          ? "text-[#5271FF] drop-shadow-sm"
+                          : "text-[#4a556a] group-hover:text-[#1A202C]"
+                          }`}>
                           {category.label}
                         </span>
                       </Link>
@@ -663,7 +648,7 @@ function HomeContent() {
         <div className="mt-2 flex justify-center">
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 rounded-full bg-[#E8437F] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#d93670] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8437F] focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full bg-[#5271FF] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#3A56D4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5271FF] focus-visible:ring-offset-2"
           >
             View All Categories
           </Link>
@@ -671,7 +656,7 @@ function HomeContent() {
       </section>
 
       {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
+      <section id="best-sellers" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
             Best Selling Products
@@ -713,12 +698,12 @@ function HomeContent() {
             return (
               <div
                 key={product.id}
-                className="group bg-[#F4F4F0] hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                className="group bg-[#F4F4F0] hover:bg-[#5271FF] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
               >
                 {/* Wishlist Button */}
                 <button
                   onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#E8A1C4] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#5271FF] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
                   aria-label="Add to wishlist"
                 >
                   <Heart
@@ -762,7 +747,7 @@ function HomeContent() {
                         <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
                         <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
-                      
+
                       {/* Stars and reviews */}
                       <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
                         <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
@@ -797,7 +782,7 @@ function HomeContent() {
       </section>
 
       {recentProducts.length > 0 && (
-        <section id="recently-viewed" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <section id="recently-viewed" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
           </div>
@@ -837,53 +822,9 @@ function HomeContent() {
         </section>
       )}
 
-      {/* 5. Special Offer Banner */}
-      <section id="special-offer" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="group bg-[#F4F4F0] hover:bg-[#DDE0F0] border border-natural/20 rounded-2xl overflow-hidden shadow-xs relative cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(74,85,104,0.22)] hover:border-[#4A5568]/30">
-
-          {/* Shimmer overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-[-100%] group-hover:translate-x-[100%] ease-in-out" style={{ transition: 'opacity 0.4s ease, transform 0.8s ease' }} />
-
-          {/* Subtle Leaf Shadow Graphic overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-natural/5 via-transparent to-transparent pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center p-8 sm:p-12">
-
-            {/* Banner Left Details */}
-            <div className="md:col-span-7 space-y-4 text-center md:text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E8437F]">
-                Special Offer
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#4a556a] group-hover:text-[#2d3748] leading-tight transition-colors duration-300">
-                Up to 50% Off
-              </h2>
-              <p className="text-xs sm:text-sm text-[#4A5568] max-w-md leading-relaxed font-medium">
-                Limited time offer on selected items. Hurry up and grab the best deals!
-              </p>
-              <button className="h-11 px-6 bg-[#DDE0F0] group-hover:bg-[#4A5568] group-hover:text-white border border-transparent active:scale-98 text-[#4A5568] font-bold text-xs tracking-wider rounded-lg transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-sm cursor-pointer hover:scale-[1.02]">
-                Shop the Sale
-                <ArrowRight size={14} />
-              </button>
-            </div>
-
-            {/* Banner Right Image */}
-            <div className="md:col-span-5 flex justify-center relative">
-              <img
-                src="/special_offer.png"
-                alt="Special Offer Sale Kraft Bag"
-                className="w-full max-w-[340px] h-auto object-contain transition-all duration-500 group-hover:scale-[1.06] group-hover:drop-shadow-2xl select-none"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=400";
-                }}
-              />
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* 6. Customer Testimonials */}
-      <section id="testimonials" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
           <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 

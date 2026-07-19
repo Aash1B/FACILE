@@ -76,7 +76,7 @@ const CATEGORY_BRANDS: Record<string, string[]> = {
 
 const CARD_STYLES = [
   { surface: "from-[#DDE0F0] to-[#eef0f9]", icon: "bg-[#4a556a]", accent: "bg-[#aeb7d8]" },
-  { surface: "from-[#f9dbe8] to-[#fff0f6]", icon: "bg-[#E8437F]", accent: "bg-[#f2a9c7]" },
+  { surface: "from-[#f9dbe8] to-[#fff0f6]", icon: "bg-[#4a556a]", accent: "bg-[#f2a9c7]" },
   { surface: "from-[#eadfcf] to-[#fff8ec]", icon: "bg-[#A58E74]", accent: "bg-[#d9c3a6]" },
 ];
 
@@ -757,7 +757,7 @@ export default function CategoryPage() {
                         return (
                           <div
                             key={product.id}
-                            className="group bg-white hover:bg-[#4a556a] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative"
+                            className="group bg-white hover:bg-[#5271FF] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative"
                           >
                             {discount > 0 && (
                               <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">

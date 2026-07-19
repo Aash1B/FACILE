@@ -364,12 +364,12 @@ export default function CartPage() {
                         <div className="flex items-center justify-between sm:justify-end gap-4">
                           <div className="flex items-center border border-natural/25 rounded-full bg-natural/10 p-0.5">
                             <button
-                              onClick={() => handleDecrease(item)}
+                              onClick={() => item.quantity === 1 ? handleRemove(item.productId) : handleDecrease(item)}
                               disabled={isPending}
                               className="p-1.5 hover:bg-natural/20 rounded-full transition-colors text-fern disabled:cursor-not-allowed"
-                              aria-label="Decrease quantity"
+                              aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                             >
-                              <Minus size={12} />
+                              {item.quantity === 1 ? <Trash2 size={12} /> : <Minus size={12} />}
                             </button>
                             <span className="w-7 text-center text-xs font-bold text-fern">{item.quantity}</span>
                             <button
@@ -394,15 +394,6 @@ export default function CartPage() {
                             >
                               <Bookmark size={13} />
                               Save for Later
-                            </button>
-                            <button
-                              onClick={() => handleRemove(item.productId)}
-                              disabled={isPending}
-                              className="p-1.5 text-natural hover:text-red-500 transition-colors disabled:cursor-not-allowed"
-                              aria-label="Remove item"
-                              title="Remove"
-                            >
-                              <Trash2 size={15} />
                             </button>
                           </div>
                         </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -10,7 +9,7 @@ import {
   Sparkles
 } from "lucide-react";
 
-function Instagram({ size = 18 }: { size?: number }) {
+function Instagram({ size = 18, strokeWidth = 2 }: { size?: number, strokeWidth?: number }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -19,7 +18,7 @@ function Instagram({ size = 18 }: { size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -30,7 +29,7 @@ function Instagram({ size = 18 }: { size?: number }) {
   );
 }
 
-function Facebook({ size = 18 }: { size?: number }) {
+function Facebook({ size = 18, strokeWidth = 2 }: { size?: number, strokeWidth?: number }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +38,7 @@ function Facebook({ size = 18 }: { size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -48,7 +47,25 @@ function Facebook({ size = 18 }: { size?: number }) {
   );
 }
 
-function Twitter({ size = 18 }: { size?: number }) {
+function Twitter({ size = 18, strokeWidth = 2 }: { size?: number, strokeWidth?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    </svg>
+  );
+}
+
+function Pinterest({ size = 18 }: { size?: number }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +78,8 @@ function Twitter({ size = 18 }: { size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 21.5s2.5-5 3-7c0-2 2-3 4-2.5s2.5 3.5 1 5.5" />
     </svg>
   );
 }
@@ -81,125 +99,121 @@ export default function Footer() {
 
   return (
     <footer className="bg-fern text-warm-ivory border-t border-natural/30 relative z-50 select-none">
-
-      {/* Newsletter / Headline Section */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-natural/20">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-          <div className="max-w-md space-y-2">
-            <h3 className="text-xl sm:text-2xl font-serif font-bold tracking-wide flex items-center gap-2">
-              <Sparkles size={20} className="text-apricot animate-pulse" />
-              Join the facile community
-            </h3>
-            <p className="text-xs sm:text-sm text-warm-ivory/70 leading-relaxed font-medium">
-              Receive updates on new collections, exclusive private sales, and stories about slow living and sustainability.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubscribe} className="w-full lg:max-w-md">
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:relative w-full">
-              <div className="relative flex-1">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-ivory/50" size={16} />
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full h-11.5 pl-11 pr-4 sm:pr-32 bg-white/10 border border-natural/35 focus:border-apricot focus:ring-1 focus:ring-apricot text-xs text-warm-ivory rounded-full shadow-inner transition-all duration-200 placeholder:text-warm-ivory/45 focus:outline-none font-semibold"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full sm:w-auto h-11.5 sm:h-8.5 px-5 bg-apricot hover:bg-apricot/90 text-warm-ivory text-xs font-bold tracking-wide rounded-full flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-97 hover:shadow-md sm:absolute sm:right-1.5 sm:top-1/2 sm:-translate-y-1/2"
-              >
-                {subscribed ? "Subscribed!" : "Subscribe"}
-                {!subscribed && <ArrowRight size={12} />}
-              </button>
-            </div>
-          </form>
-        </div>
+      
+      {/* SECTION 1 - Newsletter (Hero Section) */}
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-14 border-b border-natural/10 flex flex-col items-center text-center">
+        <Sparkles size={24} className="text-apricot mb-4 animate-pulse" />
+        <h3 className="text-3xl sm:text-4xl font-serif font-bold tracking-wide mb-4">
+          Register to shop
+        </h3>
+        
+        <form onSubmit={handleSubscribe} className="w-full sm:max-w-md relative group">
+          <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-warm-ivory/50 transition-colors group-focus-within:text-apricot" size={18} />
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full h-14 pl-14 pr-36 bg-white/5 border border-natural/30 focus:border-apricot focus:bg-white/10 text-sm text-warm-ivory rounded-full shadow-inner transition-all duration-300 placeholder:text-warm-ivory/45 focus:outline-none font-medium"
+          />
+          <button
+            type="submit"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-11 px-6 bg-apricot hover:bg-[#3A56D4] hover:-translate-y-0.5 active:translate-y-0 text-warm-ivory text-xs font-bold tracking-widest uppercase rounded-full flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+          >
+            {subscribed ? "Registered!" : "Register"}
+            {!subscribed && <ArrowRight size={14} />}
+          </button>
+        </form>
       </div>
 
-      {/* Main Link Directory */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10">
+      {/* SECTION 2 - Main Footer Grid */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-y-12 gap-x-8 md:gap-x-12">
 
-          {/* Brand Info (Col span 4) */}
-          <div className="md:col-span-4 space-y-6">
-            <a href="#" className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a]">
-              facile
-            </a>
-            <p className="text-xs text-warm-ivory/75 leading-relaxed font-semibold max-w-sm">
-              We design and curate premium-quality essentials with a focus on simplicity, utility, and ethical sourcing. Bringing slow fashion and fine craftsmanship closer to you.
+          {/* Column 1 - Brand */}
+          <div className="md:col-span-4 lg:col-span-3 flex flex-col justify-end h-full space-y-4">
+            <span 
+              className="font-antic font-normal text-3xl text-[#5271FF] tracking-[0.02em]"
+            >
+              FACILE
+            </span>
+            <p className="text-[13px] text-warm-ivory/75 leading-loose font-medium max-w-[280px]">
+              We design timeless essentials crafted with simplicity, quality and sustainability.
             </p>
-            <div className="flex items-center gap-4 text-warm-ivory/70">
-              <a href="#" className="hover:text-apricot transition-colors p-1" aria-label="Instagram">
-                <Instagram size={18} />
+            <div className="flex items-center gap-5 pt-2 text-warm-ivory/70">
+              <a href="#" className="hover:text-apricot hover:-translate-y-1 transition-all duration-300" aria-label="Instagram">
+                <Instagram size={20} strokeWidth={1.5} />
               </a>
-              <a href="#" className="hover:text-apricot transition-colors p-1" aria-label="Facebook">
-                <Facebook size={18} />
+              <a href="#" className="hover:text-apricot hover:-translate-y-1 transition-all duration-300" aria-label="Facebook">
+                <Facebook size={20} strokeWidth={1.5} />
               </a>
-              <a href="#" className="hover:text-apricot transition-colors p-1" aria-label="Twitter">
-                <Twitter size={18} />
+              <a href="#" className="hover:text-apricot hover:-translate-y-1 transition-all duration-300" aria-label="Twitter">
+                <Twitter size={20} strokeWidth={1.5} />
+              </a>
+              <a href="#" className="hover:text-apricot hover:-translate-y-1 transition-all duration-300" aria-label="Pinterest">
+                <Pinterest size={20} />
               </a>
             </div>
           </div>
 
-          {/* Spacer */}
-          <div className="hidden md:block md:col-span-1" />
+          {/* Grouped Link Columns to push right and control spacing */}
+          <div className="md:col-span-8 lg:col-span-9 flex flex-wrap md:flex-nowrap justify-end gap-12 sm:gap-16 lg:gap-20 w-full">
+            
+            {/* Column 2 - SHOP */}
+            <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Shop</h4>
+              <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
+                <li><a href="#best-sellers" className="hover:text-apricot transition-colors duration-200">New Arrivals</a></li>
+                <li><a href="#best-sellers" className="hover:text-apricot transition-colors duration-200">Best Sellers</a></li>
+                <li><a href="#categories" className="hover:text-apricot transition-colors duration-200">Categories</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Gift Cards</a></li>
+              </ul>
+            </div>
 
-          {/* Links: Shop (Col span 2) */}
-          <div className="md:col-span-2 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-apricot">Shop</h4>
-            <ul className="space-y-2.5 text-xs text-warm-ivory/80 font-semibold">
-              <li><a href="#best-sellers" className="hover:text-apricot transition-colors">New Arrivals</a></li>
-              <li><a href="#best-sellers" className="hover:text-apricot transition-colors">Best Sellers</a></li>
-              <li><a href="#special-offer" className="hover:text-apricot transition-colors">Trending Offer</a></li>
-              <li><a href="#categories" className="hover:text-apricot transition-colors">Categories</a></li>
-            </ul>
-          </div>
+            {/* Column 3 - SUPPORT */}
+            <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Support</h4>
+              <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Shipping</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Contact</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Track Order</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Size Guide</a></li>
+              </ul>
+            </div>
 
-          {/* Links: Customer Support (Col span 2.5) */}
-          <div className="md:col-span-2.5 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-apricot">Support</h4>
-            <ul className="space-y-2.5 text-xs text-warm-ivory/80 font-semibold">
-              <li><a href="#" className="hover:text-apricot transition-colors">Shipping & Delivery</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Returns & Refunds</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Frequently Asked Questions</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Size Guide</a></li>
-            </ul>
-          </div>
-
-          {/* Links: Company & Brand (Col span 2.5) */}
-          <div className="md:col-span-2.5 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-apricot">Brand</h4>
-            <ul className="space-y-2.5 text-xs text-warm-ivory/80 font-semibold">
-              <li><a href="#" className="hover:text-apricot transition-colors">Our Story</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Sustainability Commitments</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Journal & Blog</a></li>
-              <li><a href="#" className="hover:text-apricot transition-colors">Careers</a></li>
-            </ul>
+            {/* Column 4 - COMPANY */}
+            <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Company</h4>
+              <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">About Us</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Sustainability</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Privacy Policy</a></li>
+              </ul>
+            </div>
           </div>
 
         </div>
       </div>
 
-      {/* Bottom Footer Section */}
-      <div className="bg-[#363827] text-warm-ivory/60 text-[10px] font-bold border-t border-natural/20">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-
-          <div className="flex items-center gap-1.5">
-            <span>© {new Date().getFullYear()} facile. Made with</span>
-            <Heart size={10} className="text-apricot fill-apricot" />
-            <span>for conscious living.</span>
+      {/* SECTION 3 - Bottom Bar */}
+      <div className="bg-[#2a301e] border-t border-natural/10 text-warm-ivory/50 text-[11px] font-medium tracking-wide">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          
+          <div className="flex items-center gap-1.5 text-center">
+            <span>© {new Date().getFullYear()} FACILE.</span>
+            <span>Made with</span>
+            <Heart size={10} className="text-apricot fill-apricot mx-0.5 inline" />
+            <span>for seamless shopping.</span>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <a href="#" className="hover:text-warm-ivory transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-warm-ivory transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-warm-ivory transition-colors flex items-center gap-1">
-              <Globe size={11} />
-              English (US)
+            <a href="#" className="hover:text-warm-ivory transition-colors">Terms</a>
+            <a href="#" className="hover:text-warm-ivory transition-colors">Cookies</a>
+            <a href="#" className="hover:text-warm-ivory transition-colors flex items-center gap-1.5 ml-2">
+              <Globe size={12} strokeWidth={1.5} />
+              Language
             </a>
           </div>
 

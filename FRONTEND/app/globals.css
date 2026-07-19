@@ -5,11 +5,12 @@
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-antic: var(--font-antic);
 
   /* Brand Colors */
   --color-fern:       #4A5568;   /* Fern: Primary text, headers, dark buttons */
   --color-warm-ivory: #FAF3E3;   /* Warm Ivory: Primary background, light surfaces */
-  --color-apricot:    #E8437F;   /* Apricot: Accents, highlights, call-to-actions */
+  --color-apricot:    #5271FF;   /* Blue: Accents, highlights, call-to-actions */
   --color-natural:    #4A5568;   /* Natural: Secondary text, borders, neutral elements */
   --color-sand:       #F4F4F0;
   --color-azul:       #DDE0F0;   /* Azul: Very light blue-grey alternative */
@@ -148,7 +149,7 @@ body {
 
 /* Label text on auth pages */
 .auth-palette label {
-  color: #e8437f !important;
+  color: #5271FF !important;
 }
 
 /* "Back to store" link and similar secondary text */

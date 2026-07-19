@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCart, CartItem } from "@/context/CartContext";
 import { ShoppingBag, X, Plus, Minus, ArrowRight, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
 
-const HIDDEN_ROUTES = ["/checkout", "/login", "/register", "/admin", "/cart", "/success"];
+const HIDDEN_ROUTES = ["/checkout", "/login", "/register", "/admin", "/cart", "/success", "/profile"];
 
 export default function FloatingCartSummary() {
   const { cart, updateQuantity, removeFromCart, setIsCartOpen } = useCart();
@@ -14,7 +14,6 @@ export default function FloatingCartSummary() {
   
   const [isVisible, setIsVisible] = useState(false);
   const [bottomOffset, setBottomOffset] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Check if we should hide based on current route
   const isHiddenRoute = HIDDEN_ROUTES.some(route => pathname?.startsWith(route)) || pathname === "/";
@@ -57,17 +56,13 @@ export default function FloatingCartSummary() {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
-        if (isVisible && !isCollapsed) {
+        if (isVisible) {
           document.body.classList.add('cart-expanded');
-          document.body.classList.remove('cart-collapsed');
-        } else if (isVisible && isCollapsed) {
-          document.body.classList.add('cart-collapsed');
-          document.body.classList.remove('cart-expanded');
         } else {
-          document.body.classList.remove('cart-expanded', 'cart-collapsed');
+          document.body.classList.remove('cart-expanded');
         }
       } else {
-        document.body.classList.remove('cart-expanded', 'cart-collapsed');
+        document.body.classList.remove('cart-expanded');
       }
     };
 
@@ -76,9 +71,9 @@ export default function FloatingCartSummary() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      document.body.classList.remove('cart-expanded', 'cart-collapsed');
+      document.body.classList.remove('cart-expanded');
     };
-  }, [isVisible, isCollapsed]);
+  }, [isVisible]);
 
   if (!isVisible || cart.length === 0) return null;
 
@@ -94,35 +89,10 @@ export default function FloatingCartSummary() {
     <>
       {/* DESKTOP (Right panel) */}
       <div 
-        className={`hidden md:flex fixed right-0 top-[104px] z-[35] transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[48px]' : 'w-[180px]'}`}
+        className="hidden md:flex fixed right-0 top-[104px] z-[35] transition-all duration-300 ease-in-out w-[180px]"
         style={{ bottom: `${bottomOffset}px` }}
       >
-        <div className="bg-[#F4F4F0] w-full shadow-[-4px_0_15px_rgba(0,0,0,0.05)] border-l border-natural/20 flex flex-col h-full relative">
-          
-          {/* Toggle Button */}
-          <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="absolute -left-5 top-1/2 -translate-y-1/2 bg-[#4A5568] text-white rounded-full p-1 shadow-md hover:scale-110 transition-transform z-10 flex items-center justify-center border-2 border-[#F4F4F0]"
-            title={isCollapsed ? "Expand Cart" : "Collapse Cart"}
-          >
-            {isCollapsed ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-          </button>
-
-          {isCollapsed ? (
-            <div 
-              className="flex flex-col items-center justify-center gap-3 cursor-pointer h-full hover:bg-natural/5 transition-colors pb-[15%]"
-              onClick={() => setIsCollapsed(false)}
-              title="View Cart Summary"
-            >
-              <div className="relative">
-                <ShoppingBag size={20} className="text-[#4A5568]" />
-                <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <>
+        <div className="bg-white w-full shadow-[-4px_0_15px_rgba(0,0,0,0.05)] border-l border-gray-200 flex flex-col h-full relative">
               <div className="px-4 pb-4 pt-7 border-b border-natural/10 flex flex-col items-center text-center">
                 <h3 className="text-xs font-semibold text-[#4A5568] mb-0.5">Subtotal</h3>
                 <span className="text-lg font-extrabold text-[#4A5568] mb-3">₹{subtotal.toLocaleString("en-IN")}</span>
@@ -134,52 +104,48 @@ export default function FloatingCartSummary() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto scrollbar-thin p-2 space-y-3 pb-24">
+              <div className="flex-1 overflow-y-auto scrollbar-thin p-0 space-y-0 pb-24">
                 {cart.map((item) => (
-                  <div key={`${item.id}-${item.selectedSize}`} className="flex flex-col gap-2 pb-3 border-b border-natural/10 last:border-0 relative group">
-                <div className="flex gap-2">
-                  <div className="w-14 h-14 bg-white rounded border border-natural/15 flex-shrink-0 flex items-center justify-center p-0.5">
-                    <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                  </div>
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#4A5568] hover:text-fern cursor-pointer truncate leading-tight" onClick={() => router.push(`/product/${item.id}`)}>{item.name}</p>
-                    {item.selectedSize && (
-                      <p className="text-[10px] font-medium text-natural/70 mt-0.5">Size: {item.selectedSize}</p>
-                    )}
-                    <span className="text-xs font-extrabold text-[#4A5568] leading-tight mt-1">₹{item.price.toLocaleString("en-IN")}</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-1 rounded-md border border-natural/20 bg-white p-0.5 shadow-sm">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, item.quantity - 1); }} 
-                      className="flex h-5 w-5 items-center justify-center rounded text-[#4A5568] hover:bg-natural/5 disabled:opacity-35 transition-colors"
+                  <div key={`${item.id}-${item.selectedSize}`} className="flex flex-col items-center gap-1 pb-6 pt-5 border-b border-gray-200 last:border-0 relative group">
+                    <div 
+                      className="w-full flex flex-col items-center justify-between cursor-pointer hover:opacity-80 transition-all gap-1"
+                      onClick={() => router.push(`/product/${item.id}`)}
+                      title={item.name}
                     >
-                      <Minus size={10} />
-                    </button>
-                    <span className="w-4 text-center text-[11px] font-bold text-[#4A5568]">{item.quantity}</span>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, item.quantity + 1); }} 
-                      disabled={item.quantity >= (item.maxOrderQuantity || 10)} 
-                      className="flex h-5 w-5 items-center justify-center rounded text-[#4A5568] hover:bg-natural/5 disabled:opacity-35 transition-colors"
-                    >
-                      <Plus size={10} />
-                    </button>
+                      <div className="w-full h-28 flex items-center justify-center">
+                        <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                      </div>
+                      <span className="text-[15px] font-bold text-black leading-tight text-center">₹{item.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between w-[110px] h-[34px] rounded-full border-2 border-[#FFD814] bg-white px-2 mt-1">
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (item.quantity === 1) {
+                            removeFromCart(item.id);
+                          } else {
+                            updateQuantity(item.id, item.quantity - 1); 
+                          }
+                        }} 
+                        className="flex h-full w-8 items-center justify-center text-black transition-colors hover:text-gray-700 active:scale-95"
+                      >
+                        {item.quantity === 1 ? <Trash2 size={15} /> : <Minus size={16} strokeWidth={2.5} />}
+                      </button>
+                      
+                      <span className="flex-1 text-center text-sm font-bold text-black">{item.quantity}</span>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, item.quantity + 1); }} 
+                        disabled={item.quantity >= (item.maxOrderQuantity || 10)} 
+                        className="flex h-full w-8 items-center justify-center text-black disabled:opacity-35 transition-colors hover:text-gray-700 active:scale-95"
+                      >
+                        <Plus size={16} strokeWidth={2.5} />
+                      </button>
+                    </div>
                   </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} 
-                    className="text-natural/60 hover:text-red-500 transition-colors p-1"
-                    title="Remove item"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
+                ))}
           </div>
-          </>
-          )}
         </div>
       </div>
 

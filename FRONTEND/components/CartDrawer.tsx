@@ -83,9 +83,9 @@ export default function CartDrawer() {
                     </button>
                   </div>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item, index) => (
                     <div 
-                      key={item.id} 
+                      key={`${item.id}-${index}`} 
                       className="flex items-center gap-4 p-3 bg-white border border-natural/15 rounded-xl shadow-xs hover:border-natural/40 transition-colors"
                     >
                       <img 
@@ -106,25 +106,21 @@ export default function CartDrawer() {
 
                       {/* Quantity Controls */}
                       <div className="flex flex-col items-end gap-2">
-                        <button onClick={() => removeFromCart(item.id)} className="p-1 text-[#E8437F] hover:text-[#E8437F]/80 transition-colors" aria-label="Remove item">
-                          <Trash2 size={14} />
-                        </button>
-                        
-                        <div className="flex items-center border border-natural/20 rounded-full bg-natural/20 p-0.5">
+                        <div className="flex items-center border border-natural/20 rounded-full bg-natural/20 p-1">
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-[#4A5568]"
-                            aria-label="Decrease quantity"
+                            onClick={() => item.quantity === 1 ? removeFromCart(item.id) : updateQuantity(item.id, item.quantity - 1)}
+                            className={`p-1.5 hover:bg-natural/10 rounded-full transition-colors ${item.quantity === 1 ? 'text-[#5271FF]' : 'text-[#4A5568]'}`}
+                            aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                           >
-                            <Minus size={10} />
+                            {item.quantity === 1 ? <Trash2 size={13} /> : <Minus size={13} />}
                           </button>
-                          <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
+                          <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 hover:bg-natural/10 rounded-full transition-colors text-[#4A5568]"
+                            className="p-1.5 hover:bg-natural/10 rounded-full transition-colors text-[#4A5568]"
                             aria-label="Increase quantity"
                           >
-                            <Plus size={10} />
+                            <Plus size={13} />
                           </button>
                         </div>
                       </div>

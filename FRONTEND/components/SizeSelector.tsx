@@ -29,7 +29,7 @@ export const SizeSelector: React.FC<SizeSelectorProps> = ({
         
         {/* Validation Message */}
         <div
-          className={`flex items-center gap-1 text-[10px] font-bold text-[#E8437F] transition-opacity duration-300 ${
+          className={`flex items-center gap-1 text-[10px] font-bold text-[#5271FF] transition-opacity duration-300 ${
             showValidation ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -53,7 +53,7 @@ export const SizeSelector: React.FC<SizeSelectorProps> = ({
                     ? "bg-[#4A5568] text-white border-[#4A5568] shadow-md transform scale-[1.03]"
                     : "bg-white text-[#4A5568] border-natural/25 hover:border-[#4A5568] hover:-translate-y-0.5 hover:shadow-sm hover:bg-natural/5"
                 }
-                ${showValidation && !isSelected && !selectedSize ? "border-[#E8437F]/50 bg-[#E8437F]/5" : ""}
+                ${showValidation && !isSelected && !selectedSize ? "border-[#5271FF]/50 bg-[#5271FF]/5" : ""}
               `}
               aria-label={`Select size ${size}`}
               aria-pressed={isSelected}

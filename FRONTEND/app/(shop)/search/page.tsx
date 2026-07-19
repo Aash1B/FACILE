@@ -546,7 +546,7 @@ function ProductCard({
   const discount = calcDiscount(product.price, product.originalPrice);
 
   return (
-    <div className="group bg-white hover:bg-[#4A5568] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
+    <div className="group bg-white hover:bg-[#5271FF] border border-natural/10 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/25 hover:-translate-y-0.5 transition-all duration-300 flex flex-col relative">
       {discount > 0 && (
         <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
           -{discount}%

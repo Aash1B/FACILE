@@ -545,7 +545,7 @@ export default function FacileChatbot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full bg-[#4a556a] px-4 py-3 text-xs font-bold text-white shadow-[0_12px_35px_rgba(74,85,106,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3b4455] md:flex"
+          className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full bg-[#5271FF] px-4 py-3 text-xs font-bold text-white shadow-[0_12px_35px_rgba(74,85,106,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3b4455] md:flex"
           aria-label="Open FACILE shopping assistant"
         >
           <MessageCircle size={18} />
@@ -560,7 +560,7 @@ export default function FacileChatbot() {
         aria-hidden={!open}
         aria-label="FACILE shopping assistant"
       >
-        <header className="flex items-center gap-3 bg-[#4a556a] px-5 py-4 text-white">
+        <header className="flex items-center gap-3 bg-[#5271FF] px-5 py-4 text-white">
           <div className="relative grid h-11 w-11 place-items-center rounded-2xl bg-white/15">
             <Bot size={24} />
             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#4a556a] bg-emerald-400" />
@@ -578,13 +578,13 @@ export default function FacileChatbot() {
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
           {messages.map((message) => (
             <div key={message.id} className={`flex gap-2.5 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              {message.role === "assistant" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#dde0f0] text-[#4a556a]"><Sparkles size={14} /></div>}
-              <div className={`max-w-[84%] ${message.role === "user" ? "rounded-[20px_20px_5px_20px] bg-[#4a556a] text-white" : "rounded-[5px_20px_20px_20px] border border-[#4a556a]/10 bg-white text-[#384152] shadow-sm"} px-4 py-3`}>
+              {message.role === "assistant" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><Sparkles size={14} /></div>}
+              <div className={`max-w-[84%] ${message.role === "user" ? "rounded-[20px_20px_5px_20px] bg-[#5271FF] text-white" : "rounded-[5px_20px_20px_20px] border border-[#4a556a]/10 bg-white text-[#384152] shadow-sm"} px-4 py-3`}>
                 <p className="text-[12px] leading-relaxed">{message.text}</p>
                 {message.products?.map((product) => (
                   <div key={product.id} className="mt-3 overflow-hidden rounded-2xl border border-[#4a556a]/10 bg-[#f8f8f5]">
                     <div className="flex gap-3 p-2.5">
-                      <img src={product.image || FALLBACK_IMAGE} alt="" className="h-16 w-16 flex-none rounded-xl bg-[#dde0f0] object-cover" />
+                      <img src={product.image || FALLBACK_IMAGE} alt="" className="h-16 w-16 flex-none rounded-xl bg-[#DDE0F0] object-cover" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[11px] font-bold text-[#384152]">{product.title}</p>
                         <p className="mt-0.5 text-[9px] text-[#4a556a]/60">{product.brand || "FACILE"}{product.rating ? ` · ★ ${product.rating}` : ""}</p>
@@ -592,13 +592,13 @@ export default function FacileChatbot() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 border-t border-[#4a556a]/10">
-                      <Link href={`/product/${product.id}`} onClick={() => setOpen(false)} className="flex items-center justify-center gap-1 border-r border-[#4a556a]/10 py-2 text-[10px] font-bold text-[#4a556a] hover:bg-[#dde0f0]/50">View <ExternalLink size={10} /></Link>
+                      <Link href={`/product/${product.id}`} onClick={() => setOpen(false)} className="flex items-center justify-center gap-1 border-r border-[#4a556a]/10 py-2 text-[10px] font-bold text-[#4a556a] hover:bg-[#DDE0F0]/50">View <ExternalLink size={10} /></Link>
                       <button onClick={() => addProduct(product)} className="flex items-center justify-center gap-1 py-2 text-[10px] font-bold text-[#870339] hover:bg-[#870339]/5"><ShoppingCart size={11} /> Add</button>
                     </div>
                   </div>
                 ))}
                 {message.action && (
-                  <Link href={message.action.href} onClick={() => setOpen(false)} className="mt-3 flex items-center justify-between rounded-xl bg-[#dde0f0]/65 px-3 py-2 text-[10px] font-bold text-[#4a556a] hover:bg-[#dde0f0]">
+                  <Link href={message.action.href} onClick={() => setOpen(false)} className="mt-3 flex items-center justify-between rounded-xl bg-[#DDE0F0]/65 px-3 py-2 text-[10px] font-bold text-[#4a556a] hover:bg-[#DDE0F0]">
                     {message.action.label}<ChevronRight size={13} />
                   </Link>
                 )}
@@ -606,30 +606,30 @@ export default function FacileChatbot() {
               {message.role === "user" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#870339]/10 text-[#870339]"><UserRound size={14} /></div>}
             </div>
           ))}
-          {typing && <div className="flex items-center gap-2.5"><div className="grid h-7 w-7 place-items-center rounded-xl bg-[#dde0f0] text-[#4a556a]"><Bot size={14} /></div><div className="flex gap-1 rounded-2xl bg-white px-4 py-3 shadow-sm"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#4a556a]/50" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#4a556a]/50 [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#4a556a]/50 [animation-delay:240ms]" /></div></div>}
+          {typing && <div className="flex items-center gap-2.5"><div className="grid h-7 w-7 place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><Bot size={14} /></div><div className="flex gap-1 rounded-2xl bg-white px-4 py-3 shadow-sm"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:240ms]" /></div></div>}
         </div>
 
         {messages.length < 3 && (
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-3">
-            {STARTERS.map((starter) => <button key={starter} onClick={() => send(starter)} className="flex-none rounded-full border border-[#4a556a]/15 bg-white px-3 py-2 text-[10px] font-semibold text-[#4a556a] hover:border-[#4a556a]/35 hover:bg-[#dde0f0]/40">{starter}</button>)}
+            {STARTERS.map((starter) => <button key={starter} onClick={() => send(starter)} className="flex-none rounded-full border border-[#4a556a]/15 bg-white px-3 py-2 text-[10px] font-semibold text-[#4a556a] hover:border-[#4a556a]/35 hover:bg-[#DDE0F0]/40">{starter}</button>)}
           </div>
         )}
 
         <form onSubmit={submit} className="border-t border-[#4a556a]/10 bg-white p-3.5">
           {voiceState !== "idle" && (
-            <div className="mb-2 flex items-center justify-center gap-2 rounded-xl bg-[#dde0f0]/60 px-3 py-2 text-[10px] font-semibold text-[#4a556a]" role="status">
-              <span className={`h-2 w-2 animate-pulse rounded-full ${voiceState === "listening" ? "bg-red-500" : "bg-[#4a556a]"}`} />
+            <div className="mb-2 flex items-center justify-center gap-2 rounded-xl bg-[#DDE0F0]/60 px-3 py-2 text-[10px] font-semibold text-[#4a556a]" role="status">
+              <span className={`h-2 w-2 animate-pulse rounded-full ${voiceState === "listening" ? "bg-red-500" : "bg-[#5271FF]"}`} />
               {voiceState === "listening" ? "Listening in English or Hinglish - tap stop when finished" : "Turning your voice into a message..."}
             </div>
           )}
           {voiceError && <p className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-[10px] font-semibold text-red-700" role="alert">{voiceError}</p>}
-          <div className="flex items-center gap-2 rounded-2xl border border-[#4a556a]/15 bg-[#f8f8f5] p-1.5 pl-4 focus-within:border-[#4a556a]/40 focus-within:ring-2 focus-within:ring-[#dde0f0]">
+          <div className="flex items-center gap-2 rounded-2xl border border-[#4a556a]/15 bg-[#f8f8f5] p-1.5 pl-4 focus-within:border-[#4a556a]/40 focus-within:ring-2 focus-within:ring-[#DDE0F0]">
             <ShoppingBag size={16} className="flex-none text-[#4a556a]/45" />
             <input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask about products, cart or orders…" className="min-w-0 flex-1 bg-transparent py-2 text-xs text-[#384152] outline-none placeholder:text-[#4a556a]/40" aria-label="Message Fia" />
-            <button type="button" onClick={() => void toggleVoiceInput()} disabled={voiceState === "transcribing" || typing} className={`grid h-9 w-9 flex-none place-items-center rounded-xl transition disabled:cursor-not-allowed disabled:opacity-35 ${voiceState === "listening" ? "bg-red-500 text-white hover:bg-red-600" : "text-[#4a556a] hover:bg-[#dde0f0]"}`} aria-label={voiceState === "listening" ? "Stop listening" : "Speak to Fia"} title={voiceState === "listening" ? "Stop listening" : "Speak in English or Hinglish"}>
+            <button type="button" onClick={() => void toggleVoiceInput()} disabled={voiceState === "transcribing" || typing} className={`grid h-9 w-9 flex-none place-items-center rounded-xl transition disabled:cursor-not-allowed disabled:opacity-35 ${voiceState === "listening" ? "bg-red-500 text-white hover:bg-red-600" : "text-[#4a556a] hover:bg-[#DDE0F0]"}`} aria-label={voiceState === "listening" ? "Stop listening" : "Speak to Fia"} title={voiceState === "listening" ? "Stop listening" : "Speak in English or Hinglish"}>
               {voiceState === "listening" ? <Square size={13} fill="currentColor" /> : <Mic size={16} />}
             </button>
-            <button disabled={!input.trim() || typing || voiceState !== "idle"} className="grid h-9 w-9 flex-none place-items-center rounded-xl bg-[#4a556a] text-white transition hover:bg-[#3b4455] disabled:cursor-not-allowed disabled:opacity-35" aria-label="Send message"><Send size={15} /></button>
+            <button disabled={!input.trim() || typing || voiceState !== "idle"} className="grid h-9 w-9 flex-none place-items-center rounded-xl bg-[#5271FF] text-white transition hover:bg-[#3b4455] disabled:cursor-not-allowed disabled:opacity-35" aria-label="Send message"><Send size={15} /></button>
           </div>
           <p className="mt-2 text-center text-[9px] text-[#4a556a]/40">Try: "add two Nike T-shirts to cart" or "add the first one"</p>
         </form>

@@ -179,7 +179,7 @@ export default function WishlistPage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#4a556a] text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
-          <Trash2 size={16} className="text-[#E8437F]" />
+          <Trash2 size={16} className="text-[#5271FF]" />
           {toastMessage}
         </div>
       )}
@@ -191,7 +191,7 @@ export default function WishlistPage() {
             <ArrowLeft size={16} /> Back to Shop
           </Link>
           <h1 className="text-xl font-extrabold font-serif text-[#4a556a]">My Wishlist</h1>
-          <div className="text-xs font-bold bg-[#E8437F]/10 text-[#E8437F] px-3 py-1 rounded-full border border-[#E8437F]/20 shadow-xs">
+          <div className="text-xs font-bold bg-[#5271FF]/10 text-[#5271FF] px-3 py-1 rounded-full border border-[#5271FF]/20 shadow-xs">
             {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function WishlistPage() {
           </div>
         ) : wishlistItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4 bg-white border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-sm">
-            <Heart size={44} className="text-[#E8437F] mb-4 animate-pulse fill-[#E8437F]/10" />
+            <Heart size={44} className="text-[#5271FF] mb-4 animate-pulse fill-[#5271FF]/10" />
             <h2 className="text-md font-extrabold text-[#4a556a] mb-2 font-serif">Your Wishlist is Empty</h2>
             <p className="text-xs text-[#4a556a]/70 mb-6 leading-relaxed max-w-xs">
               Save items you love here to find them easily later. Add some products and they will appear here!
@@ -222,7 +222,7 @@ export default function WishlistPage() {
               return (
                 <div
                   key={product.id}
-                  className="group bg-white hover:bg-[#4A5568] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                  className="group bg-white hover:bg-[#5271FF] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
                 >
                   {/* Remove Button */}
                   <button

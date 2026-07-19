@@ -567,7 +567,7 @@ export default function CheckoutPage() {
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-apricot via-natural to-fern" />
 
           <div className="w-20 h-20 bg-[#4A5568] text-natural rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-natural">
-            <CheckCircle2 size={44} className="text-[#E8A1C4] stroke-[2px] animate-bounce" />
+            <CheckCircle2 size={44} className="text-[#5271FF] stroke-[2px] animate-bounce" />
           </div>
 
           <span className="text-[10px] font-extrabold tracking-wider text-apricot uppercase bg-apricot/10 px-3 py-1 rounded-full">
@@ -769,7 +769,7 @@ export default function CheckoutPage() {
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
               <div className="flex justify-between items-center mb-5">
                 <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2">
-                  <MapPin size={18} className="text-[#E8A1C4]" />
+                  <MapPin size={18} className="text-[#5271FF]" />
                   1. Delivery Address
                 </h2>
                 {!isAddingAddress && (
@@ -922,7 +922,7 @@ export default function CheckoutPage() {
                           </span>
                           {isSelected && (
                             <div className="w-4 h-4 bg-[#4A5568] rounded-full flex items-center justify-center text-white shadow-sm">
-                              <Check size={10} className="stroke-[3.5px] text-[#E8A1C4]" />
+                              <Check size={10} className="stroke-[3.5px] text-[#5271FF]" />
                             </div>
                           )}
                         </div>
@@ -938,11 +938,11 @@ export default function CheckoutPage() {
                       </div>
                       <div className="mt-3 flex items-center gap-3 border-t border-black/10 pt-2">
                         {!addr.isDefault && (
-                          <button type="button" onClick={(event) => { event.stopPropagation(); handleSetDefaultAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                          <button type="button" onClick={(event) => { event.stopPropagation(); handleSetDefaultAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#5271FF]">
                             <Star size={11} /> Default
                           </button>
                         )}
-                        <button type="button" onClick={(event) => { event.stopPropagation(); handleEditAddress(addr); }} className="ml-auto flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#E8437F]">
+                        <button type="button" onClick={(event) => { event.stopPropagation(); handleEditAddress(addr); }} className="ml-auto flex items-center gap-1 text-[9px] font-bold uppercase text-[#4A5568] hover:text-[#5271FF]">
                           <Pencil size={11} /> Edit
                         </button>
                         <button type="button" onClick={(event) => { event.stopPropagation(); handleDeleteAddress(addr.id); }} className="flex items-center gap-1 text-[9px] font-bold uppercase text-red-600 hover:text-red-700">
@@ -959,7 +959,7 @@ export default function CheckoutPage() {
             <div className="border border-natural/20 rounded-[24px] p-6 shadow-xs relative overflow-hidden" style={{ backgroundColor: '#DDE0F0' }}>
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
               <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2 mb-5">
-                <Calendar size={18} className="text-[#E8A1C4]" />
+                <Calendar size={18} className="text-[#5271FF]" />
                 2. Delivery Schedule
               </h2>
 
@@ -1028,7 +1028,7 @@ export default function CheckoutPage() {
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
               <div className="flex justify-between items-center mb-5">
                 <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2">
-                  <ShoppingBag size={18} className="text-[#E8A1C4]" />
+                  <ShoppingBag size={18} className="text-[#5271FF]" />
                   3. Order Summary ({checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items)
                 </h2>
                 {checkoutItems.length === 0 && (
@@ -1048,8 +1048,8 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-natural/15">
-                  {checkoutItems.map((item) => (
-                    <div key={item.id} className="py-4.5 flex gap-4 first:pt-0 last:pb-0 items-center justify-between">
+                  {checkoutItems.map((item, index) => (
+                    <div key={`${item.id}-${index}`} className="py-4.5 flex gap-4 first:pt-0 last:pb-0 items-center justify-between">
                       <div className="flex gap-3.5 items-center min-w-0">
                         <img
                           src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
@@ -1093,7 +1093,7 @@ export default function CheckoutPage() {
 
             {/* Secured Checkout Badge */}
             <div className="bg-[#4A5568] text-white rounded-2xl p-4 flex items-center gap-3 border border-natural/20 shadow-sm">
-              <ShieldCheck size={26} className="text-[#E8A1C4] stroke-[2.5px] flex-shrink-0" />
+              <ShieldCheck size={26} className="text-[#5271FF] stroke-[2.5px] flex-shrink-0" />
               <div>
                 <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-white">100% Secure Checkout</h4>
                 <p className="text-[9px] text-white/80 font-medium">SSL encryption protects your financial transactions.</p>
@@ -1186,7 +1186,7 @@ export default function CheckoutPage() {
 
                 {subtotal < 15000 && subtotal > 0 && (
                   <div className="p-3 bg-apricot/5 border border-apricot/15 rounded-xl flex gap-2 items-start text-[10px] text-natural font-medium">
-                    <Truck size={14} className="text-[#E8A1C4] flex-shrink-0 mt-0.5" />
+                    <Truck size={14} className="text-[#5271FF] flex-shrink-0 mt-0.5" />
                     <p>Add <span className="text-warm-ivory font-bold">{formatPrice(15000 - subtotal)}</span> more to qualify for <span className="text-warm-ivory font-bold">Free Delivery</span>!</p>
                   </div>
                 )}
@@ -1254,7 +1254,7 @@ export default function CheckoutPage() {
 
             <div className="border-b border-natural/15 pb-4 mb-4">
               <h3 className="font-serif text-lg font-extrabold flex items-center gap-2">
-                <CreditCard className="text-[#E8A1C4]" size={20} />
+                <CreditCard className="text-[#5271FF]" size={20} />
                 Secure Checkout Payment
               </h3>
               <p className="text-[10px] text-natural font-bold uppercase tracking-wider mt-0.5">Payable Amount: {formatPrice(totalAmount)}</p>
