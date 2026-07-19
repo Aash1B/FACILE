@@ -129,6 +129,133 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 const SUBCATEGORY_IMAGES: Record<string, string> = {
+  // Beauty Subcategories
+  "Fragrance": "https://plain-apac-prod-public.komododecks.com/202607/19/g9o7IXs1E5WzshIim5uk/image.png",
+  "Fragrances": "https://plain-apac-prod-public.komododecks.com/202607/19/g9o7IXs1E5WzshIim5uk/image.png",
+  "Bath and body": "https://plain-apac-prod-public.komododecks.com/202607/19/GJ69vBp9E7OmY9Rz2HJu/image.png",
+  "Bath & Body": "https://plain-apac-prod-public.komododecks.com/202607/19/GJ69vBp9E7OmY9Rz2HJu/image.png",
+  "Bath and Body": "https://plain-apac-prod-public.komododecks.com/202607/19/GJ69vBp9E7OmY9Rz2HJu/image.png",
+  "Hair care": "https://plain-apac-prod-public.komododecks.com/202607/19/CHCy7QPTVbgkYOBUYT94/image.png",
+  "Hair Care": "https://plain-apac-prod-public.komododecks.com/202607/19/CHCy7QPTVbgkYOBUYT94/image.png",
+  "Makeup": "https://plain-apac-prod-public.komododecks.com/202607/19/0ydzyMqZmHzVX5xsXIFP/image.png",
+  "Men grooming": "https://plain-apac-prod-public.komododecks.com/202607/19/tf48FTc0opixdGU72gmF/image.png",
+  "Men's Grooming": "https://plain-apac-prod-public.komododecks.com/202607/19/tf48FTc0opixdGU72gmF/image.png",
+  "Men Grooming": "https://plain-apac-prod-public.komododecks.com/202607/19/tf48FTc0opixdGU72gmF/image.png",
+  "Nail care": "https://plain-apac-prod-public.komododecks.com/202607/19/fnzMaboUZu7KzOO5vBrr/image.png",
+  "Nail Care": "https://plain-apac-prod-public.komododecks.com/202607/19/fnzMaboUZu7KzOO5vBrr/image.png",
+  "Beauty tools": "https://plain-apac-prod-public.komododecks.com/202607/19/PZZe0TKcr2knUgVwyGZu/image.png",
+  "Beauty Tools": "https://plain-apac-prod-public.komododecks.com/202607/19/PZZe0TKcr2knUgVwyGZu/image.png",
+  "Skincare": "https://plain-apac-prod-public.komododecks.com/202607/19/de8S73qNeiNNlqkvZAF8/image.png",
+
+  // Sports Subcategories
+  "Badminton": "https://plain-apac-prod-public.komododecks.com/202607/19/k3cgi1u3XbLRaWYQ7pnv/image.png",
+  "Football": "https://plain-apac-prod-public.komododecks.com/202607/19/Hyo6gKD9cTrrROJF3Gxs/image.png",
+  "Sports accessories": "/sports_accessories_vibrant.png",
+  "Sports Accessories": "/sports_accessories_vibrant.png",
+  "Cricket": "https://plain-apac-prod-public.komododecks.com/202607/19/318OwQgUpmL1UshHUVcI/image.png",
+  "Cycling": "https://plain-apac-prod-public.komododecks.com/202607/19/zkQ7tb0PYURQLJRPQwEw/image.png",
+  "Outdoor games": "https://plain-apac-prod-public.komododecks.com/202607/19/MKSNiuFcBOg8kexHVinl/image.png",
+  "Outdoor Games": "https://plain-apac-prod-public.komododecks.com/202607/19/MKSNiuFcBOg8kexHVinl/image.png",
+  "Gym equipments": "https://plain-apac-prod-public.komododecks.com/202607/19/zA67TmyfbKS2qYEUewIX/image.png",
+  "Gym Equipment": "https://plain-apac-prod-public.komododecks.com/202607/19/zA67TmyfbKS2qYEUewIX/image.png",
+  "Gym Equipments": "https://plain-apac-prod-public.komododecks.com/202607/19/zA67TmyfbKS2qYEUewIX/image.png",
+  "Running gear": "/running_gear_vibrant.png",
+  "Running Gear": "/running_gear_vibrant.png",
+
+  // Stationery Subcategories
+  "Notebook": "https://plain-apac-prod-public.komododecks.com/202607/19/mNC5ZydsLCgpxfQzXJ3C/image.png",
+  "Notebooks": "https://plain-apac-prod-public.komododecks.com/202607/19/mNC5ZydsLCgpxfQzXJ3C/image.png",
+  "Pen and pencils": "https://plain-apac-prod-public.komododecks.com/202607/19/GdYviW16u9tA21jvAglq/image.png",
+  "Pens & Pencils": "https://plain-apac-prod-public.komododecks.com/202607/19/GdYviW16u9tA21jvAglq/image.png",
+  "Pens and Pencils": "https://plain-apac-prod-public.komododecks.com/202607/19/GdYviW16u9tA21jvAglq/image.png",
+  "Pen & Pencils": "https://plain-apac-prod-public.komododecks.com/202607/19/GdYviW16u9tA21jvAglq/image.png",
+  "Art supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/m6gTW2TXdN17O3E46d4R/image.png",
+  "Art Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/m6gTW2TXdN17O3E46d4R/image.png",
+  "Desk organizer": "https://plain-apac-prod-public.komododecks.com/202607/19/K5iDhyUNKNBbRQfCayv7/image.png",
+  "Desk Organizers": "https://plain-apac-prod-public.komododecks.com/202607/19/K5iDhyUNKNBbRQfCayv7/image.png",
+  "Desk Organiser": "https://plain-apac-prod-public.komododecks.com/202607/19/K5iDhyUNKNBbRQfCayv7/image.png",
+  "Desk Organisers": "https://plain-apac-prod-public.komododecks.com/202607/19/K5iDhyUNKNBbRQfCayv7/image.png",
+  "Jorunal": "https://plain-apac-prod-public.komododecks.com/202607/19/ST1rt8sShEecfhuNN4AS/image.png",
+  "Journal": "https://plain-apac-prod-public.komododecks.com/202607/19/ST1rt8sShEecfhuNN4AS/image.png",
+  "Journals": "https://plain-apac-prod-public.komododecks.com/202607/19/ST1rt8sShEecfhuNN4AS/image.png",
+  "Planner": "https://plain-apac-prod-public.komododecks.com/202607/19/rYtldf1F9PapCeGKTNFC/image.png",
+  "Planners": "https://plain-apac-prod-public.komododecks.com/202607/19/rYtldf1F9PapCeGKTNFC/image.png",
+  "Sticky notes": "https://plain-apac-prod-public.komododecks.com/202607/19/EvPtMcs4vbqXzpb07NMs/image.png",
+  "Sticky Notes": "https://plain-apac-prod-public.komododecks.com/202607/19/EvPtMcs4vbqXzpb07NMs/image.png",
+  "Office supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/xTyEYcUAcXDBzDBgiKoX/image.png",
+  "Office Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/xTyEYcUAcXDBzDBgiKoX/image.png",
+  // Home & Living Subcategories
+  "Home decor": "https://plain-apac-prod-public.komododecks.com/202607/19/gW7z6PI5cx8Fp20jAS1n/image.png",
+  "Home Decor": "https://plain-apac-prod-public.komododecks.com/202607/19/gW7z6PI5cx8Fp20jAS1n/image.png",
+  "Lightning": "https://plain-apac-prod-public.komododecks.com/202607/19/rDCkgXwQC6RWTjKY2jPi/image.png",
+  "Lighting": "https://plain-apac-prod-public.komododecks.com/202607/19/rDCkgXwQC6RWTjKY2jPi/image.png",
+  "Furniture": "https://plain-apac-prod-public.komododecks.com/202607/19/PlAUSf9nyykS7cFouaB8/image.png",
+  "Bath essential": "https://plain-apac-prod-public.komododecks.com/202607/19/8JJFn4asNAEZZufLhMbT/image.png",
+  "Bath Essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/8JJFn4asNAEZZufLhMbT/image.png",
+  "Bath Essential": "https://plain-apac-prod-public.komododecks.com/202607/19/8JJFn4asNAEZZufLhMbT/image.png",
+  "Kitchen essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/8Qpnpv6lHNnHxNz1E0fy/image.png",
+  "Kitchen Essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/8Qpnpv6lHNnHxNz1E0fy/image.png",
+  "Dining": "https://plain-apac-prod-public.komododecks.com/202607/19/p4eApmwWxvMzbB2Dm5Y5/image.png",
+  "Bedding": "https://plain-apac-prod-public.komododecks.com/202607/19/lRUrVdCBH511BDiDPt95/image.png",
+  "Storage": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  "Storage & Organization": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  "Storage & organization": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  "Storage and Organization": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  "Storage & Organisation": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  "Storage and Organisation": "https://plain-apac-prod-public.komododecks.com/202607/19/9Ft6eLnKh2Ze4BJM9TCn/image.png",
+  // Pets Subcategories
+  "Bowls and feeders": "https://plain-apac-prod-public.komododecks.com/202607/19/W2eUDTR7EkpPpzksenLv/image.png",
+  "Bowls & Feeders": "https://plain-apac-prod-public.komododecks.com/202607/19/W2eUDTR7EkpPpzksenLv/image.png",
+  "Bowls and Feeders": "https://plain-apac-prod-public.komododecks.com/202607/19/W2eUDTR7EkpPpzksenLv/image.png",
+  "Bowls & feeders": "https://plain-apac-prod-public.komododecks.com/202607/19/W2eUDTR7EkpPpzksenLv/image.png",
+  "Pet beds and mats": "https://plain-apac-prod-public.komododecks.com/202607/19/Xh1ppSCsGICiCX2wnpMt/image.png",
+  "Beds & Mats": "https://plain-apac-prod-public.komododecks.com/202607/19/Xh1ppSCsGICiCX2wnpMt/image.png",
+  "Beds and Mats": "https://plain-apac-prod-public.komododecks.com/202607/19/Xh1ppSCsGICiCX2wnpMt/image.png",
+  "Pet Beds & Mats": "https://plain-apac-prod-public.komododecks.com/202607/19/Xh1ppSCsGICiCX2wnpMt/image.png",
+  "Pet beds & mats": "https://plain-apac-prod-public.komododecks.com/202607/19/Xh1ppSCsGICiCX2wnpMt/image.png",
+  "Toys": "https://plain-apac-prod-public.komododecks.com/202607/19/TuLKUGUKUTMBrrKWHK3H/image.png",
+  "Treats": "https://plain-apac-prod-public.komododecks.com/202607/19/XUDGEcoOk1Sta4g1HK2W/image.png",
+  "Pet food": "https://plain-apac-prod-public.komododecks.com/202607/19/SyC4N4HdfhonQB3UIuXs/image.png",
+  "Pet Food": "https://plain-apac-prod-public.komododecks.com/202607/19/SyC4N4HdfhonQB3UIuXs/image.png",
+  "Cats supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/kNiIGkJSUGMc2rdxLj7b/image.png",
+  "Cat Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/kNiIGkJSUGMc2rdxLj7b/image.png",
+  "Cats Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/kNiIGkJSUGMc2rdxLj7b/image.png",
+  "Cat supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/kNiIGkJSUGMc2rdxLj7b/image.png",
+  "Dog supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/IKoFeAlBlG2LLOiAl7GD/image.png",
+  "Dog Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/IKoFeAlBlG2LLOiAl7GD/image.png",
+  "Grooming": "https://plain-apac-prod-public.komododecks.com/202607/19/QEDDLWIIesBmVTisrtT0/image.png",
+  // Kids & Baby Subcategories
+  "Baby clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/Os8dJzLJbXITPK3AoEIk/image.png",
+  "Baby Clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/Os8dJzLJbXITPK3AoEIk/image.png",
+  "Kids clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/ZgUrdXclCNmMk0Xslp7U/image.png",
+  "Kids Clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/ZgUrdXclCNmMk0Xslp7U/image.png",
+  "Kid's Clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/ZgUrdXclCNmMk0Xslp7U/image.png",
+  "Boys Clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/ZgUrdXclCNmMk0Xslp7U/image.png",
+  "Girls Clothing": "https://plain-apac-prod-public.komododecks.com/202607/19/ZgUrdXclCNmMk0Xslp7U/image.png",
+  "Kids toys": "https://plain-apac-prod-public.komododecks.com/202607/19/dc45gH7wluQX21F5c9PA/image.png",
+  "Kids Toys": "https://plain-apac-prod-public.komododecks.com/202607/19/dc45gH7wluQX21F5c9PA/image.png",
+  "Toys & Games": "https://plain-apac-prod-public.komododecks.com/202607/19/dc45gH7wluQX21F5c9PA/image.png",
+  "Baby care": "https://plain-apac-prod-public.komododecks.com/202607/19/ZCVAks9PlwVhbTNmaqt9/image.png",
+  "Baby Care": "https://plain-apac-prod-public.komododecks.com/202607/19/ZCVAks9PlwVhbTNmaqt9/image.png",
+  "School essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/UpPW8VmmdE5oUDkfdpfv/image.png",
+  "School Essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/UpPW8VmmdE5oUDkfdpfv/image.png",
+  "School Supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/UpPW8VmmdE5oUDkfdpfv/image.png",
+  "School supplies": "https://plain-apac-prod-public.komododecks.com/202607/19/UpPW8VmmdE5oUDkfdpfv/image.png",
+  "Baby feeder": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Baby Feeders": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Baby Feeder": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Feeding Essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Feeding essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Baby feeding": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Baby Feeding": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Feeding & Nursing": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Feeding & nursing": "https://plain-apac-prod-public.komododecks.com/202607/19/fIdtLXUdrGvudKD5FY3d/image.png",
+  "Baby bedding": "https://plain-apac-prod-public.komododecks.com/202607/19/iDEVV7rHUhkkyKKL2r5M/image.png",
+  "Baby Bedding": "https://plain-apac-prod-public.komododecks.com/202607/19/iDEVV7rHUhkkyKKL2r5M/image.png",
+  "Kids footwear": "https://plain-apac-prod-public.komododecks.com/202607/19/O1xpKrNBSTcD5eOxFA7q/image.png",
+  "Kids Footwear": "https://plain-apac-prod-public.komododecks.com/202607/19/O1xpKrNBSTcD5eOxFA7q/image.png",
+  "Kid's Footwear": "https://plain-apac-prod-public.komododecks.com/202607/19/O1xpKrNBSTcD5eOxFA7q/image.png",
+
   "Earrings": "https://plain-apac-prod-public.komododecks.com/202607/17/Dux3oOjYmv3MOPHXBDSD/image.png",
   "Necklaces": "https://plain-apac-prod-public.komododecks.com/202607/17/zUndEgCUCwICjghFDbFI/image.png",
   "Bracelets": "https://plain-apac-prod-public.komododecks.com/202607/17/gi7NW1jlDPYC4fg05rzk/image.png",
@@ -137,7 +264,7 @@ const SUBCATEGORY_IMAGES: Record<string, string> = {
   "Bags": "https://plain-apac-prod-public.komododecks.com/202607/17/gJfEvjOxvgeoz795o9U1/image.png",
   "Hair Accessories": "https://plain-apac-prod-public.komododecks.com/202607/17/y33JoB79IfLCKHM08AN4/image.png",
   "Sunglasses": "https://plain-apac-prod-public.komododecks.com/202607/17/ebvSEPRoWMb98i5UDfef/image.png",
-  "Ethnic Wear": "https://plain-apac-prod-public.komododecks.com/202607/18/2uG5D4fVvFoCfF4gizJN/image.png",
+  "Ethnic Wear": "/ethnic_wear.png",
   "Tops & T-Shirts": "https://plain-apac-prod-public.komododecks.com/202607/18/MlW17UoPtrMl3FMCWbKb/image.png",
   "Activewear": "https://plain-apac-prod-public.komododecks.com/202607/18/1u8VswmedgZwztWdsz2d/image.png",
   "Bottom Wear": "https://plain-apac-prod-public.komododecks.com/202607/18/6ht1dh6zjMI977LdwSR6/image.png",
@@ -153,7 +280,41 @@ const SUBCATEGORY_IMAGES: Record<string, string> = {
   "Sports Shoes": "https://plain-apac-prod-public.komododecks.com/202607/18/aomKf46UJ6FqsCal9DBz/image.png",
   "Slippers": "https://plain-apac-prod-public.komododecks.com/202607/18/jsHjqG1BJQPrl2t1KR5i/image.png",
   "Loafers": "https://plain-apac-prod-public.komododecks.com/202607/18/69KaZqXdNyqozJjkyGDR/image.png",
+  // Electronics
+  "Power Banks": "/light_blue_power_bank.png",
+  "Cables & Chargers": "https://plain-apac-prod-public.komododecks.com/202607/18/cDwBmvQ3LP4uXRd2xx68/image.png",
+  "Smart Home Devices": "https://plain-apac-prod-public.komododecks.com/202607/18/7sDGc2wXbG2aROPiFMzT/image.png",
+  "Audio Devices": "https://plain-apac-prod-public.komododecks.com/202607/18/7lFtAxyBUDNhYXvGddF2/image.png",
+  "Gaming Accessories": "https://plain-apac-prod-public.komododecks.com/202607/18/AMT6IyKMY1o0USGHe2Jn/image.png",
+  "Laptop Accessories": "https://plain-apac-prod-public.komododecks.com/202607/18/KAz9khkhtxxno21zqwmx/image.png",
+  "Smart Watches": "https://plain-apac-prod-public.komododecks.com/202607/18/EMgbgDjZFUWuTPIKBHvS/image.png",
+  "Mobile Accessories": "/mobile_accessories_white_grey.png",
+  "Mobile accessories": "/mobile_accessories_white_grey.png",
 };
+
+const CONTAIN_SUBCATEGORIES = new Set([
+  "Power Banks",
+  "Cables & Chargers",
+  "Smart Home Devices",
+  "Gaming Accessories",
+  "Laptop Accessories",
+]);
+
+const TOP_ALIGNED_SUBCATEGORIES = new Set([
+  "Kids Clothing",
+  "Kids clothing",
+  "Kid's Clothing",
+  "Boys Clothing",
+  "Girls Clothing",
+  "Baby Clothing",
+  "Baby clothing",
+  "Baby Care",
+  "Baby care",
+  "Dresses",
+  "Ethnic Wear",
+  "Tops & T-Shirts",
+]);
+
 
 export default function CategoryPage() {
   const params = useParams<{ id: string }>();
@@ -427,6 +588,18 @@ export default function CategoryPage() {
           sub.name.toLowerCase() !== "travel bag"
         );
       }
+      if (resolvedFallbackCategoryId === "3") {
+        filtered = filtered.filter(sub => 
+          sub.name.toLowerCase() !== "kitchenware" &&
+          sub.name.toLowerCase() !== "kitchen ware"
+        );
+      }
+      if (resolvedFallbackCategoryId === "5") {
+        filtered = filtered.filter(sub => 
+          sub.name.toLowerCase() !== "running shoes" &&
+          sub.name.toLowerCase() !== "running shoe"
+        );
+      }
       const seen = new Set<string>();
       return filtered.filter(sub => {
         const normalized = sub.name.toLowerCase().replace(/\s+/g, "");
@@ -617,22 +790,29 @@ export default function CategoryPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {subcategories.map((subcategory, index) => {
                 const style = CARD_STYLES[index % CARD_STYLES.length];
+                const imageSrc = SUBCATEGORY_IMAGES[subcategory.name]
+                  || Object.entries(SUBCATEGORY_IMAGES).find(([k]) => k.toLowerCase() === subcategory.name.toLowerCase())?.[1];
+                const hasImage = !!imageSrc;
                 return (
                   <Link
                     key={subcategory.id}
                     href={`/category/${categoryId}?subcategory=${subcategory.id}`}
-                    className={`group relative min-h-52 overflow-hidden rounded-[28px] border border-white/70 ${SUBCATEGORY_IMAGES[subcategory.name] ? 'bg-white' : `bg-gradient-to-br ${style.surface}`} p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
+                    className={`group relative aspect-video overflow-hidden rounded-[28px] border border-white/70 ${
+                      hasImage ? 'bg-white' : `bg-gradient-to-br ${style.surface}`
+                    } p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
                   >
-                    {SUBCATEGORY_IMAGES[subcategory.name] ? (
+                    {hasImage && imageSrc ? (
                       <>
                         <img 
-                          src={SUBCATEGORY_IMAGES[subcategory.name]} 
+                          src={imageSrc} 
                           alt={subcategory.name} 
-                          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
-                            subcategory.name === "Ethnic Wear" ? "object-[center_15%]" :
-                            ["Dresses", "Loungewear"].includes(subcategory.name) ? "object-top" :
-                            "object-center"
-                          }`}
+                          className={`absolute inset-0 w-full h-full ${
+                            CONTAIN_SUBCATEGORIES.has(subcategory.name)
+                              ? "object-contain p-3 sm:p-4 object-center"
+                              : TOP_ALIGNED_SUBCATEGORIES.has(subcategory.name)
+                              ? "object-cover object-top"
+                              : "object-cover object-center"
+                          } transition-transform duration-700 group-hover:scale-105`} 
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                       </>
@@ -645,16 +825,20 @@ export default function CategoryPage() {
                       </>
                     )}
 
-                    <div className={`relative z-10 h-full flex flex-col items-start gap-7 ${SUBCATEGORY_IMAGES[subcategory.name] ? "justify-end" : "justify-between"}`}>
-                      {!SUBCATEGORY_IMAGES[subcategory.name] && (
+                    <div className={`relative z-10 h-full flex flex-col items-start ${hasImage ? "justify-end" : "justify-between"}`}>
+                      {!hasImage && (
                         <span className={`w-14 h-14 rounded-2xl ${style.icon} text-white flex items-center justify-center shadow-md transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105`}>
                           <Boxes size={25} strokeWidth={1.8} />
                         </span>
                       )}
 
                       <div className="w-full">
-                        <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${SUBCATEGORY_IMAGES[subcategory.name] ? "text-white drop-shadow-md" : "text-[#3f485a]"}`}>{subcategory.name}</h3>
-                        <span className={`mt-3 inline-flex items-center gap-2 text-xs font-bold transition-colors ${SUBCATEGORY_IMAGES[subcategory.name] ? "text-white/90 group-hover:text-white drop-shadow-sm" : "text-[#4a556a]/70 group-hover:text-[#4a556a]"}`}>
+                        <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${hasImage ? "text-white drop-shadow-md" : "text-[#3f485a]"}`}>
+                          {subcategory.name}
+                        </h3>
+                        <span className={`mt-3 inline-flex items-center gap-2 text-xs font-bold transition-colors ${
+                          hasImage ? "text-white/90 group-hover:text-white drop-shadow-sm" : "text-[#4a556a]/70 group-hover:text-[#4a556a]"
+                        }`}>
                           Browse products
                           <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
                         </span>

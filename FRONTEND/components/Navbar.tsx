@@ -115,6 +115,18 @@ export default function Navbar() {
     if (categoryName.toLowerCase() === "fashion") {
       filtered = list.filter(sub => sub.name.toLowerCase() !== "apparel");
     }
+    if (categoryName.toLowerCase().includes("home")) {
+      filtered = list.filter(sub => 
+        sub.name.toLowerCase() !== "kitchenware" && 
+        sub.name.toLowerCase() !== "kitchen ware"
+      );
+    }
+    if (categoryName.toLowerCase() === "sports") {
+      filtered = list.filter(sub => 
+        sub.name.toLowerCase() !== "running shoes" && 
+        sub.name.toLowerCase() !== "running shoe"
+      );
+    }
     const seen = new Set<string>();
     return filtered.filter(sub => {
       const normalized = sub.name.toLowerCase().replace(/\s+/g, "");
@@ -727,8 +739,7 @@ export default function Navbar() {
                     </button>
                     {isProfileOpen && (
                       <div className="absolute right-0 mt-2.5 w-80 bg-[#DDE0F0] border border-natural/20 rounded-2xl shadow-xl px-6 py-4 z-50 animate-fade-in text-black">
-                        <div className="border-b border-natural/20 pb-3 mb-3 space-y-1">
-                          <p className="font-extrabold text-[#4a556a]/80 uppercase tracking-wider text-[10px]">Logged in as</p>
+                        <div className="border-b border-natural/20 pb-3 mb-3 space-y-0.5">
                           <p className="font-bold text-sm text-[#4a556a] truncate">{user.name}</p>
                           <p className="text-[#4a556a]/90 truncate text-xs font-medium">{user.email}</p>
                         </div>
