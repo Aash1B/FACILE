@@ -162,7 +162,7 @@ const HERO_SLIDES = [
   },
   {
     id: "hero-3", image: "/banner-sportswear.png", alt: "Health & Wellness - Self Care Starts Here", link: "/category/health-wellness",
-    buttonConfig: { text: "+ Explore", icon: false, className: "text-[#1d2b44] hover:text-[#4a556a] font-semibold text-xl md:text-2xl px-6 py-2 shadow-none hover:shadow-none bg-[#EFEBE8]" },
+    buttonConfig: { text: "+ Explore", icon: false, className: "text-[#1d2b44] hover:text-[#5271FF] font-semibold text-xl md:text-2xl px-6 py-2 shadow-none hover:shadow-none bg-[#EFEBE8]" },
     buttonStyle: { left: '4.5%', bottom: '23%', width: 'auto', height: 'auto' }
   },
   {
@@ -250,6 +250,7 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
+  const [isFirstHeroRotation, setIsFirstHeroRotation] = useState(true);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
 
@@ -276,13 +277,16 @@ function HomeContent() {
 
   useEffect(() => {
     if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    
+
+    const timeoutDuration = isFirstHeroRotation ? 500 : 2500;
+
     const timer = window.setTimeout(() => {
       setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
-    }, 2500);
+      if (isFirstHeroRotation) setIsFirstHeroRotation(false);
+    }, timeoutDuration);
 
     return () => window.clearTimeout(timer);
-  }, [heroPaused, heroIndex]);
+  }, [heroPaused, heroIndex, isFirstHeroRotation]);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -456,7 +460,8 @@ function HomeContent() {
 
       {/* 1. Hero Section */}
       <section
-        className="w-full px-4 sm:px-6 lg:px-8 pt-6"
+        className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
         onFocusCapture={() => setHeroPaused(true)}
@@ -498,27 +503,85 @@ function HomeContent() {
             </div>
           ))}
 
+          {/* Mobile Overlay: Blend image with #FAF3E3 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
+          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
+          <div
+            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
+            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
+          />
 
+          {/* Hero Content Area */}
+          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
+              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
+              <span>NEW ARRIVALS</span>
+            </div>
+
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
+              Discover The Best Products for You
+            </h1>
+
+            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
+              <a
+                href="#best-sellers"
+                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+              >
+                Shop Now
+                <ArrowRight size={14} />
+              </a>
+              <a
+                href="#categories"
+                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
+              >
+                Explore Deals
+              </a>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
+              <div className="flex -space-x-2">
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
+              </div>
+              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
+                Trusted by 10,000+ Happy Customers
+              </p>
+            </div>
+          </div>
 
         </div>
 
-        {/* Carousel Indicators */}
-        <div className="mt-4 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
-          {HERO_SLIDES.map((slide, index) => (
-            <button
-              key={slide.id}
-              type="button"
-              role="tab"
-              aria-selected={heroIndex === index}
-              aria-label={`Show slide ${index + 1}`}
-              onClick={() => setHeroIndex(index)}
-              className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all duration-300 ${heroIndex === index ? "bg-[#4A5568] w-6" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
-            />
-          ))}
-        </div>
-      </section>
+<<<<<<< HEAD
+  {/* Carousel Indicators */ }
+  <div className="mt-4 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
+=======
+        <div className="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
+>>>>>>> 6227860 (updated sub category)
+      {HERO_SLIDES.map((slide, index) => (
+        <button
+          key={slide.id}
+          type="button"
+          role="tab"
+          aria-selected={heroIndex === index}
+          aria-label={`Show slide ${index + 1}`}
+          onClick={() => setHeroIndex(index)}
+          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all duration-300 ${heroIndex === index ? "bg-[#4A5568] w-6" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
 
-      {/* 2. Feature Highlights Bar */}
+          className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${heroIndex === index ? "bg-[#4A5568]" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
+
+        />
+      ))}
+    </div>
+  </section>
+
+  {/* 2. Feature Highlights Bar */ }
       <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
         <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
@@ -527,8 +590,8 @@ function HomeContent() {
               <Truck size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[#4a556a]">Free Shipping</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over ₹999</p>
+              <h3 className="text-xs font-bold text-[#5271FF]">Free Shipping</h3>
+              <p className="text-[10px] text-[#5271FF] font-medium mt-0.5">On orders over ₹999</p>
             </div>
           </div>
 
@@ -537,8 +600,8 @@ function HomeContent() {
               <ShieldCheck size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[#4a556a]">Secure Payment</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">100% secure payment</p>
+              <h3 className="text-xs font-bold text-[#5271FF]">Secure Payment</h3>
+              <p className="text-[10px] text-[#5271FF] font-medium mt-0.5">100% secure payment</p>
             </div>
           </div>
 
@@ -547,8 +610,8 @@ function HomeContent() {
               <RefreshCw size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[#4a556a]">Easy Returns</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">30 days return policy</p>
+              <h3 className="text-xs font-bold text-[#5271FF]">Easy Returns</h3>
+              <p className="text-[10px] text-[#5271FF] font-medium mt-0.5">30 days return policy</p>
             </div>
           </div>
 
@@ -557,8 +620,8 @@ function HomeContent() {
               <Headset size={22} />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[#4a556a]">24/7 Support</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">Dedicated support</p>
+              <h3 className="text-xs font-bold text-[#5271FF]">24/7 Support</h3>
+              <p className="text-[10px] text-[#5271FF] font-medium mt-0.5">Dedicated support</p>
             </div>
           </div>
 
@@ -574,11 +637,11 @@ function HomeContent() {
 
         <div className="relative group/carousel py-8">
           {/* Custom Navigation Buttons */}
-          <button className="swiper-button-prev-custom absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
+          <button className="swiper-button-prev-custom absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronLeft size={20} />
           </button>
 
-          <button className="swiper-button-next-custom absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#4a556a]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#4a556a] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
+          <button className="swiper-button-next-custom absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
             <ChevronRight size={20} />
           </button>
 
@@ -629,12 +692,16 @@ function HomeContent() {
                           }`}
                       >
                         <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${isActive
+
                           ? `shadow-[0_12px_30px_rgba(82,113,255,0.25)] bg-white ${category.bgColor}`
+                          ? `shadow-[0_12px_30px_rgba(232,67,127,0.25)] bg-white ${category.bgColor}`
+
                           : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
                           }`}>
                           <img
                             src={category.image}
                             alt={category.label}
+
                             className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
                               }`}
                             className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${
@@ -644,7 +711,15 @@ function HomeContent() {
                         </div>
                         <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
                           ? "text-[#5271FF] drop-shadow-sm"
-                          : "text-[#4a556a] group-hover:text-[#1A202C]"
+
+                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
+                              }`}
+                          />
+                        </div>
+                        <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
+                          ? "text-[#E8437F] drop-shadow-sm"
+
+                          : "text-[#5271FF] group-hover:text-[#1A202C]"
                           }`}>
                           {category.label}
                         </span>
@@ -665,238 +740,244 @@ function HomeContent() {
             View All Categories
           </Link>
         </div>
-      </section>
+      </section >
 
-      {/* 4. Best Selling Products */}
-      <section id="best-sellers" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">
-            Best Selling Products
-          </h2>
-          <div className="flex items-center gap-4 self-end sm:self-auto">
-            {productPageCount > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:block text-[11px] font-semibold text-[#4a556a]/70 mr-1">
-                  {productPage + 1} / {productPageCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setProductPage((page) => Math.max(0, page - 1))}
-                  disabled={productPage === 0}
-                  aria-label="Show previous products"
-                  className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setProductPage((page) => Math.min(productPageCount - 1, page + 1))}
-                  disabled={productPage >= productPageCount - 1}
-                  aria-label="Show more products"
-                  className="w-9 h-9 rounded-full border border-[#4a556a]/25 flex items-center justify-center text-[#4a556a] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 5-Column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {visibleProducts.map((product) => {
-            const isFav = favorites.includes(product.id);
-            const discount = product.originalPrice > product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
-            return (
-              <div
-                key={product.id}
-                className="group bg-[#F4F4F0] hover:bg-[#5271FF] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+    {/* 4. Best Selling Products */ }
+    < section id = "best-sellers" className = "max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6" >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">
+          Best Selling Products
+        </h2>
+        <div className="flex items-center gap-4 self-end sm:self-auto">
+          {productPageCount > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:block text-[11px] font-semibold text-[#5271FF]/70 mr-1">
+                {productPage + 1} / {productPageCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => setProductPage((page) => Math.max(0, page - 1))}
+                disabled={productPage === 0}
+                aria-label="Show previous products"
+                className="w-9 h-9 rounded-full border border-[#5271FF]/25 flex items-center justify-center text-[#5271FF] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
               >
-                {/* Wishlist Button */}
-                <button
-                  onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#5271FF] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
-                  aria-label="Add to wishlist"
-                >
-                  <Heart
-                    size={14}
-                    className={`transition-colors`}
-                    style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
-                  />
-                </button>
-
-                <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
-                  {/* Product Image */}
-                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
-                    {discount > 0 && (
-                      <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
-                        -{discount}%
-                      </div>
-                    )}
-                    {product.facileChoice && (
-                      <div className={`absolute left-3 z-20 rounded-full bg-[#5271FF] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
-                        Facile Choice
-                      </div>
-                    )}
-                    <ProductImage
-                      src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
-                      alt={product.name}
-                      className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
-                        {product.name}
-                      </h3>
-                    </div>
-
-                    {/* Price and Rating */}
-                    <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
-                        <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
-                      </div>
-
-                      {/* Stars and reviews */}
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
-                        <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
-                        {product.reviews > 0 ? (
-                          <>
-                            <span className="text-[#4a556a] group-hover:text-warm-ivory font-bold">{product.rating.toFixed(1)}</span>
-                            <span>({product.reviews})</span>
-                          </>
-                        ) : (
-                          <span className="text-natural group-hover:text-warm-ivory/80">0</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-
-                {/* Action Button */}
-                <div className="px-4 pb-4">
-                  <button
-                    onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
-                  >
-                    <ShoppingCart size={12} className="stroke-[2.5px]" />
-                    Add to Cart
-                  </button>
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {recentProducts.length > 0 && (
-        <section id="recently-viewed" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#5271FF] tracking-tight">Recently Viewed Products</h2>
-          </div>
-          <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
-            {recentProducts.map((product) => (
-              <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
-                <Link href={`/product/${product.id}`} className="block">
-                  <div className="aspect-square overflow-hidden bg-neutral-100/50">
-                    <ProductImage src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} />
-                  </div>
-                  <div className="space-y-2 p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="truncate text-sm font-bold text-[#5271FF]">{product.name}</h3>
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-extrabold text-[#5271FF]">&#8377;{product.price.toLocaleString("en-IN")}</span>
-                        {product.originalPrice != null && product.originalPrice > product.price && (
-                          <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
-                        <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
-                        {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>0</span>}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                <div className="px-4 pb-4">
-                  <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#5271FF] text-[11px] font-bold text-warm-ivory shadow-sm">
-                    <ShoppingCart size={12} className="stroke-[2.5px]" /> Add to Cart
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-
-      {/* 6. Customer Testimonials */}
-      <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">What Our Customers Say</h2>
-
-          {/* Navigation Arrows */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTestimonialIndex((prev) => Math.max(0, prev - 1))}
-              disabled={testimonialIndex === 0}
-              className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
-              aria-label="Previous testimonials"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={() => setTestimonialIndex((prev) => Math.min(TESTIMONIALS.length - 3, prev + 1))}
-              disabled={testimonialIndex >= TESTIMONIALS.length - 3}
-              className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#4a556a] hover:border-[#4a556a] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
-              aria-label="Next testimonials"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TESTIMONIALS.slice(testimonialIndex, testimonialIndex + 3).map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className="bg-white hover:bg-[#DDE0F0] border border-natural/15 p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-6 hover:shadow-sm transition-all duration-300"
-            >
-              <div className="space-y-4">
-                <Quote size={28} className="text-green-200 fill-green-500/10 stroke-[1.5px]" />
-                <p className="text-xs text-natural leading-relaxed italic font-medium">
-                  &quot;{testimonial.feedback}&quot;
-                </p>
-              </div>
-
-              {/* User Identity */}
-              <div className="flex items-center gap-3 pt-4 border-t border-natural/10">
-                <img
-                  src={testimonial.avatar}
-                  alt={testimonial.name}
-                  className="w-10 h-10 rounded-full object-cover border border-natural/10"
-                />
-                <div>
-                  <h4 className="text-xs font-bold text-fern">{testimonial.name}</h4>
-                  <div className="flex items-center gap-0.5 mt-0.5 text-amber-400">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} size={10} className="fill-amber-400" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setProductPage((page) => Math.min(productPageCount - 1, page + 1))}
+                disabled={productPage >= productPageCount - 1}
+                aria-label="Show more products"
+                className="w-9 h-9 rounded-full border border-[#5271FF]/25 flex items-center justify-center text-[#5271FF] hover:bg-white disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all cursor-pointer"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
+          )}
+        </div>
+      </div>
+
+  {/* 5-Column Grid */ }
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+    {visibleProducts.map((product) => {
+      const isFav = favorites.includes(product.id);
+      const discount = product.originalPrice > product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      return (
+        <div
+          key={product.id}
+          className="group bg-[#F4F4F0] hover:bg-[#5271FF] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+        >
+          {/* Wishlist Button */}
+          <button
+            onClick={(e) => handleToggleFavorite(product.id, product.name, e)}
+            className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#F4F4F0]/95 text-fern hover:text-[#5271FF] shadow-xs hover:scale-105 active:scale-95 transition-all border border-natural/10 focus:outline-none cursor-pointer"
+            aria-label="Add to wishlist"
+          >
+            <Heart
+              size={14}
+              className={`transition-colors`}
+              style={isFav ? { fill: '#870339', color: '#870339', stroke: '#870339' } : {}}
+            />
+          </button>
+
+          <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+            {/* Product Image */}
+            <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
+              {discount > 0 && (
+                <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
+                  -{discount}%
+                </div>
+              )}
+              {product.facileChoice && (
+                <div className={`absolute left-3 z-20 rounded-full bg-[#5271FF] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
+                  Facile Choice
+                </div>
+              )}
+              <ProductImage
+                src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
+                alt={product.name}
+                className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="p-4 flex-1 flex flex-col justify-between">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                  {product.name}
+                </h3>
+              </div>
+
+              {/* Price and Rating */}
+              <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                  <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
+                </div>
+
+                {/* Stars and reviews */}
+                <div className="flex items-center gap-1 text-[10px] font-semibold text-natural group-hover:text-warm-ivory/80 transition-colors shrink-0">
+                  <Star size={11} className={product.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-neutral-300"} />
+                  {product.reviews > 0 ? (
+                    <>
+                      <span className="text-[#5271FF] group-hover:text-warm-ivory font-bold">{product.rating.toFixed(1)}</span>
+                      <span>({product.reviews})</span>
+                    </>
+                  ) : (
+                    <span className="text-natural group-hover:text-warm-ivory/80">0</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Action Button */}
+          <div className="px-4 pb-4">
+            <button
+              onClick={(e) => handleAddToCart(product, e)}
+              className="w-full h-8.5 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+            >
+              <ShoppingCart size={12} className="stroke-[2.5px]" />
+              Add to Cart
+            </button>
+          </div>
+
+        </div>
+      );
+    })}
+  </div>
+      </section >
+
+  {
+    recentProducts.length > 0 && (
+      <section id="recently-viewed" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#5271FF] tracking-tight">Recently Viewed Products</h2>
+        </div>
+        <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
+          {recentProducts.map((product) => (
+            <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
+              <Link href={`/product/${product.id}`} className="block">
+                <div className="aspect-square overflow-hidden bg-neutral-100/50">
+                  <ProductImage src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} />
+                </div>
+                <div className="space-y-2 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="truncate text-sm font-bold text-[#5271FF]">{product.name}</h3>
+                  </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-extrabold text-[#5271FF]">&#8377;{product.price.toLocaleString("en-IN")}</span>
+                      {product.originalPrice != null && product.originalPrice > product.price && (
+                        <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
+                      <Star size={11} className={(product.reviews ?? 0) > 0 ? "fill-amber-400 text-amber-400" : "text-neutral-300"} />
+                      {(product.reviews ?? 0) > 0 ? <><span>{Number(product.rating).toFixed(1)}</span><span>({product.reviews})</span></> : <span>0</span>}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+              <div className="px-4 pb-4">
+                <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#5271FF] text-[11px] font-bold text-warm-ivory shadow-sm">
+                  <ShoppingCart size={12} className="stroke-[2.5px]" /> Add to Cart
+                </button>
+              </div>
+            </article>
           ))}
         </div>
       </section>
+    )
+  }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6227860 (updated sub category)
+
+  {/* 6. Customer Testimonials */ }
+  <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="flex items-center justify-between mb-10">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">What Our Customers Say</h2>
+
+      {/* Navigation Arrows */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTestimonialIndex((prev) => Math.max(0, prev - 1))}
+          disabled={testimonialIndex === 0}
+          className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#5271FF] hover:border-[#5271FF] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
+          aria-label="Previous testimonials"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <button
+          onClick={() => setTestimonialIndex((prev) => Math.min(TESTIMONIALS.length - 3, prev + 1))}
+          disabled={testimonialIndex >= TESTIMONIALS.length - 3}
+          className="w-8 h-8 rounded-full border border-natural/25 flex items-center justify-center text-[#5271FF] hover:border-[#5271FF] hover:bg-white/50 disabled:opacity-35 disabled:cursor-not-allowed active:scale-95 transition-all focus:outline-none cursor-pointer"
+          aria-label="Next testimonials"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
     </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {TESTIMONIALS.slice(testimonialIndex, testimonialIndex + 3).map((testimonial) => (
+        <div
+          key={testimonial.id}
+          className="bg-white hover:bg-[#DDE0F0] border border-natural/15 p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-6 hover:shadow-sm transition-all duration-300"
+        >
+          <div className="space-y-4">
+            <Quote size={28} className="text-green-200 fill-green-500/10 stroke-[1.5px]" />
+            <p className="text-xs text-natural leading-relaxed italic font-medium">
+              &quot;{testimonial.feedback}&quot;
+            </p>
+          </div>
+
+          {/* User Identity */}
+          <div className="flex items-center gap-3 pt-4 border-t border-natural/10">
+            <img
+              src={testimonial.avatar}
+              alt={testimonial.name}
+              className="w-10 h-10 rounded-full object-cover border border-natural/10"
+            />
+            <div>
+              <h4 className="text-xs font-bold text-fern">{testimonial.name}</h4>
+              <div className="flex items-center gap-0.5 mt-0.5 text-amber-400">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} size={10} className="fill-amber-400" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      ))}
+    </div>
+  </section>
+
+    </div >
   );
 }
 

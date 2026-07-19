@@ -14,30 +14,34 @@ public class ProductImageSchemaInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        alterColumnToTextIfNeeded("products", "image");
-        alterColumnToTextIfNeeded("product_images", "image_url");
+
+        try {
+            alterColumnToTextIfNeeded("products", "image");
+            alterColumnToTextIfNeeded("product_images", "image_url");
+        } catch (Exception e) {
+            System.err.println("Failed to execute image schema initializer: " + e.getMessage());
+            // Ignore failure, allow application to start
+        }
     }
 
     private void alterColumnToTextIfNeeded(String tableName, String columnName) {
         String dataType = jdbcTemplate.queryForObject(
                 """
-                SELECT data_type
-                FROM information_schema.columns
-                WHERE table_schema = 'public'
-                  AND table_name = ?
-                  AND column_name = ?
-                """,
+                        SELECT data_type
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                          AND table_name = ?
+                          AND column_name = ?
+                        """,
                 String.class,
                 tableName,
-                columnName
-        );
+                columnName);
 
         // ALTER TYPE takes an ACCESS EXCLUSIVE lock even when the column is already
         // TEXT. Avoid taking that lock on every application startup.
         if (!"text".equalsIgnoreCase(dataType)) {
             jdbcTemplate.execute(
-                    "ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " TYPE TEXT"
-            );
+                    "ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " TYPE TEXT");
         }
     }
 }
