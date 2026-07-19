@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCoverflow, Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -139,16 +140,16 @@ const BEST_SELLERS: ProductCard[] = [
 
 // Mock Categories
 const CATEGORIES = [
-  { id: "c2", label: "Fashion", image: "https://plain-apac-prod-public.komododecks.com/202607/17/qKpLYvFyROMI7leCj3CB/image.jpg", bgColor: "bg-green-50/55 border border-green-100/40" },
-  { id: "c4", label: "Beauty", image: "https://plain-apac-prod-public.komododecks.com/202607/17/d9NfYAkJvfqHEU2qtifI/image.png", bgColor: "bg-purple-50/55 border border-purple-100/40" },
-  { id: "c3", label: "Home & Living", image: "https://plain-apac-prod-public.komododecks.com/202607/17/NlNTLMW9a5QezH556U2E/image.png", bgColor: "bg-orange-50/55 border border-orange-100/40" },
+  { id: "c2", label: "Fashion", image: "/fashion_model.png", bgColor: "bg-green-50/55 border border-green-100/40" },
+  { id: "c4", label: "Beauty", image: "https://plain-apac-prod-public.komododecks.com/202607/17/3ycnSUIgMdexVNSF82Ra/image.png", bgColor: "bg-purple-50/55 border border-purple-100/40" },
+  { id: "c3", label: "Home & Living", image: "https://plain-apac-prod-public.komododecks.com/202607/18/tDedHWXYOjaYCXJx6JkU/image.png", bgColor: "bg-orange-50/55 border border-orange-100/40" },
   { id: "c7", label: "Jewellery & Accessories", image: "https://plain-apac-prod-public.komododecks.com/202607/17/r2Wl1ThgEtUYbK0mSqCE/image.jpg", bgColor: "bg-amber-50/55 border border-amber-100/40" },
-  { id: "c8", label: "Footwear", image: "https://plain-apac-prod-public.komododecks.com/202607/17/tUmgd5MPVooerUVvRLme/image.jpg", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
-  { id: "c1", label: "Electronics", image: "https://plain-apac-prod-public.komododecks.com/202607/17/OP1zDwVgGwQTldoBny0u/image.png", bgColor: "bg-blue-50/55 border border-blue-100/40" },
-  { id: "c9", label: "Stationery", image: "https://plain-apac-prod-public.komododecks.com/202607/17/wPlN3dHGv1kawI0tdp5t/image.jpg", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
+  { id: "c8", label: "Footwear", image: "https://plain-apac-prod-public.komododecks.com/202607/17/inBO4F22OrRIT0Gep6Li/image.png", bgColor: "bg-cyan-50/55 border border-cyan-100/40" },
+  { id: "c1", label: "Electronics", image: "https://plain-apac-prod-public.komododecks.com/202607/18/CFEDJmfGLPxeAaBrfGkg/image.png", bgColor: "bg-blue-50/55 border border-blue-100/40" },
+  { id: "c9", label: "Stationery", image: "https://plain-apac-prod-public.komododecks.com/202607/18/EPkaqlfAPhSL9rqbzGlV/image.png", bgColor: "bg-indigo-50/55 border border-indigo-100/40" },
   { id: "c6", label: "Kids & Baby", image: "https://plain-apac-prod-public.komododecks.com/202607/17/QB3FzjHXFZ78VF7EDRqx/image.png", bgColor: "bg-rose-50/55 border border-rose-100/40" },
-  { id: "c10", label: "Health & Wellness", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PuXLUYcl7nDsR0bD15Ce/image.png", bgColor: "bg-lime-50/55 border border-lime-100/40" },
-  { id: "c5", label: "Sports", image: "https://plain-apac-prod-public.komododecks.com/202607/17/PECWKykUnRfaQoB2VAyf/image.png", bgColor: "bg-teal-50/55 border border-teal-100/40" },
+  { id: "c10", label: "Health & Wellness", image: "https://plain-apac-prod-public.komododecks.com/202607/18/4Y7tzw7CeoPlHbREaaqS/image.png", bgColor: "bg-lime-50/55 border border-lime-100/40" },
+  { id: "c5", label: "Sports", image: "https://plain-apac-prod-public.komododecks.com/202607/17/CctkrgFjW7Wn7KVN65jl/image.png", bgColor: "bg-teal-50/55 border border-teal-100/40" },
   { id: "c11", label: "Pets", image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=250", bgColor: "bg-emerald-50/55 border border-emerald-100/40" }
 ];
 
@@ -251,7 +252,28 @@ function HomeContent() {
   const [heroPaused, setHeroPaused] = useState(false);
   const [isFirstHeroRotation, setIsFirstHeroRotation] = useState(true);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
-  const [activeCategoryIndex, setActiveCategoryIndex] = useState(3);
+  const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const updated = CATEGORIES.map((cat) => {
+              const dbCat = data.find((c: any) => c.name.toLowerCase() === cat.label.toLowerCase());
+              return dbCat ? { ...cat, id: `c${dbCat.id}` } : cat;
+            });
+            setCategoriesList(updated);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load categories from backend, using fallbacks.", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -265,18 +287,6 @@ function HomeContent() {
 
     return () => window.clearTimeout(timer);
   }, [heroPaused, heroIndex, isFirstHeroRotation]);
-
-  const scrollCategoriesLeft = () => {
-    setActiveCategoryIndex((current) => (current === 0 ? CATEGORIES.length - 1 : current - 1));
-  };
-  const scrollCategoriesRight = () => {
-    setActiveCategoryIndex((current) => (current === CATEGORIES.length - 1 ? 0 : current + 1));
-  };
-
-  const visibleCategories = Array.from({ length: 7 }, (_, slot) => {
-    const index = (activeCategoryIndex - 3 + slot + CATEGORIES.length) % CATEGORIES.length;
-    return { category: CATEGORIES[index], isActive: slot === 3, slot };
-  });
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -451,6 +461,7 @@ function HomeContent() {
       {/* 1. Hero Section */}
       <section
         className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
         onFocusCapture={() => setHeroPaused(true)}
@@ -491,6 +502,60 @@ function HomeContent() {
               </Link>
             </div>
           ))}
+
+          {/* Mobile Overlay: Blend image with #FAF3E3 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
+          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
+          <div
+            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
+            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
+          />
+
+          {/* Hero Content Area */}
+          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
+              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
+              <span>NEW ARRIVALS</span>
+            </div>
+
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
+              Discover The Best Products for You
+            </h1>
+
+            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
+              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
+              <a
+                href="#best-sellers"
+                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
+              >
+                Shop Now
+                <ArrowRight size={14} />
+              </a>
+              <a
+                href="#categories"
+                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
+              >
+                Explore Deals
+              </a>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
+              <div className="flex -space-x-2">
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
+                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
+              </div>
+              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
+                Trusted by 10,000+ Happy Customers
+              </p>
+            </div>
+          </div>
+
         </div>
 
         {/* Carousel Indicators */}
@@ -519,7 +584,7 @@ function HomeContent() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-[#4a556a]">Free Shipping</h3>
-              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over $50</p>
+              <p className="text-[10px] text-[#4a556a] font-medium mt-0.5">On orders over ₹999</p>
             </div>
           </div>
 
@@ -605,7 +670,7 @@ function HomeContent() {
               }}
               className="!px-4 sm:!px-12 !pb-8 !pt-6"
             >
-              {CATEGORIES.map((category) => (
+              {categoriesList.map((category) => (
                 <SwiperSlide key={category.id} className="!w-[200px] sm:!w-[220px]">
                   {({ isActive }) => (
                     <motion.div variants={{
@@ -628,6 +693,9 @@ function HomeContent() {
                             alt={category.label}
                             className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
                               }`}
+                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${
+                              isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
+                            }`}
                           />
                         </div>
                         <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
@@ -645,7 +713,7 @@ function HomeContent() {
           </motion.div>
         </div>
 
-        <div className="mt-2 flex justify-center">
+        <div className="-mt-3 flex justify-center relative z-20">
           <Link
             href="/categories"
             className="inline-flex items-center gap-2 rounded-full bg-[#5271FF] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#3A56D4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5271FF] focus-visible:ring-offset-2"
@@ -658,7 +726,7 @@ function HomeContent() {
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">
             Best Selling Products
           </h2>
           <div className="flex items-center gap-4 self-end sm:self-auto">
@@ -726,10 +794,10 @@ function HomeContent() {
                         Facile Choice
                       </div>
                     )}
-                    <img
+                    <ProductImage
                       src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                     />
                   </div>
 
@@ -791,7 +859,7 @@ function HomeContent() {
               <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
                 <Link href={`/product/${product.id}`} className="block">
                   <div className="aspect-square overflow-hidden bg-neutral-100/50">
-                    <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
+                    <ProductImage src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} />
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
@@ -826,7 +894,7 @@ function HomeContent() {
       {/* 6. Customer Testimonials */}
       <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
 
           {/* Navigation Arrows */}
           <div className="flex gap-2">

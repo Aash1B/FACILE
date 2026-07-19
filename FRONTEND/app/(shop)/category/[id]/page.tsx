@@ -26,6 +26,7 @@ import {
   Check
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 
 import { CATEGORY_DETAILS, FALLBACK_PRODUCTS_MAP } from "@/lib/fallbackData";
 
@@ -127,6 +128,33 @@ const COLOR_MAP: Record<string, string> = {
   "Free Size": "#a3e635",
 };
 
+const SUBCATEGORY_IMAGES: Record<string, string> = {
+  "Earrings": "https://plain-apac-prod-public.komododecks.com/202607/17/Dux3oOjYmv3MOPHXBDSD/image.png",
+  "Necklaces": "https://plain-apac-prod-public.komododecks.com/202607/17/zUndEgCUCwICjghFDbFI/image.png",
+  "Bracelets": "https://plain-apac-prod-public.komododecks.com/202607/17/gi7NW1jlDPYC4fg05rzk/image.png",
+  "Rings": "https://plain-apac-prod-public.komododecks.com/202607/17/EA3OAob6bji3nJL3y3kf/image.png",
+  "Watches": "https://plain-apac-prod-public.komododecks.com/202607/17/ODa2F7nS3cEVW6NVuS9G/image.png",
+  "Bags": "https://plain-apac-prod-public.komododecks.com/202607/17/gJfEvjOxvgeoz795o9U1/image.png",
+  "Hair Accessories": "https://plain-apac-prod-public.komododecks.com/202607/17/y33JoB79IfLCKHM08AN4/image.png",
+  "Sunglasses": "https://plain-apac-prod-public.komododecks.com/202607/17/ebvSEPRoWMb98i5UDfef/image.png",
+  "Ethnic Wear": "https://plain-apac-prod-public.komododecks.com/202607/18/2uG5D4fVvFoCfF4gizJN/image.png",
+  "Tops & T-Shirts": "https://plain-apac-prod-public.komododecks.com/202607/18/MlW17UoPtrMl3FMCWbKb/image.png",
+  "Activewear": "https://plain-apac-prod-public.komododecks.com/202607/18/1u8VswmedgZwztWdsz2d/image.png",
+  "Bottom Wear": "https://plain-apac-prod-public.komododecks.com/202607/18/6ht1dh6zjMI977LdwSR6/image.png",
+  "Winter Wear": "https://plain-apac-prod-public.komododecks.com/202607/18/Y2uYQNbva99bWhIQEaLC/image.png",
+  "Dresses": "https://plain-apac-prod-public.komododecks.com/202607/18/E6zzmgXa5xt0FBOmKOO1/image.png",
+  "Loungewear": "https://plain-apac-prod-public.komododecks.com/202607/18/Q4ATUcO3gKAdhYtEbv41/image.png",
+  "Co-ord Sets": "https://plain-apac-prod-public.komododecks.com/202607/18/hd3SuFgV7kzPaUfD8S3r/image.png",
+  "Sneakers": "https://plain-apac-prod-public.komododecks.com/202607/18/nWsRLOAFVrhd8Bc4uosr/image.png",
+  "Heels": "https://plain-apac-prod-public.komododecks.com/202607/18/oO03g2OGbSMjHvSXehHs/image.png",
+  "Flats": "https://plain-apac-prod-public.komododecks.com/202607/18/MJd9n3Vi3aEo3OOIhrzQ/image.png",
+  "Boots": "https://plain-apac-prod-public.komododecks.com/202607/18/VXU9G3ZzrFxXZAAFV4Sp/image.png",
+  "Sandals": "https://plain-apac-prod-public.komododecks.com/202607/18/S1eXhIW7A4RBiXZmSPUU/image.png",
+  "Sports Shoes": "https://plain-apac-prod-public.komododecks.com/202607/18/aomKf46UJ6FqsCal9DBz/image.png",
+  "Slippers": "https://plain-apac-prod-public.komododecks.com/202607/18/jsHjqG1BJQPrl2t1KR5i/image.png",
+  "Loafers": "https://plain-apac-prod-public.komododecks.com/202607/18/69KaZqXdNyqozJjkyGDR/image.png",
+};
+
 export default function CategoryPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
@@ -140,17 +168,32 @@ export default function CategoryPage() {
     image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1400",
   });
 
+  const [resolvedFallbackCategoryId, setResolvedFallbackCategoryId] = useState<string>(() => {
+    return CATEGORY_DETAILS[categoryId] ? categoryId : "1";
+  });
+
+  useEffect(() => {
+    const entry = Object.entries(CATEGORY_DETAILS).find(
+      ([_, value]) => value.name.toLowerCase() === details.name.toLowerCase()
+    );
+    if (entry) {
+      setResolvedFallbackCategoryId(entry[0]);
+    }
+  }, [details.name]);
+
   useEffect(() => {
     const localFallback = CATEGORY_DETAILS[categoryId] ?? CATEGORY_DETAILS["1"];
     setDetails(localFallback);
     setDbCategoryId(categoryId);
 
     const fetchCategoryDetails = async () => {
+      // 1. Try direct fetch
       try {
         const res = await fetch(`/api/categories/${categoryId}`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.name) {
+            setDbCategoryId(String(data.id));
             setDetails({
               name: data.name,
               description: data.description || localFallback.description,
@@ -161,6 +204,7 @@ export default function CategoryPage() {
         }
       } catch {}
 
+      // 2. Try match by name
       try {
         const res = await fetch("/api/categories");
         if (res.ok) {
@@ -176,6 +220,7 @@ export default function CategoryPage() {
                 description: matched.description || localFallback.description,
                 image: matched.image || localFallback.image,
               });
+              return;
             }
           }
         }
@@ -371,14 +416,35 @@ export default function CategoryPage() {
   };
 
   useEffect(() => {
-    const fallback = (FALLBACK_SUBCATEGORIES[categoryId] ?? []).map((name, index) => ({ id: `fallback-${index}`, name }));
+    const fallback = (FALLBACK_SUBCATEGORIES[resolvedFallbackCategoryId] ?? []).map((name, index) => ({ id: `fallback-${index}`, name }));
+
+    const sanitize = (list: SubCategory[]) => {
+      let filtered = list;
+      if (resolvedFallbackCategoryId === "2") {
+        filtered = list.filter(sub => 
+          sub.name.toLowerCase() !== "apparel" &&
+          sub.name.toLowerCase() !== "travel bags" &&
+          sub.name.toLowerCase() !== "travel bag"
+        );
+      }
+      const seen = new Set<string>();
+      return filtered.filter(sub => {
+        const normalized = sub.name.toLowerCase().replace(/\s+/g, "");
+        if (seen.has(normalized)) return false;
+        seen.add(normalized);
+        return true;
+      });
+    };
 
     fetch(`/api/categories/${dbCategoryId}/subcategories`)
       .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data) => setSubcategories(Array.isArray(data) && data.length ? data : fallback))
-      .catch(() => setSubcategories(fallback))
+      .then((data) => {
+        const rawList = Array.isArray(data) && data.length ? data : fallback;
+        setSubcategories(sanitize(rawList));
+      })
+      .catch(() => setSubcategories(sanitize(fallback)))
       .finally(() => setLoading(false));
-  }, [dbCategoryId, categoryId]);
+  }, [dbCategoryId, resolvedFallbackCategoryId]);
 
   useEffect(() => {
     const isShoesFilter = searchParams?.get("filter") === "shoes";
@@ -409,7 +475,7 @@ export default function CategoryPage() {
               return allowedSubNames.some((sub) => subName.includes(sub));
             });
           } else if (String(subcategoryId).startsWith("fallback-")) {
-            const fallbackList = FALLBACK_SUBCATEGORIES[categoryId] ?? [];
+            const fallbackList = FALLBACK_SUBCATEGORIES[resolvedFallbackCategoryId] ?? [];
             const index = parseInt(String(subcategoryId).replace("fallback-", ""), 10);
             const fallbackName = fallbackList[index];
             loadedProducts = data.filter(p => p.subCategory?.name?.toLowerCase() === fallbackName.toLowerCase());
@@ -422,7 +488,7 @@ export default function CategoryPage() {
       })
       .catch(() => setProducts([]))
       .finally(() => setProductsLoading(false));
-  }, [subcategoryId, dbCategoryId, categoryId, subcategories, searchParams]);
+  }, [subcategoryId, dbCategoryId, resolvedFallbackCategoryId, subcategories, searchParams]);
 
   useEffect(() => {
     fetch(`/api/products?categoryId=${dbCategoryId}`)
@@ -442,7 +508,7 @@ export default function CategoryPage() {
   const subcategoryName = isShoesFilter ? "Shoes, Sneakers & Loafers" : (
     selectedSub ? selectedSub.name : (
       String(subcategoryId).startsWith("fallback-") ? (
-        FALLBACK_SUBCATEGORIES[categoryId]?.[parseInt(String(subcategoryId).replace("fallback-", ""), 10)] || "Subcategory"
+        FALLBACK_SUBCATEGORIES[resolvedFallbackCategoryId]?.[parseInt(String(subcategoryId).replace("fallback-", ""), 10)] || "Subcategory"
       ) : "Subcategory"
     )
   );
@@ -469,7 +535,7 @@ export default function CategoryPage() {
   };
 
   const filterPanelProps: FilterPanelProps = {
-    categoryId,
+    categoryId: resolvedFallbackCategoryId,
     subcategoryName,
     products,
     selectedBrands, toggleBrand,
@@ -555,21 +621,40 @@ export default function CategoryPage() {
                   <Link
                     key={subcategory.id}
                     href={`/category/${categoryId}?subcategory=${subcategory.id}`}
-                    className={`group relative min-h-52 overflow-hidden rounded-[28px] border border-white/70 bg-gradient-to-br ${style.surface} p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
+                    className={`group relative min-h-52 overflow-hidden rounded-[28px] border border-white/70 ${SUBCATEGORY_IMAGES[subcategory.name] ? 'bg-white' : `bg-gradient-to-br ${style.surface}`} p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
                   >
-                    <span className={`absolute -right-9 -top-10 w-32 h-32 rounded-full ${style.accent} opacity-30 transition-transform duration-500 group-hover:scale-125`} />
-                    <span className="absolute -right-2 bottom-4 text-[72px] leading-none font-black text-white/35 select-none">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                    {SUBCATEGORY_IMAGES[subcategory.name] ? (
+                      <>
+                        <img 
+                          src={SUBCATEGORY_IMAGES[subcategory.name]} 
+                          alt={subcategory.name} 
+                          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
+                            subcategory.name === "Ethnic Wear" ? "object-[center_15%]" :
+                            ["Dresses", "Loungewear"].includes(subcategory.name) ? "object-top" :
+                            "object-center"
+                          }`}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                      </>
+                    ) : (
+                      <>
+                        <span className={`absolute -right-9 -top-10 w-32 h-32 rounded-full ${style.accent} opacity-30 transition-transform duration-500 group-hover:scale-125`} />
+                        <span className="absolute -right-2 bottom-4 text-[72px] leading-none font-black text-white/35 select-none">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </>
+                    )}
 
-                    <div className="relative z-10 h-full flex flex-col items-start justify-between gap-7">
-                      <span className={`w-14 h-14 rounded-2xl ${style.icon} text-white flex items-center justify-center shadow-md transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105`}>
-                        <Boxes size={25} strokeWidth={1.8} />
-                      </span>
+                    <div className={`relative z-10 h-full flex flex-col items-start gap-7 ${SUBCATEGORY_IMAGES[subcategory.name] ? "justify-end" : "justify-between"}`}>
+                      {!SUBCATEGORY_IMAGES[subcategory.name] && (
+                        <span className={`w-14 h-14 rounded-2xl ${style.icon} text-white flex items-center justify-center shadow-md transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105`}>
+                          <Boxes size={25} strokeWidth={1.8} />
+                        </span>
+                      )}
 
                       <div className="w-full">
-                        <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#3f485a]">{subcategory.name}</h3>
-                        <span className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-[#4a556a]/70 group-hover:text-[#4a556a] transition-colors">
+                        <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${SUBCATEGORY_IMAGES[subcategory.name] ? "text-white drop-shadow-md" : "text-[#3f485a]"}`}>{subcategory.name}</h3>
+                        <span className={`mt-3 inline-flex items-center gap-2 text-xs font-bold transition-colors ${SUBCATEGORY_IMAGES[subcategory.name] ? "text-white/90 group-hover:text-white drop-shadow-sm" : "text-[#4a556a]/70 group-hover:text-[#4a556a]"}`}>
                           Browse products
                           <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
                         </span>
@@ -779,10 +864,10 @@ export default function CategoryPage() {
 
                             <Link href={`/product/bs${product.id}`} className="flex flex-col flex-1">
                               <div className="aspect-square bg-neutral-50 overflow-hidden flex-shrink-0 relative">
-                                <img
+                                <ProductImage
                                   src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                                   alt={product.title}
-                                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                                  className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                                 />
                               </div>
 

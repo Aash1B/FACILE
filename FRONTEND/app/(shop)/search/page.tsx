@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 import { Product, FALLBACK_PRODUCTS } from "@/lib/fallbackData";
 import {
   Heart,
@@ -563,10 +564,10 @@ function ProductCard({
 
       <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
         <div className="aspect-square bg-neutral-50 overflow-hidden flex-shrink-0">
-          <img
+          <ProductImage
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           />
         </div>
 

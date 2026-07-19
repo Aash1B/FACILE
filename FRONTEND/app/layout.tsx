@@ -22,8 +22,12 @@ const anticDidone = Antic_Didone({
 });
 
 export const metadata: Metadata = {
-  title: "Facile – Discover the Best Products",
+  title: "Facile – Online Marketplace",
   description: "Shop high-quality products at affordable prices. Free shipping, secure payment, and easy returns.",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml", sizes: "any" }],
+    shortcut: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

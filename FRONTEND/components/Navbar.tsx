@@ -110,6 +110,20 @@ export default function Navbar() {
     };
   }, []);
 
+  const sanitizeSubcategories = (list: StoreSubcategory[], categoryName: string) => {
+    let filtered = list;
+    if (categoryName.toLowerCase() === "fashion") {
+      filtered = list.filter(sub => sub.name.toLowerCase() !== "apparel");
+    }
+    const seen = new Set<string>();
+    return filtered.filter(sub => {
+      const normalized = sub.name.toLowerCase().replace(/\s+/g, "");
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
+      return true;
+    });
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("search_history");
@@ -209,7 +223,10 @@ export default function Navbar() {
               try {
                 const subResponse = await fetch(`/api/categories/${cat.id}/subcategories`);
                 const subData = subResponse.ok ? await subResponse.json() : [];
-                subMap[String(cat.id)] = Array.isArray(subData) ? subData : [];
+                subMap[String(cat.id)] = sanitizeSubcategories(
+                  Array.isArray(subData) ? subData : [],
+                  cat.name
+                );
               } catch {
                 subMap[String(cat.id)] = [];
               }
@@ -613,7 +630,10 @@ export default function Navbar() {
       const data = response.ok ? await response.json() : [];
       setSubcategoriesByCategory((current) => ({
         ...current,
-        [categoryKey]: Array.isArray(data) ? data : [],
+        [categoryKey]: sanitizeSubcategories(
+          Array.isArray(data) ? data : [],
+          category.name
+        ),
       }));
     } catch {
       setSubcategoriesByCategory((current) => ({ ...current, [categoryKey]: [] }));
@@ -705,32 +725,34 @@ export default function Navbar() {
                         {user.name}
                       </span>
                     </button>
-
                     {isProfileOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-natural/20 rounded-xl shadow-lg p-3.5 z-50 animate-fade-in text-black">
-                        <div className="border-b border-natural/10 pb-2 mb-2 text-xs">
-                          <p className="font-bold text-natural uppercase tracking-wider text-[9px]">Logged in as</p>
-                          <p className="font-bold truncate">{user.name}</p>
-                          <p className="text-natural/80 truncate text-[10px]">{user.email}</p>
+                      <div className="absolute right-0 mt-2.5 w-80 bg-[#DDE0F0] border border-natural/20 rounded-2xl shadow-xl px-6 py-4 z-50 animate-fade-in text-black">
+                        <div className="border-b border-natural/20 pb-3 mb-3 space-y-1">
+                          <p className="font-extrabold text-[#4a556a]/80 uppercase tracking-wider text-[10px]">Logged in as</p>
+                          <p className="font-bold text-sm text-[#4a556a] truncate">{user.name}</p>
+                          <p className="text-[#4a556a]/90 truncate text-xs font-medium">{user.email}</p>
                         </div>
-                        <Link
-                          href="/profile?tab=profile"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="w-full py-1.5 px-2 hover:bg-warm-ivory text-black rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left mb-1 flex"
-                        >
-                          <User size={13} />
-                          My Account
-                        </Link>
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsProfileOpen(false);
-                          }}
-                          className="w-full py-1.5 px-2 hover:bg-warm-ivory text-apricot rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer text-left"
-                        >
-                          <LogOut size={13} />
-                          Logout
-                        </button>
+                        <div className="space-y-1">
+                          <Link
+                            href="/profile?tab=profile"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="w-full py-2.5 px-3.5 hover:bg-white/65 text-[#4a556a] hover:text-[#1A202C] rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer text-left flex"
+                          >
+                            <User size={15} className="stroke-[2.5px]" />
+                            My Account
+                          </Link>
+                          <button
+                            onClick={() => {
+                              logout();
+                              setIsProfileOpen(false);
+                            }}
+                            className="w-full py-2.5 px-3.5 hover:bg-[#FFF0F6]/80 text-[#E8437F] rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer text-left"
+                          >
+                            <LogOut size={15} className="stroke-[2.5px]" />
+                            Sign Out
+                          </button>
+                        </div>
+
                       </div>
                     )}
                   </>

@@ -14,6 +14,7 @@ export interface CartItem {
   selectedSize?: string | null;
 }
 
+
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
@@ -30,6 +31,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  export function CartProvider({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -105,18 +108,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     if (productRes.ok) image = (await productRes.json()).image;
                   } catch {
                     // Use the fallback below only when product lookup fails.
+                    // Use fallback when product lookup fails
                   }
                 }
               }
 
               return {
                 id: i.productId,
-                name: String(i.productName || "Unknown Product"),
-                price: Number(i.price || 0),
-                brand: "facile Store",
+                name: i.productName,
+                price: i.price,
+                brand: "Facile",
                 image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
-                quantity: Number(i.quantity || 1),
-                maxOrderQuantity: Number(i.maxOrderQuantity || 10),
+                maxOrderQuantity: i.maxOrderQuantity || 10,
+                quantity: i.quantity,
                 selectedSize: i.selectedSize || null,
               };
             }));
@@ -137,6 +141,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } else {
           setCart([]);
         }
+      };
+    };
+
+    syncCart();
+  }, [user]);
+
+    // Load favorites on mount
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const savedFavs = localStorage.getItem("facile_favorites");
+        if (savedFavs) {
+          try {
+            setFavorites(JSON.parse(savedFavs));
+          } catch (e) {
+            console.error("Error parsing favorites data", e);
+          }
+        }
+      }
+    }, []);
+
+    const saveCartState = (newCart: CartItem[]) => {
+      setCart(newCart);
+      if (!user && typeof window !== "undefined") {
+        localStorage.setItem("facile_cart", JSON.stringify(newCart));
       }
     };
 

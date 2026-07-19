@@ -140,11 +140,11 @@ export default function CartDrawer() {
                     </div>
                     <div className="flex justify-between text-xs text-[#4A5568]">
                       <span>Shipping</span>
-                      <span>{subtotal >= 1500 ? "Free" : "₹99"}</span>
+                      <span>{subtotal >= 999 ? "Free" : "₹99"}</span>
                     </div>
                     <div className="border-t border-natural/10 my-2 pt-2 flex justify-between text-sm font-bold text-fern">
                       <span>Total Amount</span>
-                      <span>₹{(subtotal + (subtotal >= 1500 ? 0 : 99)).toLocaleString("en-IN")}</span>
+                      <span>₹{(subtotal + (subtotal >= 999 ? 0 : 99)).toLocaleString("en-IN")}</span>
                     </div>
                   </div>
 

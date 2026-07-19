@@ -405,8 +405,6 @@ function ProfileContent() {
   };
   
   // Profile Form State
-  const [profileName, setProfileName] = useState("");
-  const [profileEmail, setProfileEmail] = useState("");
   const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
   const [profileGender, setProfileGender] = useState("Prefer not to say");
   const [showSaveToast, setShowSaveToast] = useState(false);
@@ -446,9 +444,6 @@ function ProfileContent() {
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/login");
-    } else if (user) {
-      setProfileName(user.name);
-      setProfileEmail(user.email);
     }
   }, [user, isLoading, router]);
 
@@ -531,7 +526,7 @@ function ProfileContent() {
                   <div className="w-24 h-24 bg-warm-ivory text-fern rounded-full flex items-center justify-center font-serif text-3xl font-bold uppercase shadow-sm overflow-hidden">
                     {profilePhoto
                       ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                      : (profileName ? profileName.slice(0, 2) : "US")
+                      : (user.name ? user.name.slice(0, 2) : "US")
                     }
                   </div>
                   <input
@@ -549,7 +544,7 @@ function ProfileContent() {
                     <Camera size={14} />
                   </button>
                 </div>
-              <h3 className="text-lg font-bold text-fern truncate w-full text-center">{profileName}</h3>
+              <h3 className="text-lg font-bold text-fern truncate w-full text-center">{user.name}</h3>
               <p className="text-xs text-natural/80 font-medium truncate w-full text-center mb-1">{user?.email}</p>
               <p className="text-[10px] font-bold text-fern/70 uppercase tracking-widest mb-6">
                 {user ? "Member Since 2026" : "Guest Account"}
@@ -752,7 +747,22 @@ className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-al
                           EMAIL ADDRESS
                         </label>
                       </div>
+                  <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                    <div>
+                      <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
+                      <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
                     </div>
+                    
+                    <form onSubmit={handleProfileUpdate} className="space-y-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        
+                        {/* Account identity is fixed after registration. */}
+                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
+                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
+                            FULL NAME
+                          </span>
+                          <p className="truncate text-sm font-medium text-fern">{user.name}</p>
+                        </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       
@@ -788,8 +798,50 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                           PREFERRED REGION
                         </label>
                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
+                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
+                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
+                            EMAIL ADDRESS
+                          </span>
+                          <p className="truncate text-sm font-medium text-fern">{user.email}</p>
+                        </div>
                       </div>
-                    </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        
+                        {/* Floating Label Input for Phone Number */}
+                        <div className="relative group">
+                          <input 
+                            type="text" 
+                            id="phoneNumber"
+                            value={profilePhone}
+                            onChange={(e) => setProfilePhone(e.target.value)}
+                            className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
+                            placeholder="Phone Number"
+                          />
+                          <label 
+                            htmlFor="phoneNumber" 
+                            className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
+                          >
+                            PHONE NUMBER
+                          </label>
+                        </div>
+
+                        {/* Premium Select for Region */}
+                        <div className="relative group">
+                          <select 
+                            className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
+                            defaultValue="India"
+                          >
+                            <option value="India">India (INR)</option>
+                            <option value="US">United States (USD)</option>
+                            <option value="UK">United Kingdom (GBP)</option>
+                          </select>
+                          <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
+                            PREFERRED REGION
+                          </label>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
+                        </div>
+                      </div>
 
                     {/* Modern Segmented Control for Gender */}
                     <div className="space-y-3">

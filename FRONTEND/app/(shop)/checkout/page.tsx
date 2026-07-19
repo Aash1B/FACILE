@@ -211,8 +211,8 @@ export default function CheckoutPage() {
     }
   }
 
-  // Free delivery for orders over ₹15,000, else ₹99 delivery charge
-  const deliveryCharge = subtotal >= 15000 || subtotal === 0 ? 0 : 99;
+  // Free delivery for orders over ₹999, else ₹99 delivery charge
+  const deliveryCharge = subtotal >= 999 || subtotal === 0 ? 0 : 99;
   const platformFee = subtotal === 0 ? 0 : 5;
   const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge + platformFee);
 
@@ -1116,7 +1116,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1">
                     <span>Delivery Charge</span>
-                    {subtotal >= 15000 && (
+                    {subtotal >= 999 && (
                       <span className="text-[9px] bg-green-100 text-green-700 font-extrabold px-1.5 py-0.2 rounded-md uppercase tracking-wider">Free Option</span>
                     )}
                   </div>
@@ -1184,10 +1184,12 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {subtotal < 15000 && subtotal > 0 && (
+                {subtotal < 999 && subtotal > 0 && (
                   <div className="p-3 bg-apricot/5 border border-apricot/15 rounded-xl flex gap-2 items-start text-[10px] text-natural font-medium">
                     <Truck size={14} className="text-[#5271FF] flex-shrink-0 mt-0.5" />
                     <p>Add <span className="text-warm-ivory font-bold">{formatPrice(15000 - subtotal)}</span> more to qualify for <span className="text-warm-ivory font-bold">Free Delivery</span>!</p>
+                    <Truck size={14} className="text-[#E8A1C4] flex-shrink-0 mt-0.5" />
+                    <p>Add <span className="text-warm-ivory font-bold">{formatPrice(999 - subtotal)}</span> more to qualify for <span className="text-warm-ivory font-bold">Free Delivery</span>!</p>
                   </div>
                 )}
 
