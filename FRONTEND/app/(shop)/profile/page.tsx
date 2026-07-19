@@ -405,8 +405,6 @@ function ProfileContent() {
   };
   
   // Profile Form State
-  const [profileName, setProfileName] = useState("");
-  const [profileEmail, setProfileEmail] = useState("");
   const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
   const [profileGender, setProfileGender] = useState("Prefer not to say");
   const [showSaveToast, setShowSaveToast] = useState(false);
@@ -446,9 +444,6 @@ function ProfileContent() {
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/login");
-    } else if (user) {
-      setProfileName(user.name);
-      setProfileEmail(user.email);
     }
   }, [user, isLoading, router]);
 
@@ -531,7 +526,7 @@ function ProfileContent() {
                   <div className="w-24 h-24 bg-warm-ivory text-fern rounded-full flex items-center justify-center font-serif text-3xl font-bold uppercase shadow-sm overflow-hidden">
                     {profilePhoto
                       ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                      : (profileName ? profileName.slice(0, 2) : "US")
+                      : (user.name ? user.name.slice(0, 2) : "US")
                     }
                   </div>
                   <input
@@ -549,7 +544,7 @@ function ProfileContent() {
                     <Camera size={14} />
                   </button>
                 </div>
-              <h3 className="text-lg font-bold text-fern truncate w-full text-center">{profileName}</h3>
+              <h3 className="text-lg font-bold text-fern truncate w-full text-center">{user.name}</h3>
               <p className="text-xs text-natural/80 font-medium truncate w-full text-center mb-1">{user?.email}</p>
               <p className="text-[10px] font-bold text-fern/70 uppercase tracking-widest mb-6">
                 {user ? "Member Since 2026" : "Guest Account"}
@@ -715,42 +710,19 @@ function ProfileContent() {
                     <form onSubmit={handleProfileUpdate} className="space-y-6">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         
-                        {/* Floating Label Input for Full Name */}
-                        <div className="relative group">
-                          <input 
-                            type="text" 
-                            id="fullName"
-                            value={profileName}
-                            onChange={(e) => setProfileName(e.target.value)}
-                            required
-                            className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                            placeholder="Full Name"
-                          />
-                          <label 
-                            htmlFor="fullName" 
-                            className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                          >
+                        {/* Account identity is fixed after registration. */}
+                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
+                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
                             FULL NAME
-                          </label>
+                          </span>
+                          <p className="truncate text-sm font-medium text-fern">{user.name}</p>
                         </div>
 
-                        {/* Floating Label Input for Email Address */}
-                        <div className="relative group">
-                          <input 
-                            type="email" 
-                            id="emailAddress"
-                            value={profileEmail}
-                            onChange={(e) => setProfileEmail(e.target.value)}
-                            required
-                            className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                            placeholder="Email Address"
-                          />
-                          <label 
-                            htmlFor="emailAddress" 
-                            className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                          >
+                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
+                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
                             EMAIL ADDRESS
-                          </label>
+                          </span>
+                          <p className="truncate text-sm font-medium text-fern">{user.email}</p>
                         </div>
                       </div>
 

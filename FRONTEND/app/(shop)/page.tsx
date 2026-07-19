@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCoverflow, Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -749,10 +750,10 @@ function HomeContent() {
                         Facile Choice
                       </div>
                     )}
-                    <img
+                    <ProductImage
                       src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                     />
                   </div>
 
@@ -814,7 +815,7 @@ function HomeContent() {
               <article key={product.id} className="w-52 sm:w-56 flex-shrink-0 overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] shadow-xs">
                 <Link href={`/product/${product.id}`} className="block">
                   <div className="aspect-square overflow-hidden bg-neutral-100/50">
-                    <img src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} className="h-full w-full object-cover" />
+                    <ProductImage src={product.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={product.name} />
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">

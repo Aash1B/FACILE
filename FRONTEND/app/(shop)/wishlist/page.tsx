@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 import { ArrowLeft, ShoppingCart, Heart, Trash2, Sparkles, Star } from "lucide-react";
 
 // Mock Fallback Database in case the API is offline (same as page.tsx)
@@ -241,10 +242,10 @@ export default function WishlistPage() {
                           -{discount}%
                         </div>
                       )}
-                      <img
+                      <ProductImage
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        className="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                       />
                     </div>
 

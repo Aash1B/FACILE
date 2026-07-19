@@ -4,6 +4,7 @@ import React, { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import ProductImage from "@/components/ProductImage";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
@@ -762,7 +763,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               {recommendedProducts.map((item) => (
                 <Link key={item.id} href={`/product/bs${item.id}`} className="group w-48 flex-none overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] transition-all hover:-translate-y-1 hover:shadow-md sm:w-56">
                   <div className="aspect-square overflow-hidden bg-neutral-100">
-                    <img src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <ProductImage src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="transition-transform duration-300 group-hover:scale-[1.03]" />
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
