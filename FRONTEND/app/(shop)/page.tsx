@@ -461,7 +461,6 @@ function HomeContent() {
       {/* 1. Hero Section */}
       <section
         className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
-        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
         onFocusCapture={() => setHeroPaused(true)}
@@ -502,68 +501,9 @@ function HomeContent() {
               </Link>
             </div>
           ))}
-
-          {/* Mobile Overlay: Blend image with #FAF3E3 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
-          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
-          <div
-            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
-            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
-          />
-
-          {/* Hero Content Area */}
-          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
-              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
-              <span>NEW ARRIVALS</span>
-            </div>
-
-            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
-              Discover The Best Products for You
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
-              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
-              <a
-                href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
-              >
-                Shop Now
-                <ArrowRight size={14} />
-              </a>
-              <a
-                href="#categories"
-                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
-              >
-                Explore Deals
-              </a>
-            </div>
-
-            {/* Social Proof */}
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
-              <div className="flex -space-x-2">
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
-              </div>
-              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
-                Trusted by 10,000+ Happy Customers
-              </p>
-            </div>
-          </div>
-
         </div>
 
-<<<<<<< HEAD
-  {/* Carousel Indicators */ }
-  <div className="mt-4 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
-=======
         <div className="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose featured slide">
->>>>>>> 6227860 (updated sub category)
       {HERO_SLIDES.map((slide, index) => (
         <button
           key={slide.id}
@@ -572,10 +512,7 @@ function HomeContent() {
           aria-selected={heroIndex === index}
           aria-label={`Show slide ${index + 1}`}
           onClick={() => setHeroIndex(index)}
-          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all duration-300 ${heroIndex === index ? "bg-[#4A5568] w-6" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
-
-          className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${heroIndex === index ? "bg-[#4A5568]" : "bg-[#4A5568]/20 hover:bg-[#4A5568]/40"}`}
-
+          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all duration-300 ${heroIndex === index ? "bg-[#5271FF] w-6" : "bg-[#5271FF]/20 hover:bg-[#5271FF]/40"}`}
         />
       ))}
     </div>
@@ -583,7 +520,7 @@ function HomeContent() {
 
   {/* 2. Feature Highlights Bar */ }
       <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
-        <div className="bg-white border border-natural/15 hover:border-[#4A5568] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
+        <div className="bg-white border border-natural/15 hover:border-[#5271FF] rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 transition-all duration-300" style={{ boxShadow: '0 4px 6px rgba(74,85,104,0.03), 0 10px 25px rgba(74,85,104,0.06), 0 20px 48px rgba(74,85,104,0.04)' }}>
 
           <div className="flex items-center gap-4">
             <div className="p-3 bg-warm-ivory/45 rounded-xl text-[#5271FF] flex-shrink-0">
@@ -692,18 +629,12 @@ function HomeContent() {
                           }`}
                       >
                         <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${isActive
-
                           ? `shadow-[0_12px_30px_rgba(82,113,255,0.25)] bg-white ${category.bgColor}`
-                          ? `shadow-[0_12px_30px_rgba(232,67,127,0.25)] bg-white ${category.bgColor}`
-
                           : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
                           }`}>
                           <img
                             src={category.image}
                             alt={category.label}
-
-                            className={`w-full h-full object-cover transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
-                              }`}
                             className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${
                               isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
                             }`}
@@ -711,14 +642,6 @@ function HomeContent() {
                         </div>
                         <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
                           ? "text-[#5271FF] drop-shadow-sm"
-
-                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
-                              }`}
-                          />
-                        </div>
-                        <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
-                          ? "text-[#E8437F] drop-shadow-sm"
-
                           : "text-[#5271FF] group-hover:text-[#1A202C]"
                           }`}>
                           {category.label}
@@ -911,10 +834,7 @@ function HomeContent() {
     )
   }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 6227860 (updated sub category)
 
   {/* 6. Customer Testimonials */ }
   <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
