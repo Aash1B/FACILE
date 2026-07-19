@@ -142,7 +142,7 @@ export default function CartDrawer() {
                       <span>Shipping</span>
                       <span>{subtotal >= 999 ? "Free" : "₹99"}</span>
                     </div>
-                    <div className="border-t border-natural/10 my-2 pt-2 flex justify-between text-sm font-bold text-fern">
+                    <div className="border-t border-natural/10 my-2 pt-2 flex justify-between text-sm font-bold text-[#5271FF]">
                       <span>Total Amount</span>
                       <span>₹{(subtotal + (subtotal >= 999 ? 0 : 99)).toLocaleString("en-IN")}</span>
                     </div>
@@ -151,7 +151,7 @@ export default function CartDrawer() {
                   <button
                     onClick={handleCheckout}
                     disabled={isCheckingOut}
-                    className="w-full h-11 bg-fern hover:bg-fern/95 active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-full shadow-md transition-all flex items-center justify-center gap-2 disabled:bg-fern/50"
+                    className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-full shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isCheckingOut ? (
                       <>

@@ -250,7 +250,6 @@ function HomeContent() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
-  const [isFirstHeroRotation, setIsFirstHeroRotation] = useState(true);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
 
@@ -278,15 +277,12 @@ function HomeContent() {
   useEffect(() => {
     if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     
-    const timeoutDuration = isFirstHeroRotation ? 500 : 2500;
-    
     const timer = window.setTimeout(() => {
       setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
-      if (isFirstHeroRotation) setIsFirstHeroRotation(false);
-    }, timeoutDuration);
+    }, 2500);
 
     return () => window.clearTimeout(timer);
-  }, [heroPaused, heroIndex, isFirstHeroRotation]);
+  }, [heroPaused, heroIndex]);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -460,8 +456,7 @@ function HomeContent() {
 
       {/* 1. Hero Section */}
       <section
-        className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
-        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        className="w-full px-4 sm:px-6 lg:px-8 pt-6"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
         onFocusCapture={() => setHeroPaused(true)}
@@ -503,58 +498,7 @@ function HomeContent() {
             </div>
           ))}
 
-          {/* Mobile Overlay: Blend image with #FAF3E3 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F0] via-[#F4F4F0] via-35% to-transparent z-10 pointer-events-none sm:hidden" />
-          {/* Desktop Overlay: Solid #FAF3E3 panel, with smooth gradient blending the image */}
-          <div
-            className="absolute inset-0 z-10 pointer-events-none hidden sm:block"
-            style={{ background: 'linear-gradient(to right, #F4F4F0 0%, #F4F4F0 42%, transparent 52%)' }}
-          />
 
-          {/* Hero Content Area */}
-          <div className="relative z-20 max-w-xl px-6 py-10 sm:py-16 sm:pl-12 lg:pl-16 space-y-5 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-fern/10 rounded-full text-xs font-bold text-fern mx-auto sm:mx-0">
-              <span className="w-1.5 h-1.5 bg-fern rounded-full" />
-              <span>NEW ARRIVALS</span>
-            </div>
-
-            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#4A5568] leading-[1.15] tracking-tight">
-              Discover The Best Products for You
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed max-w-md mx-auto sm:mx-0 font-semibold">
-              Explore our wide range of high-quality products at affordable prices. Shop now and enjoy the best deals!
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
-              <a
-                href="#best-sellers"
-                className="w-full sm:w-auto h-11 px-6 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black active:scale-98 transition-all font-bold text-xs tracking-wider rounded-lg shadow-md flex items-center justify-center gap-2"
-              >
-                Shop Now
-                <ArrowRight size={14} />
-              </a>
-              <a
-                href="#categories"
-                className="w-full sm:w-auto h-11 px-6 bg-white border border-natural/20 hover:border-fern text-fern font-bold text-xs tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all"
-              >
-                Explore Deals
-              </a>
-            </div>
-
-            {/* Social Proof */}
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 pt-5 border-t border-natural/15 max-w-md mx-auto sm:mx-0">
-              <div className="flex -space-x-2">
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="avatar" />
-                <img className="inline-block h-7 w-7 rounded-full ring-2 ring-warm-ivory object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="avatar" />
-              </div>
-              <p className="text-[11px] font-bold text-[#4A5568] tracking-wide">
-                Trusted by 10,000+ Happy Customers
-              </p>
-            </div>
-          </div>
 
         </div>
 
@@ -624,7 +568,7 @@ function HomeContent() {
       <section id="categories" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">Shop by Categories</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">Shop by Categories</h2>
           </div>
         </div>
 
@@ -726,7 +670,7 @@ function HomeContent() {
       {/* 4. Best Selling Products */}
       <section id="best-sellers" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">
             Best Selling Products
           </h2>
           <div className="flex items-center gap-4 self-end sm:self-auto">
@@ -790,7 +734,7 @@ function HomeContent() {
                       </div>
                     )}
                     {product.facileChoice && (
-                      <div className={`absolute left-3 z-20 rounded-full bg-[#4a556a] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
+                      <div className={`absolute left-3 z-20 rounded-full bg-[#5271FF] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
                         Facile Choice
                       </div>
                     )}
@@ -804,7 +748,7 @@ function HomeContent() {
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                      <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
                     </div>
@@ -812,7 +756,7 @@ function HomeContent() {
                     {/* Price and Rating */}
                     <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
                         <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
 
@@ -836,7 +780,7 @@ function HomeContent() {
                 <div className="px-4 pb-4">
                   <button
                     onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    className="w-full h-8.5 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                   >
                     <ShoppingCart size={12} className="stroke-[2.5px]" />
                     Add to Cart
@@ -852,7 +796,7 @@ function HomeContent() {
       {recentProducts.length > 0 && (
         <section id="recently-viewed" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#4a556a] tracking-tight">Recently Viewed Products</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#5271FF] tracking-tight">Recently Viewed Products</h2>
           </div>
           <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
             {recentProducts.map((product) => (
@@ -863,11 +807,11 @@ function HomeContent() {
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="truncate text-sm font-bold text-[#4a556a]">{product.name}</h3>
+                      <h3 className="truncate text-sm font-bold text-[#5271FF]">{product.name}</h3>
                     </div>
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-extrabold text-[#4a556a]">&#8377;{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#5271FF]">&#8377;{product.price.toLocaleString("en-IN")}</span>
                         {product.originalPrice != null && product.originalPrice > product.price && (
                           <span className="text-[10px] font-medium text-natural line-through">&#8377;{product.originalPrice.toLocaleString("en-IN")}</span>
                         )}
@@ -880,7 +824,7 @@ function HomeContent() {
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
-                  <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#4a556a] text-[11px] font-bold text-warm-ivory shadow-sm">
+                  <button type="button" onClick={(event) => handleAddRecentToCart(product, event)} className="flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-[#5271FF] text-[11px] font-bold text-warm-ivory shadow-sm">
                     <ShoppingCart size={12} className="stroke-[2.5px]" /> Add to Cart
                   </button>
                 </div>
@@ -894,7 +838,7 @@ function HomeContent() {
       {/* 6. Customer Testimonials */}
       <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4a556a] tracking-tight">What Our Customers Say</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">What Our Customers Say</h2>
 
           {/* Navigation Arrows */}
           <div className="flex gap-2">

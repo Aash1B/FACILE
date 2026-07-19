@@ -701,53 +701,7 @@ function ProfileContent() {
               >
                 {/* Tab 1: Profile Settings */}
                 {activeTab === "profile" && (
-<div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
-                  <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
-                  </div>
-                  
-                  <form onSubmit={handleProfileUpdate} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      
-                      {/* Floating Label Input for Full Name */}
-                      <div className="relative group">
-                        <input 
-                          type="text" 
-                          id="fullName"
-                          value={profileName}
-                          onChange={(e) => setProfileName(e.target.value)}
-                          required
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Full Name"
-                        />
-                        <label 
-                          htmlFor="fullName" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          FULL NAME
-                        </label>
-                      </div>
-
-                      {/* Floating Label Input for Email Address */}
-                      <div className="relative group">
-                        <input 
-                          type="email" 
-                          id="emailAddress"
-                          value={profileEmail}
-                          onChange={(e) => setProfileEmail(e.target.value)}
-                          required
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Email Address"
-                        />
-                        <label 
-                          htmlFor="emailAddress" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          EMAIL ADDRESS
-                        </label>
-                      </div>
-                  <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                     <div>
                       <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
                       <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
@@ -764,40 +718,6 @@ className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-al
                           <p className="truncate text-sm font-medium text-fern">{user.name}</p>
                         </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      
-                      {/* Floating Label Input for Phone Number */}
-                      <div className="relative group">
-                        <input 
-                          type="text" 
-                          id="phoneNumber"
-                          value={profilePhone}
-                          onChange={(e) => setProfilePhone(e.target.value)}
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Phone Number"
-                        />
-                        <label 
-                          htmlFor="phoneNumber" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          PHONE NUMBER
-                        </label>
-                      </div>
-
-                      {/* Premium Select for Region */}
-                      <div className="relative group">
-                        <select 
-className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
-                          defaultValue="India"
-                        >
-                          <option value="India">India (INR)</option>
-                          <option value="US">United States (USD)</option>
-                          <option value="UK">United Kingdom (GBP)</option>
-                        </select>
-<label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
-                          PREFERRED REGION
-                        </label>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
                         <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
                           <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
                             EMAIL ADDRESS

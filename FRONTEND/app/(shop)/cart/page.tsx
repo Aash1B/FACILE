@@ -468,9 +468,9 @@ export default function CartPage() {
                   <span>Shipping</span>
                   <span className="text-fern font-bold">{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
                 </div>
-                <div className="border-t border-natural/15 pt-3 flex justify-between items-baseline text-sm font-extrabold text-fern">
-                  <span className="font-serif">Total</span>
-                  <span className="text-lg text-apricot">{formatPrice(grandTotal)}</span>
+                <div className="border-t border-natural/15 pt-3 flex justify-between items-baseline text-sm font-extrabold text-[#5271FF]">
+                  <span className="font-serif text-[#5271FF]">Total</span>
+                  <span className="text-lg text-[#5271FF]">{formatPrice(grandTotal)}</span>
                 </div>
               </div>
 
@@ -478,7 +478,7 @@ export default function CartPage() {
                 href="/checkout"
                 className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all shadow-md ${
                   cart && cart.items.length > 0
-                    ? "bg-fern hover:bg-fern/90 text-warm-ivory active:scale-98"
+                    ? "bg-[#5271FF] hover:bg-[#3A56D4] text-white active:scale-98"
                     : "bg-natural/30 text-natural cursor-not-allowed pointer-events-none"
                 }`}
               >

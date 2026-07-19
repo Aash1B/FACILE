@@ -44,7 +44,7 @@ export default function RootLayout({
       <head>
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#FAF3E3] text-fern">
+      <body className="min-h-full flex flex-col bg-[#F4F4F0] text-fern">
         <AuthProvider>
           <CartProvider>
             {children}
