@@ -92,13 +92,13 @@ export default function FloatingCartSummary() {
         className="hidden md:flex fixed right-0 top-[104px] z-[35] transition-all duration-300 ease-in-out w-[180px]"
         style={{ bottom: `${bottomOffset}px` }}
       >
-        <div className="bg-white w-full shadow-[-4px_0_15px_rgba(0,0,0,0.05)] border-l border-gray-200 flex flex-col h-full relative">
+        <div className="bg-[#F4F4F0] w-full shadow-[-4px_0_15px_rgba(0,0,0,0.05)] border-l border-gray-200 flex flex-col h-full relative">
               <div className="px-4 pb-4 pt-7 border-b border-natural/10 flex flex-col items-center text-center">
-                <h3 className="text-xs font-semibold text-[#4A5568] mb-0.5">Subtotal</h3>
-                <span className="text-lg font-extrabold text-[#4A5568] mb-3">₹{subtotal.toLocaleString("en-IN")}</span>
+                <h3 className="text-xs font-semibold text-[#5271FF] mb-0.5">Subtotal</h3>
+                <span className="text-lg font-extrabold text-[#5271FF] mb-3">₹{subtotal.toLocaleString("en-IN")}</span>
                 <button 
                   onClick={handleOpenCart}
-                  className="w-full h-9 bg-[#4A5568] hover:bg-[#3A4354] text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5"
+                  className="w-full h-9 bg-[#5271FF] hover:bg-[#3A56D4] text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5"
                 >
                   Go to Cart <ArrowRight size={13} />
                 </button>
@@ -118,7 +118,7 @@ export default function FloatingCartSummary() {
                       <span className="text-[15px] font-bold text-black leading-tight text-center">₹{item.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                     </div>
                     
-                    <div className="flex items-center justify-between w-[110px] h-[34px] rounded-full border-2 border-[#FFD814] bg-white px-2 mt-1">
+                    <div className="flex items-center justify-between w-[110px] h-[34px] rounded-full border-2 border-[#5271FF] bg-white px-2 mt-1">
                       <button 
                         onClick={(e) => { 
                           e.stopPropagation(); 
@@ -155,12 +155,12 @@ export default function FloatingCartSummary() {
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-natural uppercase tracking-wider">Subtotal ({totalItems} items)</span>
-              <span className="text-sm font-extrabold text-[#4A5568]">₹{subtotal.toLocaleString("en-IN")}</span>
+              <span className="text-sm font-extrabold text-[#5271FF]">₹{subtotal.toLocaleString("en-IN")}</span>
             </div>
           </div>
           <button 
             onClick={handleOpenCart}
-            className="h-10 px-5 bg-[#4A5568] hover:bg-[#3A4354] text-white rounded-xl text-[13px] font-bold flex items-center justify-center shadow-sm"
+            className="h-10 px-5 bg-[#5271FF] hover:bg-[#3A56D4] text-white rounded-xl text-[13px] font-bold flex items-center justify-center shadow-sm"
           >
             Go to Cart
           </button>

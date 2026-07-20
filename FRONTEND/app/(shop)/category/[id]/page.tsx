@@ -77,7 +77,7 @@ const CATEGORY_BRANDS: Record<string, string[]> = {
 
 const CARD_STYLES = [
   { surface: "from-[#DDE0F0] to-[#eef0f9]", icon: "bg-[#4a556a]", accent: "bg-[#aeb7d8]" },
-  { surface: "from-[#f9dbe8] to-[#fff0f6]", icon: "bg-[#4a556a]", accent: "bg-[#f2a9c7]" },
+  { surface: "from-[#5271FF]/20 to-[#5271FF]/10", icon: "bg-[#4a556a]", accent: "bg-[#5271FF]" },
   { surface: "from-[#eadfcf] to-[#fff8ec]", icon: "bg-[#A58E74]", accent: "bg-[#d9c3a6]" },
 ];
 
@@ -1045,7 +1045,7 @@ export default function CategoryPage() {
                               </div>
                             )}
                             {isFacileChoice && (
-                              <div className={`absolute left-3 z-20 rounded-full bg-[#4a556a] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
+                              <div className={`absolute left-3 z-20 rounded-full bg-[#5271FF] px-3 py-1 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discount > 0 ? "top-12" : "top-3"}`}>
                                 Facile Choice
                               </div>
                             )}
@@ -1074,7 +1074,7 @@ export default function CategoryPage() {
                                         {product.brand}
                                       </p>
                                     )}
-                                    <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-white leading-snug line-clamp-2 transition-colors">
+                                    <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-white leading-snug line-clamp-2 transition-colors">
                                       {product.title}
                                     </h3>
                                   </div>
@@ -1082,7 +1082,7 @@ export default function CategoryPage() {
 
                                 <div className="flex items-center justify-between pt-3 border-t border-natural/8 mt-3">
                                   <div className="flex items-baseline gap-1.5">
-                                    <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-white transition-colors">
+                                    <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-white transition-colors">
                                       ₹{price.toLocaleString("en-IN")}
                                     </span>
                                     {mrp > price && (
@@ -1113,7 +1113,7 @@ export default function CategoryPage() {
                             <div className="px-4 pb-4">
                               <button
                                 onClick={(e) => handleAddToCart(product, e)}
-                                className="w-full h-8 bg-[#4a556a] group-hover:bg-white group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-[0.98] text-white text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                                className="w-full h-8 bg-[#5271FF] group-hover:bg-white group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-[0.98] text-white text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
                               >
                                 <ShoppingCart size={11} className="stroke-[2.5px]" />
                                 Add to Cart
@@ -1372,7 +1372,7 @@ function FilterPanel({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#4a556a]/10">
-        <h2 className="text-sm font-bold text-[#4a556a]">Filters</h2>
+        <h2 className="text-sm font-bold text-[#5271FF]">Filters</h2>
         {hasActiveFilters && (
           <button
             type="button"

@@ -687,9 +687,9 @@ export default function Navbar() {
             <div className="absolute left-1/2 -translate-x-1/2 flex justify-center ml-8 mt-2">
               <Link
                 href="/"
-                className="font-antic font-normal text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
+                className="font-serif font-bold text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
               >
-                FACILE
+                facile
               </Link>
             </div>
 
@@ -757,7 +757,7 @@ export default function Navbar() {
                               logout();
                               setIsProfileOpen(false);
                             }}
-                            className="w-full py-2.5 px-3.5 hover:bg-[#FFF0F6]/80 text-[#E8437F] rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer text-left"
+                            className="w-full py-2.5 px-3.5 hover:bg-[#5271FF]/10 text-[#5271FF] rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer text-left"
                           >
                             <LogOut size={15} className="stroke-[2.5px]" />
                             Sign Out

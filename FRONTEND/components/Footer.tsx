@@ -128,15 +128,15 @@ export default function Footer() {
       </div>
 
       {/* SECTION 2 - Main Footer Grid */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-y-12 gap-x-8 md:gap-x-12">
 
           {/* Column 1 - Brand */}
           <div className="md:col-span-4 lg:col-span-3 flex flex-col justify-end h-full space-y-4">
             <span 
-              className="font-antic font-normal text-3xl text-[#5271FF] tracking-[0.02em]"
+              className="font-serif font-bold text-3xl text-[#5271FF] tracking-[0.02em]"
             >
-              FACILE
+              facile
             </span>
             <p className="text-[13px] text-warm-ivory/75 leading-loose font-medium max-w-[280px]">
               We design timeless essentials crafted with simplicity, quality and sustainability.
@@ -197,13 +197,13 @@ export default function Footer() {
       </div>
 
       {/* SECTION 3 - Bottom Bar */}
-      <div className="bg-[#2a301e] border-t border-natural/10 text-warm-ivory/50 text-[11px] font-medium tracking-wide">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[#5271FF] border-t border-natural/10 text-warm-ivory/80 text-[11px] font-medium tracking-wide">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
           
           <div className="flex items-center gap-1.5 text-center">
             <span>© {new Date().getFullYear()} FACILE.</span>
             <span>Made with</span>
-            <Heart size={10} className="text-apricot fill-apricot mx-0.5 inline" />
+            <Heart size={10} className="text-[#5271FF] fill-[#5271FF] mx-0.5 inline" />
             <span>for seamless shopping.</span>
           </div>
 

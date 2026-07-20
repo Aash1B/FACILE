@@ -35,7 +35,7 @@ export default function CartDrawer() {
           
           {/* Header */}
           <div className="px-6 py-5 border-b border-natural/20 flex items-center justify-between">
-            <h2 className="text-lg font-serif font-bold tracking-wide flex items-center gap-2">
+            <h2 className="text-lg font-extrabold tracking-tight flex items-center gap-2">
               <ShoppingBag size={20} className="text-apricot" />
               Your Shopping Bag ({totalItems})
             </h2>
@@ -65,19 +65,19 @@ export default function CartDrawer() {
           ) : (
             <>
               {/* Cart Items List */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex flex-1 flex-col overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
-                  <div className="py-10 flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="flex flex-1 flex-col items-center justify-center text-center space-y-4">
                     <div className="p-4 bg-[#4A5568]/10 rounded-full text-[#4A5568]/70">
                       <ShoppingBag size={32} />
                     </div>
                     <div>
                       <p className="font-serif text-base font-semibold">Your bag is empty</p>
-                      <p className="text-xs text-[#4A5568]/80 mt-1">Browse our featured brands to add slow crafted items!</p>
+                      <p className="text-base text-[#4A5568]/80 mt-1">Browse our featured brands to add slow crafted items!</p>
                     </div>
                     <button
                       onClick={() => setIsCartOpen(false)}
-                      className="px-6 py-2 bg-fern text-warm-ivory text-xs font-semibold rounded-full hover:bg-fern/90 transition-all shadow-sm"
+                      className="px-6 py-2 bg-[#5271FF] text-warm-ivory text-xs font-semibold rounded-full hover:bg-[#3A56D4] transition-all shadow-sm"
                     >
                       Start Shopping
                     </button>
@@ -142,7 +142,7 @@ export default function CartDrawer() {
                       <span>Shipping</span>
                       <span>{subtotal >= 999 ? "Free" : "₹99"}</span>
                     </div>
-                    <div className="border-t border-natural/10 my-2 pt-2 flex justify-between text-sm font-bold text-fern">
+                    <div className="border-t border-natural/10 my-2 pt-2 flex justify-between text-sm font-bold text-[#5271FF]">
                       <span>Total Amount</span>
                       <span>₹{(subtotal + (subtotal >= 999 ? 0 : 99)).toLocaleString("en-IN")}</span>
                     </div>
@@ -151,7 +151,7 @@ export default function CartDrawer() {
                   <button
                     onClick={handleCheckout}
                     disabled={isCheckingOut}
-                    className="w-full h-11 bg-fern hover:bg-fern/95 active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-full shadow-md transition-all flex items-center justify-center gap-2 disabled:bg-fern/50"
+                    className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-full shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isCheckingOut ? (
                       <>

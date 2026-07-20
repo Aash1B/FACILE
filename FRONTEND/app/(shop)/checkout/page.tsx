@@ -755,7 +755,7 @@ export default function CheckoutPage() {
           </button>
         </div>
 
-        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-grey mb-8 tracking-wide">
+        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-[#5271FF] mb-8 tracking-wide">
           Checkout
         </h1>
 
@@ -766,9 +766,9 @@ export default function CheckoutPage() {
 
             {/* SECTION 1: Address Management */}
             <div className="border border-natural/20 rounded-[24px] p-6 shadow-xs relative overflow-hidden" style={{ backgroundColor: '#DDE0F0' }}>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#5271FF]" />
               <div className="flex justify-between items-center mb-5">
-                <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2">
+                <h2 className="font-serif text-lg font-extrabold text-[#5271FF] flex items-center gap-2">
                   <MapPin size={18} className="text-[#5271FF]" />
                   1. Delivery Address
                 </h2>
@@ -780,7 +780,7 @@ export default function CheckoutPage() {
                       setAddressError("");
                       setIsAddingAddress(true);
                     }}
-                    className="text-[11px] font-bold text-[#4A5568] hover:text-[#3B4455] transition-colors flex items-center gap-1 uppercase tracking-wider cursor-pointer"
+                    className="text-[11px] font-bold text-[#5271FF] hover:text-[#3A56D4] transition-colors flex items-center gap-1 uppercase tracking-wider cursor-pointer"
                   >
                     <Plus size={12} />
                     New Address
@@ -957,8 +957,8 @@ export default function CheckoutPage() {
 
             {/* SECTION 2: Delivery Date & Time */}
             <div className="border border-natural/20 rounded-[24px] p-6 shadow-xs relative overflow-hidden" style={{ backgroundColor: '#DDE0F0' }}>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
-              <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2 mb-5">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#5271FF]" />
+              <h2 className="font-serif text-lg font-extrabold text-[#5271FF] flex items-center gap-2 mb-5">
                 <Calendar size={18} className="text-[#5271FF]" />
                 2. Delivery Schedule
               </h2>
@@ -1025,9 +1025,9 @@ export default function CheckoutPage() {
 
             {/* SECTION 3: Product Description / Summary */}
             <div className="border border-natural/20 rounded-[24px] p-6 shadow-xs relative overflow-hidden" style={{ backgroundColor: '#DDE0F0' }}>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#5271FF]" />
               <div className="flex justify-between items-center mb-5">
-                <h2 className="font-serif text-lg font-extrabold text-slate-grey flex items-center gap-2">
+                <h2 className="font-serif text-lg font-extrabold text-[#5271FF] flex items-center gap-2">
                   <ShoppingBag size={18} className="text-[#5271FF]" />
                   3. Order Summary ({checkoutItems.reduce((acc, item) => acc + item.quantity, 0)} items)
                 </h2>
@@ -1075,9 +1075,9 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-extrabold text-[#4A5568]">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="text-xs font-extrabold text-[#5271FF]">{formatPrice(item.price * item.quantity)}</p>
                         {item.quantity > 1 && (
-                          <p className="text-[9px] text-natural font-medium mt-0.5">({formatPrice(item.price)} each)</p>
+                          <p className="text-[9px] text-[#5271FF]/80 font-medium mt-0.5">({formatPrice(item.price)} each)</p>
                         )}
                       </div>
                     </div>
@@ -1092,8 +1092,8 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-[120px]">
 
             {/* Secured Checkout Badge */}
-            <div className="bg-[#4A5568] text-white rounded-2xl p-4 flex items-center gap-3 border border-natural/20 shadow-sm">
-              <ShieldCheck size={26} className="text-[#5271FF] stroke-[2.5px] flex-shrink-0" />
+            <div className="bg-[#5271FF] text-white rounded-2xl p-4 flex items-center gap-3 border border-natural/20 shadow-sm">
+              <ShieldCheck size={26} className="text-white stroke-[2.5px] flex-shrink-0" />
               <div>
                 <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-white">100% Secure Checkout</h4>
                 <p className="text-[9px] text-white/80 font-medium">SSL encryption protects your financial transactions.</p>
@@ -1102,10 +1102,10 @@ export default function CheckoutPage() {
 
             {/* Bill Details */}
             <div className="border border-natural/20 rounded-[24px] p-6 shadow-sm space-y-5 relative overflow-hidden" style={{ backgroundColor: '#DDE0F0' }}>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#4A5568]" />
-              <h2 className="font-serif text-base font-extrabold text-slate-grey pb-3 border-b border-natural/10 flex items-center justify-between">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#5271FF]" />
+              <h2 className="font-serif text-base font-extrabold text-[#5271FF] pb-3 border-b border-natural/10 flex items-center justify-between">
                 <span>Billing Details</span>
-                <Info size={14} className="text-slate-grey" />
+                <Info size={14} className="text-[#5271FF]" />
               </h2>
 
               <div className="space-y-3.5 text-xs text-natural font-semibold">
@@ -1169,7 +1169,7 @@ export default function CheckoutPage() {
                         />
                         <button
                           onClick={handleApplyVoucher}
-                          className="h-9 px-4 bg-[#4A5568] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-white transition-all hover:bg-[#4A5568]/90"
+                          className="h-9 px-4 bg-[#5271FF] hover:bg-[#3A56D4] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer text-white transition-all"
                         >
                           Apply
                         </button>
@@ -1193,9 +1193,9 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                <div className="border-t border-natural/15 pt-4 flex justify-between items-baseline text-sm font-extrabold text-natural">
-                  <span className="font-serif text-slate-grey">Grand Total</span>
-                  <span className="text-lg text-apricot">{formatPrice(totalAmount)}</span>
+                <div className="border-t border-natural/15 pt-4 flex justify-between items-baseline text-sm font-extrabold text-[#5271FF]">
+                  <span className="font-serif text-[#5271FF]">Grand Total</span>
+                  <span className="text-lg text-[#5271FF]">{formatPrice(totalAmount)}</span>
                 </div>
               </div>
 
@@ -1203,7 +1203,7 @@ export default function CheckoutPage() {
               {/* Action Button */}
               <button
                 onClick={handleProceedToPay}
-                className="w-full h-12 bg-proceed-btn font-extrabold text-xs tracking-wider rounded-xl shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer uppercase"
+                className="w-full h-12 bg-[#5271FF] hover:bg-[#3A56D4] text-white font-extrabold text-xs tracking-wider rounded-xl shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer uppercase"
               >
                 Proceed to Pay
               </button>
@@ -1386,7 +1386,7 @@ export default function CheckoutPage() {
                 <div className="pt-2 border-t border-natural/15">
                   <button
                     onClick={handleConfirmPayment}
-                    className="w-full h-11 bg-proceed-btn font-extrabold text-xs tracking-wider rounded-xl uppercase shadow active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] text-white font-extrabold text-xs tracking-wider rounded-xl uppercase shadow active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <ShieldCheck size={14} className="stroke-[2.5px]" />
                     Pay {formatPrice(totalAmount)} Now

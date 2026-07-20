@@ -407,6 +407,7 @@ function ProfileContent() {
   // Profile Form State
   const [profilePhone, setProfilePhone] = useState("+91 98765 43210");
   const [profileGender, setProfileGender] = useState("Prefer not to say");
+  const [profileRegion, setProfileRegion] = useState("India");
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
@@ -416,6 +417,21 @@ function ProfileContent() {
     const saved = localStorage.getItem('facile_profile_photo');
     if (saved) setProfilePhoto(saved);
   }, []);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    const saved = localStorage.getItem(`facile_profile_details_${user.email}`);
+    if (!saved) return;
+
+    try {
+      const details = JSON.parse(saved);
+      if (typeof details.phone === "string") setProfilePhone(details.phone);
+      if (typeof details.gender === "string") setProfileGender(details.gender);
+      if (typeof details.region === "string") setProfileRegion(details.region);
+    } catch {
+      localStorage.removeItem(`facile_profile_details_${user.email}`);
+    }
+  }, [user?.email]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -460,6 +476,11 @@ function ProfileContent() {
 
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem(`facile_profile_details_${user.email}`, JSON.stringify({
+      phone: profilePhone.trim(),
+      gender: profileGender,
+      region: profileRegion,
+    }));
     setShowSaveToast(true);
     setTimeout(() => setShowSaveToast(false), 4000);
   };
@@ -499,14 +520,16 @@ function ProfileContent() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-10"
+          className="mb-10 grid grid-cols-1 lg:grid-cols-12 gap-8"
         >
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-fern">
-            Manage Profile
-          </h1>
-          <p className="text-sm text-natural font-medium mt-3">
-            Manage your profile, orders, and account settings.
-          </p>
+          <div className="text-center lg:col-span-3">
+            <h1 className="text-4xl font-extrabold tracking-tight text-fern">
+              Manage Profile
+            </h1>
+            <p className="text-sm text-natural font-medium mt-3">
+              Manage your profile, orders, and account settings.
+            </p>
+          </div>
         </motion.div>
 
         {/* Layout Grid */}
@@ -521,9 +544,9 @@ function ProfileContent() {
           >
             
             {/* Premium Account Summary Card */}
-            <div className="bg-[#E6E6FA] rounded-3xl p-6 shadow-sm border border-natural/10 flex flex-col items-center relative overflow-hidden transition-all duration-300 hover:shadow-md">
-              <div className="relative inline-block mt-4 mb-4">
-                  <div className="w-24 h-24 bg-warm-ivory text-fern rounded-full flex items-center justify-center font-serif text-3xl font-bold uppercase shadow-sm overflow-hidden">
+            <div className="bg-[#DDE0F0] rounded-3xl p-7 shadow-sm border border-natural/10 flex flex-col items-center relative overflow-hidden transition-all duration-300 hover:shadow-md">
+              <div className="relative inline-block mt-4 mb-5">
+                  <div className="w-32 h-32 bg-warm-ivory text-fern rounded-full flex items-center justify-center font-serif text-4xl font-bold uppercase shadow-sm overflow-hidden">
                     {profilePhoto
                       ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                       : (user.name ? user.name.slice(0, 2) : "US")
@@ -538,88 +561,88 @@ function ProfileContent() {
                   />
                   <button
                     onClick={() => photoInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 p-2 bg-fern text-white rounded-full shadow-md hover:bg-apricot transition-colors duration-200 cursor-pointer"
+                    className="absolute bottom-0 right-0 p-2.5 bg-fern text-white rounded-full shadow-md hover:bg-apricot transition-colors duration-200 cursor-pointer"
                     aria-label="Change photo"
                   >
-                    <Camera size={14} />
+                    <Camera size={18} />
                   </button>
                 </div>
-              <h3 className="text-lg font-bold text-fern truncate w-full text-center">{user.name}</h3>
-              <p className="text-xs text-natural/80 font-medium truncate w-full text-center mb-1">{user?.email}</p>
-              <p className="text-[10px] font-bold text-fern/70 uppercase tracking-widest mb-6">
+              <h3 className="text-2xl font-bold text-fern truncate w-full text-center">{user.name}</h3>
+              <p className="text-base text-natural/80 font-medium truncate w-full text-center mt-1 mb-1">{user?.email}</p>
+              <p className="text-sm font-bold text-fern/70 uppercase tracking-widest mb-6">
                 {user ? "Member Since 2026" : "Guest Account"}
               </p>
               
-              <div className="w-full rounded-2xl bg-[#F4F4F0] p-4 flex flex-col items-center justify-center border border-natural/10">
-                <span className="text-[10px] text-natural font-bold uppercase tracking-widest mb-1">Wallet Balance</span>
+              <div className="w-full rounded-2xl bg-[#F4F4F0] p-5 flex flex-col items-center justify-center border border-natural/10 [&>span:last-child]:text-3xl">
+                <span className="text-base text-natural font-bold uppercase tracking-widest mb-1">Wallet Balance</span>
                 <span className="text-xl font-bold text-fern">₹{walletBalance.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
             {/* Navigation Menu */}
-            <div className="flex flex-col gap-1 lg:pl-2">
+            <div className="flex flex-col gap-2 lg:pl-2">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "profile" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <User size={18} strokeWidth={activeTab === "profile" ? 2.5 : 2} />
+                <User size={22} strokeWidth={activeTab === "profile" ? 2.5 : 2} />
                 Profile Settings
               </button>
               
               <button
                 onClick={() => setActiveTab("orders")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "orders" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <ShoppingBag size={18} strokeWidth={activeTab === "orders" ? 2.5 : 2} />
+                <ShoppingBag size={22} strokeWidth={activeTab === "orders" ? 2.5 : 2} />
                 Order History
               </button>
 
               <button
                 onClick={() => setActiveTab("tracking")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "tracking"
-                    ? "bg-white text-fern shadow-sm border border-natural/10 scale-[1.02]"
-                    : "text-natural hover:bg-white/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <Truck size={18} strokeWidth={activeTab === "tracking" ? 2.5 : 2} />
+                <Truck size={22} strokeWidth={activeTab === "tracking" ? 2.5 : 2} />
                 Track Order
               </button>
 
               <button
                 onClick={() => setActiveTab("addresses")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "addresses" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <MapPin size={18} strokeWidth={activeTab === "addresses" ? 2.5 : 2} />
+                <MapPin size={22} strokeWidth={activeTab === "addresses" ? 2.5 : 2} />
                 Manage Address
               </button>
 
-              <div className="pt-4 pb-2 px-5 text-[10px] font-bold text-natural uppercase tracking-widest">
+              <div className="pt-5 pb-2 px-5 text-sm font-bold text-natural uppercase tracking-widest">
                 Payments
               </div>
 
               <button
                 onClick={() => setActiveTab("gift_cards")}
-                className={`flex justify-between items-center px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex justify-between items-center px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left [&>span]:text-base ${
                   activeTab === "gift_cards" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <Gift size={18} strokeWidth={activeTab === "gift_cards" ? 2.5 : 2} />
+                <div className="flex items-center gap-4">
+                  <Gift size={22} strokeWidth={activeTab === "gift_cards" ? 2.5 : 2} />
                   Gift Cards
                 </div>
                 <span className="text-fern/60 text-xs font-bold">₹{giftCardValue * giftCardQty}</span>
@@ -627,41 +650,41 @@ function ProfileContent() {
 
               <button
                 onClick={() => setActiveTab("saved_cards")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "saved_cards" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <WalletCards size={18} strokeWidth={activeTab === "saved_cards" ? 2.5 : 2} />
+                <WalletCards size={22} strokeWidth={activeTab === "saved_cards" ? 2.5 : 2} />
                 Saved Cards
               </button>
 
               <button
                 onClick={() => setActiveTab("security")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "security" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <Lock size={18} strokeWidth={activeTab === "security" ? 2.5 : 2} />
+                <Lock size={22} strokeWidth={activeTab === "security" ? 2.5 : 2} />
                 Security
               </button>
 
-              <div className="pt-4 pb-2 px-5 text-[10px] font-bold text-natural uppercase tracking-widest">
+              <div className="pt-5 pb-2 px-5 text-sm font-bold text-natural uppercase tracking-widest">
                 My Stuff
               </div>
 
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`flex items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
+                className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${
                   activeTab === "reviews" 
-                    ? "bg-[#E6E6FA] text-fern shadow-sm border border-natural/10 scale-[1.02]" 
-                    : "text-natural hover:bg-[#E6E6FA]/60 hover:text-fern"
+                    ? "bg-[#DDE0F0] text-fern shadow-sm border border-natural/10 scale-[1.02]"
+                    : "text-natural hover:bg-[#DDE0F0]/60 hover:text-fern"
                 }`}
               >
-                <Star size={18} strokeWidth={activeTab === "reviews" ? 2.5 : 2} />
+                <Star size={22} strokeWidth={activeTab === "reviews" ? 2.5 : 2} />
                 My Reviews & Ratings
               </button>
 
@@ -669,14 +692,14 @@ function ProfileContent() {
 
               <button
                 onClick={logout}
-                className="flex lg:hidden items-center gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl text-apricot hover:bg-apricot/10 transition-all duration-300 cursor-pointer"
+                className="flex lg:hidden items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl text-apricot hover:bg-apricot/10 transition-all duration-300 cursor-pointer"
               >
                 Logout
               </button>
               
               <button
                 onClick={logout}
-                className="hidden lg:flex items-center justify-center gap-2 w-full py-4 bg-[#4A5568] hover:bg-[#E6E6FA] text-white hover:text-[#4A5568] text-xs font-bold rounded-2xl transition-all duration-300 cursor-pointer shadow-sm hover:shadow border border-transparent hover:border-[#4A5568]"
+                className="hidden lg:flex items-center justify-center gap-2 w-full py-4 bg-[#5271FF] hover:bg-[#4A5568] text-white text-lg font-bold rounded-2xl transition-all duration-300 cursor-pointer shadow-sm hover:shadow border border-[#5271FF] hover:border-[#4A5568]"
               >
                 Logout
               </button>
@@ -701,142 +724,52 @@ function ProfileContent() {
               >
                 {/* Tab 1: Profile Settings */}
                 {activeTab === "profile" && (
-<div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
-                  <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
-                  </div>
-                  
-                  <form onSubmit={handleProfileUpdate} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      
-                      {/* Floating Label Input for Full Name */}
-                      <div className="relative group">
-                        <input 
-                          type="text" 
-                          id="fullName"
-                          value={profileName}
-                          onChange={(e) => setProfileName(e.target.value)}
-                          required
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Full Name"
-                        />
-                        <label 
-                          htmlFor="fullName" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          FULL NAME
-                        </label>
-                      </div>
-
-                      {/* Floating Label Input for Email Address */}
-                      <div className="relative group">
-                        <input 
-                          type="email" 
-                          id="emailAddress"
-                          value={profileEmail}
-                          onChange={(e) => setProfileEmail(e.target.value)}
-                          required
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Email Address"
-                        />
-                        <label 
-                          htmlFor="emailAddress" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          EMAIL ADDRESS
-                        </label>
-                      </div>
-                  <div className="bg-[#DDE0F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Personal Information</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Update your personal account details and public bio.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Personal Information</h2>
+                      <p className="text-base text-natural font-medium mt-3">Update your personal account details and public bio.</p>
                     </div>
                     
-                    <form onSubmit={handleProfileUpdate} className="space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <form onSubmit={handleProfileUpdate} className="max-w-2xl space-y-6">
+                      <div className="flex flex-col gap-6">
                         
                         {/* Account identity is fixed after registration. */}
-                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
-                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
+                        <div className="relative flex h-20 items-center px-4">
+                          <span className="absolute left-4 -top-2 bg-[#F4F4F0] px-1 text-lg font-bold text-fern">
                             FULL NAME
                           </span>
-                          <p className="truncate text-sm font-medium text-fern">{user.name}</p>
+                          <p className="truncate text-2xl font-medium text-fern">{user.name}</p>
                         </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      
-                      {/* Floating Label Input for Phone Number */}
-                      <div className="relative group">
-                        <input 
-                          type="text" 
-                          id="phoneNumber"
-                          value={profilePhone}
-                          onChange={(e) => setProfilePhone(e.target.value)}
-className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                          placeholder="Phone Number"
-                        />
-                        <label 
-                          htmlFor="phoneNumber" 
-className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                        >
-                          PHONE NUMBER
-                        </label>
-                      </div>
-
-                      {/* Premium Select for Region */}
-                      <div className="relative group">
-                        <select 
-className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
-                          defaultValue="India"
-                        >
-                          <option value="India">India (INR)</option>
-                          <option value="US">United States (USD)</option>
-                          <option value="UK">United Kingdom (GBP)</option>
-                        </select>
-<label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
-                          PREFERRED REGION
-                        </label>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
-                        <div className="relative flex h-14 items-center rounded-2xl border-2 border-natural/20 px-4">
-                          <span className="absolute left-4 -top-2 bg-[#DDE0F0] px-1 text-[10px] font-bold text-fern">
+                        <div className="relative flex h-20 items-center px-4">
+                          <span className="absolute left-4 -top-2 bg-[#F4F4F0] px-1 text-lg font-bold text-fern">
                             EMAIL ADDRESS
                           </span>
-                          <p className="truncate text-sm font-medium text-fern">{user.email}</p>
+                          <p className="truncate text-2xl font-medium text-fern">{user.email}</p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-6">
                         
-                        {/* Floating Label Input for Phone Number */}
-                        <div className="relative group">
-                          <input 
-                            type="text" 
-                            id="phoneNumber"
-                            value={profilePhone}
-                            onChange={(e) => setProfilePhone(e.target.value)}
-                            className="peer w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm placeholder-transparent"
-                            placeholder="Phone Number"
-                          />
-                          <label 
-                            htmlFor="phoneNumber" 
-                            className="absolute left-4 top-4 text-xs font-bold text-natural/70 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[10px] peer-focus:text-fern peer-focus:bg-[#DDE0F0] peer-focus:px-1 peer-valid:-top-2 peer-valid:text-[10px] peer-valid:text-fern peer-valid:bg-[#DDE0F0] peer-valid:px-1 pointer-events-none"
-                          >
+                        <div className="relative flex h-20 items-center px-4">
+                          <span className="absolute left-4 -top-2 bg-[#F4F4F0] px-1 text-lg font-bold text-fern">
                             PHONE NUMBER
-                          </label>
+                          </span>
+                          <p className="truncate text-2xl font-medium text-fern">{profilePhone}</p>
                         </div>
 
                         {/* Premium Select for Region */}
                         <div className="relative group">
                           <select 
-                            className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#DDE0F0] focus:shadow-sm appearance-none cursor-pointer"
-                            defaultValue="India"
+                            className="w-full h-20 px-4 bg-transparent border-2 border-natural/20 text-2xl font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:bg-[#F4F4F0] focus:shadow-sm appearance-none cursor-pointer"
+                            value={profileRegion}
+                            onChange={(e) => setProfileRegion(e.target.value)}
                           >
                             <option value="India">India (INR)</option>
                             <option value="US">United States (USD)</option>
                             <option value="UK">United Kingdom (GBP)</option>
                           </select>
-                          <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#DDE0F0] px-1 pointer-events-none">
+                          <label className="absolute left-4 -top-2 text-lg font-bold text-fern bg-[#F4F4F0] px-1 pointer-events-none">
                             PREFERRED REGION
                           </label>
                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-natural pointer-events-none" size={16} />
@@ -845,14 +778,14 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
                     {/* Modern Segmented Control for Gender */}
                     <div className="space-y-3">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-fern ml-1">Gender</label>
+                      <label className="text-lg font-bold uppercase tracking-widest text-fern ml-1">Gender</label>
                       <div className="flex flex-wrap gap-3">
                         {["Male", "Female", "Other", "Prefer not to say"].map((genderOption) => (
                           <button
                             key={genderOption}
                             type="button"
                             onClick={() => setProfileGender(genderOption)}
-                            className={`px-6 py-3 rounded-2xl text-xs font-bold transition-all duration-300 border-2 ${
+                            className={`px-8 py-4 rounded-2xl text-xl font-bold transition-all duration-300 border-2 ${
                               profileGender === genderOption
                                 ? "border-fern bg-fern text-white shadow-md scale-[1.02]"
                                 : "border-natural/20 text-natural hover:border-fern/50 hover:text-fern"
@@ -864,7 +797,13 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-natural/10 gap-4">
+                    <div className="flex flex-col items-start pt-8 border-t border-natural/10 gap-3">
+                      <button
+                        type="submit"
+                        className="w-full sm:w-auto h-14 px-10 bg-fern hover:bg-apricot text-white text-lg font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
+                      >
+                        Save Changes
+                      </button>
                       <button
                         type="button"
                         onClick={async () => {
@@ -877,15 +816,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                             }
                           }
                         }}
-                        className="w-full sm:w-auto h-12 px-6 text-red-500 hover:text-red-700 text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:bg-red-50"
+                        className="w-full sm:w-auto h-14 px-6 text-red-500 hover:text-red-700 text-lg font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:bg-red-50"
                       >
                         Delete Account
-                      </button>
-                      <button
-                        type="submit"
-                        className="w-full sm:w-auto h-12 px-10 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
-                      >
-                        Save Changes
                       </button>
                     </div>
                   </form>
@@ -912,8 +845,8 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
               {activeTab === "tracking" && (
                 <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-6">
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Track Your Orders</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Select any order to view its progress and email the tracking history to {user?.email}.</p>
+                    <h2 className="text-4xl font-extrabold text-fern tracking-tight">Track Your Orders</h2>
+                    <p className="text-base text-natural font-medium mt-3">Select any order to view its progress and email the tracking history to {user?.email}.</p>
                   </div>
                   {isLoadingOrders ? (
                     <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-fern border-t-transparent rounded-full animate-spin" /></div>
@@ -927,25 +860,25 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                         return (
                           <article key={order.id} className="rounded-3xl border-2 border-natural/10 p-5 sm:p-6">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-natural">Order #{order.id.slice(-8).toUpperCase()}</p>
+                              <div className="[&>p:last-child]:mt-2 [&>p:last-child]:text-2xl">
+                                <p className="text-lg font-bold uppercase tracking-widest text-natural">Order #{order.id.slice(-8).toUpperCase()}</p>
                                 <p className="mt-1 text-sm font-bold text-fern">{formatOrderDate(order.createdAt)} · {formatPrice(order.totalAmount)}</p>
                               </div>
-                              <span className={`self-start inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}><span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />{statusStyle.label}</span>
+                              <span className={`self-start inline-flex items-center gap-2 px-4 py-2 rounded-lg text-base font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}><span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />{statusStyle.label}</span>
                             </div>
                             {history.length > 0 && (
                               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                                 {history.map((event) => (
                                   <div key={event.status} className={`rounded-2xl border p-4 ${event.completed ? "border-green-200 bg-green-50" : "border-natural/10 bg-[#F4F4F0]/60"}`}>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-fern">{event.status}</p>
-                                    <p className="mt-1 text-xs font-medium text-natural">{event.message}</p>
+                                    <p className="text-lg font-bold uppercase tracking-widest text-fern">{event.status}</p>
+                                    <p className="mt-2 text-xl font-medium text-natural">{event.message}</p>
                                   </div>
                                 ))}
                               </div>
                             )}
                             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <p className="text-[11px] font-semibold text-natural">{trackingNotices[order.id] || "Click Track & Email to request the latest history."}</p>
-                              <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="shrink-0 rounded-xl bg-fern px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-apricot disabled:cursor-wait disabled:opacity-60">
+                              <p className="text-base font-semibold text-natural">{trackingNotices[order.id] || "Click Track & Email to request the latest history."}</p>
+                              <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="shrink-0 rounded-xl bg-fern px-6 py-3.5 text-base font-bold uppercase tracking-widest text-white hover:bg-apricot disabled:cursor-wait disabled:opacity-60">
                                 {trackingOrderId === order.id ? "Preparing..." : "Track & Email"}
                               </button>
                             </div>
@@ -959,10 +892,10 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab 2: Order History */}
               {activeTab === "orders" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Your Orders</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Track shipping details and history of previous orders.</p>
+                    <h2 className="text-4xl font-extrabold text-fern tracking-tight">Your Orders</h2>
+                    <p className="text-base text-natural font-medium mt-3">Track shipping details and history of previous orders.</p>
                   </div>
 
                   {isLoadingOrders ? (
@@ -982,7 +915,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                         return (
                           <div
                             key={order.id}
-                            className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-fern/20 group"
+                            className="bg-[#F4F4F0] border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-fern/20 group"
                           >
                             <div
                               onClick={() => toggleOrder(order.id)}
@@ -990,20 +923,20 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                             >
                               <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-6 w-full">
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-natural uppercase tracking-widest">Order Number</p>
-                                  <p className="text-sm font-bold text-fern font-mono">#{order.id.slice(-8).toUpperCase()}</p>
+                                  <p className="text-lg font-bold text-natural uppercase tracking-widest">Order Number</p>
+                                  <p className="text-2xl font-bold text-fern font-mono">#{order.id.slice(-8).toUpperCase()}</p>
                                 </div>
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-natural uppercase tracking-widest">Date</p>
-                                  <p className="text-sm font-semibold text-fern">{formatOrderDate(order.createdAt)}</p>
+                                  <p className="text-lg font-bold text-natural uppercase tracking-widest">Date</p>
+                                  <p className="text-2xl font-semibold text-fern">{formatOrderDate(order.createdAt)}</p>
                                 </div>
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-natural uppercase tracking-widest">Total Amount</p>
-                                  <p className="text-sm font-bold text-fern">{formatPrice(order.totalAmount)}</p>
+                                  <p className="text-lg font-bold text-natural uppercase tracking-widest">Total Amount</p>
+                                  <p className="text-2xl font-bold text-fern">{formatPrice(order.totalAmount)}</p>
                                 </div>
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-natural uppercase tracking-widest">Status</p>
-                                  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}>
+                                  <p className="text-lg font-bold text-natural uppercase tracking-widest">Status</p>
+                                  <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-base font-bold uppercase tracking-widest ${statusStyle.bg} ${statusStyle.text}`}>
                                     <span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />
                                     {statusStyle.label}
                                   </span>
@@ -1011,7 +944,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               </div>
 
                               <div className="flex items-center gap-4 self-end lg:self-center">
-                                <span className="text-xs font-bold text-natural group-hover:text-fern transition-colors">
+                                <span className="text-base font-bold text-natural group-hover:text-fern transition-colors">
                                   {isExpanded ? "Hide Details" : "View Details"}
                                 </span>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? "bg-fern text-white" : "bg-[#F4F4F0] text-natural group-hover:bg-fern/10 group-hover:text-fern"}`}>
@@ -1033,7 +966,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                       <h4 className="text-xs font-bold uppercase tracking-widest text-fern mb-4">Order Items</h4>
                                       <div className="space-y-4">
                                         {order.items.map((item, idx) => (
-                                          <div key={idx} className="flex justify-between items-center bg-[#E6E6FA] p-4 rounded-2xl border border-natural/10 shadow-sm">
+                                          <div key={idx} className="flex justify-between items-center bg-[#F4F4F0] p-4 rounded-2xl border border-natural/10 shadow-sm">
                                             <div className="flex items-center gap-4">
                                               <div className="w-16 h-16 bg-[#F4F4F0] rounded-xl flex items-center justify-center text-natural/40">
                                                 <ShoppingBag size={20} />
@@ -1055,7 +988,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                         <p className="text-sm font-semibold text-fern">{order.shippingAddress}</p>
                                       </div>
                                       <div className="flex gap-3">
-                                        <button className="px-5 py-2.5 bg-[#E6E6FA] border-2 border-natural/20 text-fern text-xs font-bold uppercase tracking-widest rounded-xl hover:border-fern transition-colors">
+                                        <button className="px-5 py-2.5 bg-[#F4F4F0] border-2 border-natural/20 text-fern text-xs font-bold uppercase tracking-widest rounded-xl hover:border-fern transition-colors">
                                           Invoice
                                         </button>
                                         <button onClick={() => void handleTrackOrder(order.id)} disabled={trackingOrderId === order.id} className="px-5 py-2.5 bg-fern text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-apricot transition-colors shadow-sm disabled:cursor-wait disabled:opacity-60">
@@ -1078,7 +1011,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
                   {/* Digital Transactions / Payment History section */}
                   <div className="pt-10">
-                    <h3 className="font-serif text-xl font-bold text-fern mb-6">Digital Payment History</h3>
+                    <h3 className="font-serif text-3xl font-bold text-fern mb-6">Digital Payment History</h3>
                     <div className="space-y-4">
                       {isLoadingPayments ? (
                         <div className="flex justify-center items-center py-8">
@@ -1090,19 +1023,19 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                         </div>
                       ) : (
                         paymentsHistory.map((payment) => (
-                          <div key={payment.id} className="bg-[#E6E6FA] border border-natural/10 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
+                          <div key={payment.id} className="bg-[#F4F4F0] border border-natural/10 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
                             <div className="flex items-center gap-6">
                               <div className="w-12 h-12 bg-[#F4F4F0] rounded-full flex items-center justify-center text-fern">
                                 <CreditCard size={18} />
                               </div>
                               <div className="space-y-1">
-                                <p className="text-sm font-bold text-fern">{payment.paymentId}</p>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-natural">{new Date(payment.createdAt).toLocaleDateString()}</p>
+                                <p className="text-xl font-bold text-fern">{payment.paymentId}</p>
+                                <p className="text-base font-bold uppercase tracking-widest text-natural">{new Date(payment.createdAt).toLocaleDateString()}</p>
                               </div>
                             </div>
-                            <div className="text-right space-y-1">
+                            <div className="text-right space-y-1 [&>p]:text-2xl">
                               <p className="text-sm font-bold text-apricot">₹{payment.amount.toLocaleString("en-IN")}</p>
-                              <span className={`inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${
+                              <span className={`inline-flex px-3 py-1 rounded text-sm font-bold uppercase tracking-widest ${
                                 payment.status === "SUCCESS" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                               }`}>
                                 {payment.status}
@@ -1118,17 +1051,17 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab 3: Shipping Addresses */}
               {activeTab === "addresses" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Manage Address</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Manage delivery destinations for rapid checkout.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Manage Address</h2>
+                      <p className="text-base text-natural font-medium mt-3">Manage delivery destinations for rapid checkout.</p>
                     </div>
                     
                     {!showAddAddress && (
                       <button 
                         onClick={() => setShowAddAddress(true)}
-                        className="h-10 px-6 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow flex items-center gap-2"
+                        className="h-14 px-7 bg-fern hover:bg-apricot text-white text-base font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow flex items-center gap-2"
                       >
                         <Plus size={16} />
                         Add Address
@@ -1147,11 +1080,11 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                         className="border border-natural/20 rounded-3xl p-6 sm:p-8 bg-warm-ivory/30 space-y-6 overflow-hidden"
                       >
                         <div className="flex justify-between items-center border-b border-natural/10 pb-4">
-                          <h3 className="text-sm font-bold uppercase tracking-widest text-fern">New Delivery Destination</h3>
+                          <h3 className="text-xl font-bold uppercase tracking-widest text-fern">New Delivery Destination</h3>
                           <button 
                             type="button" 
                             onClick={() => setShowAddAddress(false)}
-                            className="text-xs font-bold text-natural hover:text-apricot transition-colors uppercase tracking-widest"
+                            className="text-base font-bold text-natural hover:text-apricot transition-colors uppercase tracking-widest"
                           >
                             Cancel
                           </button>
@@ -1165,9 +1098,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Label (e.g. Home, Office)"
                               value={newAddr.label}
                               onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">LABEL</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">LABEL</label>
                           </div>
                           <div className="relative group">
                             <input 
@@ -1176,9 +1109,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Recipient's Name"
                               value={newAddr.name}
                               onChange={(e) => setNewAddr({ ...newAddr, name: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">CONTACT NAME</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">CONTACT NAME</label>
                           </div>
                         </div>
 
@@ -1189,9 +1122,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                             placeholder="Building, street, apartment"
                             value={newAddr.street}
                             onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
-                            className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                            className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                           />
-                          <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">STREET ADDRESS</label>
+                          <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">STREET ADDRESS</label>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -1202,9 +1135,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="City, State, ZIP"
                               value={newAddr.city}
                               onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">CITY, STATE - ZIP</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">CITY, STATE - ZIP</label>
                           </div>
                           <div className="relative group">
                             <input 
@@ -1212,15 +1145,15 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Phone Number"
                               value={newAddr.phone}
                               onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
-                              className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
+                              className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl outline-none transition-all focus:border-fern focus:shadow-sm"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#FAF3E3] px-1">PHONE NUMBER</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">PHONE NUMBER</label>
                           </div>
                         </div>
 
                         <button
                           type="submit"
-                          className="w-full h-12 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow"
+                          className="w-full h-14 bg-fern hover:bg-apricot text-white text-base font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow"
                         >
                           Save Address
                         </button>
@@ -1233,7 +1166,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                     {addresses.map((addr, index) => (
                       <div 
                         key={addr.id}
-                        className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 group flex flex-col justify-between"
+                        className="bg-[#F4F4F0] border-2 border-natural/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 group flex flex-col justify-between"
                       >
                         <div className="space-y-4">
                           <div className="flex justify-between items-start">
@@ -1246,11 +1179,11 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 )}
                               </div>
                               <div>
-                                <span className="font-bold text-sm text-fern uppercase tracking-widest block">
+                                <span className="font-bold text-xl text-fern uppercase tracking-widest block">
                                   {addr.label}
                                 </span>
                                 {index === 0 && (
-                                  <span className="text-[9px] font-bold text-apricot uppercase tracking-widest">Default</span>
+                                  <span className="text-sm font-bold text-apricot uppercase tracking-widest">Default</span>
                                 )}
                               </div>
                             </div>
@@ -1264,7 +1197,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                             </button>
                           </div>
                           
-                          <div className="pt-2 border-t border-natural/10 text-sm font-medium text-natural/90 space-y-1">
+                          <div className="pt-2 border-t border-natural/10 text-lg font-medium text-natural/90 space-y-1">
                             <p className="font-bold text-fern">{addr.name}</p>
                             <p className="leading-relaxed">{addr.street}</p>
                             <p className="leading-relaxed">{addr.city}</p>
@@ -1272,11 +1205,11 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                         </div>
 
                         <div className="flex justify-between items-center pt-2">
-                          <div className="flex items-center gap-2 text-[10px] font-bold text-natural uppercase tracking-widest">
+                          <div className="flex items-center gap-2 text-base font-bold text-natural uppercase tracking-widest">
                             <Smartphone size={14} className="text-natural/60" />
                             <span>{addr.phone || "No Phone"}</span>
                           </div>
-                          <button className="text-xs font-bold text-fern hover:text-apricot transition-colors underline underline-offset-4 decoration-2 decoration-fern/30 hover:decoration-apricot">
+                          <button className="text-base font-bold text-fern hover:text-apricot transition-colors underline underline-offset-4 decoration-2 decoration-fern/30 hover:decoration-apricot">
                             Edit
                           </button>
                         </div>
@@ -1286,8 +1219,8 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                     {addresses.length === 0 && (
                       <div className="sm:col-span-2 py-16 text-center bg-[#F4F4F0]/50 border-2 border-dashed border-natural/20 rounded-3xl">
                         <MapPin size={40} className="mx-auto text-natural/30 mb-4" />
-                        <p className="text-sm font-semibold text-natural">No addresses saved yet.</p>
-                        <p className="text-xs font-medium text-natural/70 mt-1">Add a destination for faster checkout.</p>
+                        <p className="text-xl font-semibold text-natural">No addresses saved yet.</p>
+                        <p className="text-lg font-medium text-natural/70 mt-2">Add a destination for faster checkout.</p>
                       </div>
                     )}
                   </div>
@@ -1296,19 +1229,19 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab: Gift Cards */}
               {activeTab === "gift_cards" && (
-                <div className="bg-[#F4F4F0] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Gift Cards</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Manage and purchase FACILE gift cards.</p>
+                    <h2 className="text-4xl font-extrabold text-fern tracking-tight">Gift Cards</h2>
+                    <p className="text-base text-natural font-medium mt-3">Manage and purchase FACILE gift cards.</p>
                   </div>
 
-                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#E6E6FA] shadow-sm transition-all hover:shadow-md">
+                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#F4F4F0] shadow-sm transition-all hover:shadow-md">
                     <div className="p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-natural/10 gap-4">
                       <div>
-                        <h3 className="font-bold text-sm text-fern uppercase tracking-widest">FACILE Gift Card</h3>
-                        <p className="text-xs text-natural font-medium mt-1">Add a digital gift card to your wallet.</p>
+                        <h3 className="font-bold text-xl text-fern uppercase tracking-widest">FACILE Gift Card</h3>
+                        <p className="text-lg text-natural font-medium mt-2">Add a digital gift card to your wallet.</p>
                       </div>
-                      <div className="flex gap-4 text-xs font-bold text-fern">
+                      <div className="flex gap-4 text-lg font-bold text-fern">
                         <span className="text-apricot uppercase tracking-widest font-serif font-bold bg-[#F4F4F0] px-4 py-2 rounded-xl">Wallet Balance: ₹{walletBalance.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
@@ -1316,7 +1249,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                     <div className="p-6 sm:p-8 bg-[#F4F4F0]/50 border-b border-natural/10 flex flex-col gap-6">
                       <button 
                         onClick={() => setShowAddGiftCard(!showAddGiftCard)}
-                        className="h-10 px-6 bg-[#E6E6FA] border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-xs"
+                        className="h-14 px-6 bg-[#F4F4F0] border-2 border-natural/10 text-fern text-base font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-xs"
                       >
                         <Plus size={16} className={showAddGiftCard ? "rotate-45 transition-transform" : "transition-transform"} /> 
                         {showAddGiftCard ? "Cancel" : "Add A Gift Card"}
@@ -1337,9 +1270,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 value={giftCode} 
                                 onChange={(event) => setGiftCode(event.target.value.replace(/\D/g, "").slice(0,16))} 
                                 placeholder="16-digit card number" 
-                                className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
+                                className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 focus:border-fern text-lg font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm"
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-[#E6E6FA] transition-colors">CARD NUMBER</label>
+                              <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1 transition-colors">CARD NUMBER</label>
                             </div>
                             <div className="relative group md:col-span-1">
                               <input 
@@ -1349,14 +1282,14 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 value={giftPin} 
                                 onChange={(event) => setGiftPin(event.target.value.replace(/\D/g, "").slice(0,3))} 
                                 placeholder="3-digit PIN" 
-                                className="peer w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm" 
+                                className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 focus:border-fern text-lg font-medium tracking-widest text-fern rounded-2xl outline-none transition-all focus:shadow-sm"
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#F4F4F0] px-1 group-focus-within:bg-[#E6E6FA] transition-colors">PIN</label>
+                              <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1 transition-colors">PIN</label>
                             </div>
                             <button 
                               disabled={giftBusy || giftCode.length !== 16 || giftPin.length !== 3} 
                               onClick={redeemGiftCard} 
-                              className="h-14 px-8 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                              className="h-16 px-8 bg-fern hover:bg-apricot text-white text-base font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
                             >
                               Add to Wallet
                             </button>
@@ -1367,10 +1300,10 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
                     <div className="p-6 sm:p-8">
                       <div className="flex justify-between items-center mb-8">
-                        <h3 className="font-bold text-sm text-fern uppercase tracking-widest">Buy a FACILE Gift Card</h3>
+                        <h3 className="font-bold text-xl text-fern uppercase tracking-widest">Buy a FACILE Gift Card</h3>
                       </div>
                       
-                      <div className="flex gap-8 border-b-2 border-natural/10 mb-8 text-xs font-bold uppercase tracking-widest">
+                      <div className="flex gap-8 border-b-2 border-natural/10 mb-8 text-base font-bold uppercase tracking-widest">
                         <button className="pb-4 border-b-2 border-fern text-fern -mb-0.5">Personal Gift Cards</button>
                       </div>
 
@@ -1383,9 +1316,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Receiver's Email ID *" 
                               value={receiverEmail}
                               onChange={(e) => setReceiverEmail(e.target.value)}
-                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">RECEIVER'S EMAIL</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">RECEIVER'S EMAIL</label>
                           </div>
                           <div className="relative group">
                             <input 
@@ -1393,20 +1326,20 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Receiver's Name *" 
                               value={receiverName}
                               onChange={(e) => setReceiverName(e.target.value)}
-                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">RECEIVER'S NAME</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">RECEIVER'S NAME</label>
                           </div>
                           
                           <div className="flex gap-4">
-                            <div className="flex-1 relative group">
+                            <div className="flex-1 relative group [&>label]:bg-[#F4F4F0] [&>label]:text-base">
                               <input 
                                 type="number"
                                 list="gift-card-values"
                                 placeholder="Enter value"
                                 value={giftCardValue || ""}
                                 onChange={(e) => setGiftCardValue(Number(e.target.value))}
-                                className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
+                                className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
                               />
                               <datalist id="gift-card-values">
                                 <option value="500">₹ 500</option>
@@ -1423,9 +1356,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 max="5"
                                 value={giftCardQty}
                                 onChange={(e) => setGiftCardQty(Math.min(5, Math.max(1, Number(e.target.value))))}
-                                className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                                className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
                               />
-                              <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">QUANTITY</label>
+                              <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">QUANTITY</label>
                             </div>
                           </div>
 
@@ -1435,9 +1368,9 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               placeholder="Gifter's Name (Optional)" 
                               value={gifterName}
                               onChange={(e) => setGifterName(e.target.value)}
-                              className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all" 
+                              className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">GIFTER'S NAME</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">GIFTER'S NAME</label>
                           </div>
                           
                           <div className="relative group">
@@ -1447,15 +1380,15 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               value={personalGiftMessage}
                               onChange={(e) => setPersonalGiftMessage(e.target.value)}
                               maxLength={100}
-                              className="w-full p-4 bg-[#E6E6FA] border-2 border-natural/10 text-sm font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all resize-none min-h-[100px]" 
+                              className="w-full p-4 bg-[#F4F4F0] border-2 border-natural/10 text-lg font-medium text-fern rounded-2xl focus:outline-none focus:border-fern transition-all resize-none min-h-[120px]"
                             />
-                            <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">GIFT MESSAGE</label>
+                            <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">GIFT MESSAGE</label>
                           </div>
                           
                           <button 
                             onClick={handleBuyGiftCard}
                             disabled={isPurchasingGiftCard}
-                            className="w-full h-14 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow disabled:opacity-70 disabled:cursor-wait"
+                            className="w-full h-14 bg-fern hover:bg-apricot text-white text-base font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow disabled:opacity-70 disabled:cursor-wait"
                           >
                             {isPurchasingGiftCard ? (
                               <span className="flex items-center justify-center gap-3">
@@ -1510,26 +1443,26 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab: Saved Cards */}
               {activeTab === "saved_cards" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">Saved Cards</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Manage your saved credit and debit cards for faster checkout.</p>
+                    <h2 className="text-4xl font-extrabold text-fern tracking-tight">Saved Cards</h2>
+                    <p className="text-base text-natural font-medium mt-3">Manage your saved credit and debit cards for faster checkout.</p>
                   </div>
 
-                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#E6E6FA] shadow-sm">
+                  <div className="border border-natural/20 rounded-3xl overflow-hidden bg-[#F4F4F0] shadow-sm">
                     <div className="p-6 flex justify-between items-center border-b border-natural/10 bg-[#F4F4F0]/50">
-                      <h3 className="font-bold text-sm text-fern uppercase tracking-widest">Payment Methods</h3>
-                      <span className="text-[10px] font-bold text-natural uppercase tracking-widest">{savedCards.length}/5 Cards Saved</span>
+                      <h3 className="font-bold text-xl text-fern uppercase tracking-widest">Payment Methods</h3>
+                      <span className="text-base font-bold text-natural uppercase tracking-widest">{savedCards.length}/5 Cards Saved</span>
                     </div>
                     <div className="p-6 sm:p-8">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {savedCards.map(card => (
-                          <div key={card.id} className="border-2 border-natural/10 rounded-2xl p-6 flex justify-between items-start hover:border-fern/30 hover:shadow-md transition-all cursor-pointer bg-[#E6E6FA] group">
+                          <div key={card.id} className="border-2 border-natural/10 rounded-2xl p-6 flex justify-between items-start hover:border-fern/30 hover:shadow-md transition-all cursor-pointer bg-[#F4F4F0] group">
                             <div className="space-y-4">
                               <div className="w-14 h-9 bg-gradient-to-br from-blue-800 to-blue-900 rounded-lg flex items-center justify-center text-white text-[10px] font-bold italic shadow-sm">
                                 {card.type}
                               </div>
-                              <div>
+                              <div className="[&>p:first-child]:text-xl [&>p:last-child]:mt-2 [&>p:last-child]:text-lg">
                                 <p className="text-sm font-bold text-fern">{card.name}</p>
                                 <p className="text-xs font-mono font-medium text-natural mt-1">•••• •••• •••• {card.last4}</p>
                               </div>
@@ -1544,7 +1477,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                       <button 
                         onClick={handleAddCard}
                         disabled={savedCards.length >= 5}
-                        className="h-12 px-8 bg-[#E6E6FA] border-2 border-natural/10 text-fern text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-sm w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-14 px-8 bg-[#F4F4F0] border-2 border-natural/10 text-fern text-base font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer hover:border-fern shadow-sm hover:shadow flex items-center justify-center gap-2 max-w-sm w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus size={16} /> Add New Card
                       </button>
@@ -1555,10 +1488,10 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab: Saved UPI */}
               {activeTab === "saved_upi" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-fern">Saved UPI</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Manage your saved UPI IDs.</p>
+                    <p className="text-base text-natural font-medium mt-3">Manage your saved UPI IDs.</p>
                   </div>
                   <div className="border-2 border-dashed border-natural/20 rounded-3xl overflow-hidden bg-[#F4F4F0]/50 p-12 text-center flex flex-col items-center justify-center">
                     <WalletCards size={48} className="text-natural/30 mb-4" />
@@ -1570,23 +1503,23 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab 5: Security */}
               {activeTab === "security" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-10 animate-fade-in">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-10 animate-fade-in">
                   {/* Password Change Form */}
                   <div className="space-y-6">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Account Credentials</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Update your password securely.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Account Credentials</h2>
+                      <p className="text-base text-natural font-medium mt-3">Update your password securely.</p>
                     </div>
 
                     <form onSubmit={handlePasswordUpdate} className="space-y-6 max-w-xl">
                       <div className="relative group">
-                        <input type="email" readOnly value={user.email} className="peer w-full h-14 px-4 bg-[#F4F4F0] border-2 border-natural/5 text-sm font-medium text-fern rounded-2xl cursor-not-allowed text-opacity-70 outline-none" />
-                        <label className="absolute left-4 -top-2 text-[10px] font-bold text-fern bg-[#E6E6FA] px-1">EMAIL ADDRESS</label>
+                        <input type="email" readOnly value={user.email} className="peer w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/5 text-lg font-medium text-fern rounded-2xl cursor-not-allowed text-opacity-70 outline-none" />
+                        <label className="absolute left-4 -top-2 text-base font-bold text-fern bg-[#F4F4F0] px-1">EMAIL ADDRESS</label>
                       </div>
 
                       <button
                         type="submit"
-                        className="h-14 px-10 bg-fern hover:bg-apricot text-white text-xs font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow active:scale-95 w-full sm:w-auto"
+                        className="h-14 px-10 bg-fern hover:bg-apricot text-white text-base font-bold uppercase tracking-widest rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow active:scale-95 w-full sm:w-auto"
                       >
                         Send Reset Link
                       </button>
@@ -1614,25 +1547,25 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                   {/* Two-Factor Authentication (2FA) Setup */}
                   <div className="space-y-6">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Two-Factor Authentication (2FA)</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Secure your account with multi-factor passcodes.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Two-Factor Authentication (2FA)</h2>
+                      <p className="text-base text-natural font-medium mt-3">Secure your account with multi-factor passcodes.</p>
                     </div>
 
                     {user?.mfaEnabled ? (
                       <div className="border-2 border-green-500/20 rounded-3xl p-6 sm:p-8 bg-green-50/30 flex flex-col sm:flex-row items-start justify-between gap-6">
                         <div className="space-y-2">
-                          <h4 className="text-sm font-bold text-fern flex items-center gap-2 uppercase tracking-widest">
+                          <h4 className="text-xl font-bold text-fern flex items-center gap-2 uppercase tracking-widest">
                             2FA is currently ENABLED
                             <span className="px-2.5 py-1 bg-green-500 text-white font-bold text-[9px] uppercase tracking-widest rounded-lg shadow-sm">Active</span>
                           </h4>
-                          <p className="text-xs text-natural font-medium">
+                          <p className="text-lg text-natural font-medium">
                             Your account is protected by TOTP code validation during sign in.
                           </p>
                         </div>
                         <button 
                           type="button" 
                           onClick={handleDisableMfa}
-                          className="h-12 px-6 bg-[#E6E6FA] border-2 border-apricot/30 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm self-start sm:self-center w-full sm:w-auto"
+                          className="h-14 px-6 bg-[#F4F4F0] border-2 border-apricot/30 text-apricot hover:border-apricot hover:bg-apricot/5 text-base font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer shadow-sm self-start sm:self-center w-full sm:w-auto"
                         >
                           Disable 2FA
                         </button>
@@ -1641,11 +1574,11 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                       <div className="space-y-6">
                         <div className="border-2 border-natural/10 rounded-3xl p-6 sm:p-8 bg-[#F4F4F0]/30 flex flex-col sm:flex-row items-start justify-between gap-6">
                           <div className="space-y-2 max-w-xl">
-                            <h4 className="text-sm font-bold text-fern flex items-center gap-2 uppercase tracking-widest">
+                            <h4 className="text-xl font-bold text-fern flex items-center gap-2 uppercase tracking-widest">
                               2FA is currently DISABLED
                               <span className="px-2.5 py-1 bg-apricot/10 text-apricot border border-apricot/20 font-bold text-[9px] uppercase tracking-widest rounded-lg">Recommended</span>
                             </h4>
-                            <p className="text-xs text-natural font-medium leading-relaxed">
+                            <p className="text-lg text-natural font-medium leading-relaxed">
                               Add an extra layer of protection by requiring a code from your authenticator app on login.
                             </p>
                           </div>
@@ -1666,13 +1599,13 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="border-2 border-natural/10 rounded-3xl p-6 sm:p-8 bg-[#E6E6FA] shadow-sm space-y-6 max-w-2xl overflow-hidden"
+                              className="border-2 border-natural/10 rounded-3xl p-6 sm:p-8 bg-[#F4F4F0] shadow-sm space-y-6 max-w-2xl overflow-hidden"
                             >
-                              <h4 className="text-sm font-bold text-fern uppercase tracking-widest">MFA Setup instructions</h4>
+                              <h4 className="text-xl font-bold text-fern uppercase tracking-widest">MFA Setup instructions</h4>
                               
                               <div className="flex flex-col sm:flex-row items-center gap-8 py-6 px-8 bg-[#F4F4F0]/50 rounded-2xl border border-natural/5">
                                 {/* QR Code using Google Charts API */}
-                                <div className="p-4 bg-[#E6E6FA] rounded-2xl shadow-sm">
+                                <div className="p-4 bg-[#F4F4F0] rounded-2xl shadow-sm">
                                   <img 
                                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaSecretData.qrCodeUrl)}`}
                                     alt="Scan this TOTP QR Code"
@@ -1681,7 +1614,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 </div>
                                 <div className="space-y-3 text-center sm:text-left">
                                   <p className="text-[10px] text-natural uppercase tracking-widest font-bold">Manual Setup Key</p>
-                                  <code className="text-sm font-mono font-bold text-fern bg-[#E6E6FA] border border-natural/10 px-4 py-3 rounded-xl block shadow-sm select-all">
+                                  <code className="text-lg font-mono font-bold text-fern bg-[#F4F4F0] border border-natural/10 px-4 py-3 rounded-xl block shadow-sm select-all">
                                     {mfaSecretData.secret}
                                   </code>
                                   <p className="text-[10px] text-natural/70 font-medium max-w-[200px]">Scan the QR code or enter this key in your authenticator app.</p>
@@ -1698,7 +1631,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                     placeholder="123456"
                                     value={mfaSetupCode}
                                     onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, ""))}
-                                    className="w-full h-14 px-4 bg-[#E6E6FA] border-2 border-natural/10 focus:border-fern text-sm font-medium tracking-[0.2em] text-fern text-center rounded-2xl focus:outline-none focus:shadow-sm transition-all"
+                                    className="w-full h-16 px-4 bg-[#F4F4F0] border-2 border-natural/10 focus:border-fern text-lg font-medium tracking-[0.2em] text-fern text-center rounded-2xl focus:outline-none focus:shadow-sm transition-all"
                                   />
                                   <button 
                                     type="submit"
@@ -1724,31 +1657,31 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                   {/* Active Device Sessions */}
                   <div className="space-y-6">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Active Sessions</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Manage and revoke active logins on your account.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Active Sessions</h2>
+                      <p className="text-base text-natural font-medium mt-3">Manage and revoke active logins on your account.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {sessionsList.map((session) => (
                         <div 
                           key={session.id}
-                          className="border-2 border-natural/10 rounded-3xl p-6 bg-[#E6E6FA] shadow-sm flex flex-col justify-between gap-6 hover:shadow-md transition-shadow group"
+                          className="border-2 border-natural/10 rounded-3xl p-6 bg-[#F4F4F0] shadow-sm flex flex-col justify-between gap-6 hover:shadow-md transition-shadow group"
                         >
                           <div className="space-y-4">
                             <div className="flex items-start gap-4">
                               <div className="w-10 h-10 rounded-full bg-[#F4F4F0] flex items-center justify-center text-fern shrink-0">
                                 <Smartphone size={18} />
                               </div>
-                              <p className="text-sm font-bold text-fern line-clamp-2 leading-snug" title={session.userAgent}>
+                              <p className="text-xl font-bold text-fern line-clamp-2 leading-snug" title={session.userAgent}>
                                 {session.userAgent || "Unknown Device"}
                               </p>
                             </div>
                             <div className="bg-[#F4F4F0]/50 p-4 rounded-2xl space-y-2">
-                              <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                              <div className="flex justify-between items-center text-base font-bold uppercase tracking-widest">
                                 <span className="text-natural">IP Address</span>
                                 <span className="text-fern font-mono">{session.ipAddress || "Unknown"}</span>
                               </div>
-                              <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                              <div className="flex justify-between items-center text-base font-bold uppercase tracking-widest">
                                 <span className="text-natural">Last Active</span>
                                 <span className="text-fern">{new Date(session.lastActiveAt).toLocaleDateString()}</span>
                               </div>
@@ -1756,14 +1689,14 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                           </div>
                           <button 
                             onClick={() => handleRevokeSession(session.id)}
-                            className="h-12 w-full bg-[#E6E6FA] border-2 border-apricot/20 text-apricot hover:border-apricot hover:bg-apricot/5 text-xs font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer"
+                            className="h-14 w-full bg-[#F4F4F0] border-2 border-apricot/20 text-apricot hover:border-apricot hover:bg-apricot/5 text-base font-bold uppercase tracking-widest rounded-2xl transition-all cursor-pointer"
                           >
                             Revoke Access
                           </button>
                         </div>
                       ))}
                       {sessionsList.length === 0 && (
-                        <div className="md:col-span-2 py-12 text-center text-sm font-semibold text-natural bg-[#F4F4F0]/50 border-2 border-dashed border-natural/20 rounded-3xl">
+                        <div className="md:col-span-2 py-12 text-center text-xl font-semibold text-natural bg-[#F4F4F0]/50 border-2 border-dashed border-natural/20 rounded-3xl">
                           No active login sessions tracked.
                         </div>
                       )}
@@ -1775,21 +1708,21 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                   {/* Security Audit Logs */}
                   <div className="space-y-6">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-fern">Audit Trail</h2>
-                      <p className="text-xs text-natural font-medium mt-1">Historical log of security activities for verification.</p>
+                      <h2 className="text-4xl font-extrabold text-fern tracking-tight">Audit Trail</h2>
+                      <p className="text-base text-natural font-medium mt-3">Historical log of security activities for verification.</p>
                     </div>
 
-                    <div className="border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm bg-[#E6E6FA]">
+                    <div className="border-2 border-natural/10 rounded-3xl overflow-hidden shadow-sm bg-[#F4F4F0]">
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
-                            <tr className="bg-[#F4F4F0]/50 text-[10px] font-bold uppercase tracking-widest text-natural border-b border-natural/10">
+                            <tr className="bg-[#F4F4F0]/50 text-base font-bold uppercase tracking-widest text-natural border-b border-natural/10">
                               <th className="p-6">Action</th>
                               <th className="p-6">IP Address</th>
                               <th className="p-6">Timestamp</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-natural/10 text-sm">
+                          <tbody className="divide-y divide-natural/10 text-lg">
                             {auditLogsList.map((log) => (
                               <tr key={log.id} className="hover:bg-[#F4F4F0]/30 transition-colors">
                                 <td className="p-6 font-bold text-fern">{log.action}</td>
@@ -1814,10 +1747,10 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
 
               {/* Tab: Reviews */}
               {activeTab === "reviews" && (
-                <div className="bg-[#E6E6FA] rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-natural/10 space-y-8 animate-fade-in">
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-fern">My Reviews & Ratings</h2>
-                    <p className="text-xs text-natural font-medium mt-1">Manage the feedback you've left on products you purchased.</p>
+                    <h2 className="text-4xl font-extrabold text-fern tracking-tight">My Reviews & Ratings</h2>
+                    <p className="text-base text-natural font-medium mt-3">Manage the feedback you've left on products you purchased.</p>
                   </div>
 
                   {isLoadingReviews ? (
@@ -1827,7 +1760,7 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                   ) : userReviews.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {userReviews.map((review) => (
-                        <div key={review.id} className="bg-[#E6E6FA] border-2 border-natural/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+                        <div key={review.id} className="bg-[#F4F4F0] border-2 border-natural/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
                           <div className="space-y-4">
                             <div className="flex justify-between items-start gap-4 border-b border-natural/10 pb-4">
                               <div className="space-y-2">
@@ -1836,20 +1769,20 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                     <Star key={i} size={14} className={i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-natural/30"} />
                                   ))}
                                 </div>
-                                <h3 className="font-bold text-sm text-fern line-clamp-1">{review.title || "Review"}</h3>
+                                <h3 className="font-bold text-xl text-fern line-clamp-1">{review.title || "Review"}</h3>
                               </div>
-                              <span className="text-[10px] font-bold text-natural uppercase tracking-widest shrink-0 bg-[#F4F4F0]/50 px-2.5 py-1 rounded-lg">
+                              <span className="text-base font-bold text-natural uppercase tracking-widest shrink-0 bg-[#F4F4F0]/50 px-2.5 py-1 rounded-lg">
                                 {new Date(review.updatedAt).toLocaleDateString()}
                               </span>
                             </div>
-                            <p className="text-sm text-natural leading-relaxed font-medium line-clamp-3">
+                            <p className="text-lg text-natural leading-relaxed font-medium line-clamp-3">
                               "{review.comment}"
                             </p>
                           </div>
                           
                           {review.product && (
                             <div className="mt-6 pt-4 border-t border-natural/10 flex items-center gap-4 bg-[#F4F4F0]/50 p-3 rounded-2xl group-hover:bg-[#F4F4F0] transition-colors">
-                              <div className="w-14 h-14 bg-[#E6E6FA] rounded-xl overflow-hidden shrink-0 shadow-sm border border-natural/10 flex items-center justify-center">
+                              <div className="w-14 h-14 bg-[#F4F4F0] rounded-xl overflow-hidden shrink-0 shadow-sm border border-natural/10 flex items-center justify-center">
                                 {review.product.imageUrl ? (
                                   <img src={review.product.imageUrl} alt={review.product.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -1857,8 +1790,8 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                                 )}
                               </div>
                               <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-natural uppercase tracking-widest">Reviewed Product</p>
-                                <p className="text-xs font-bold text-fern leading-tight line-clamp-2">{review.product.name}</p>
+                                <p className="text-base font-bold text-natural uppercase tracking-widest">Reviewed Product</p>
+                                <p className="text-lg font-bold text-fern leading-tight line-clamp-2">{review.product.name}</p>
                               </div>
                             </div>
                           )}
@@ -1868,8 +1801,8 @@ className="w-full h-14 px-4 bg-transparent border-2 border-natural/20 text-sm fo
                   ) : (
                     <div className="py-20 text-center bg-[#F4F4F0]/50 border-2 border-dashed border-natural/20 rounded-3xl">
                       <Star size={40} className="mx-auto text-natural/30 mb-4" />
-                      <p className="text-sm font-semibold text-natural">You haven't reviewed any products yet.</p>
-                      <p className="text-xs font-medium text-natural/70 mt-1">Share your thoughts on recent purchases.</p>
+                      <p className="text-xl font-semibold text-natural">You haven't reviewed any products yet.</p>
+                      <p className="text-lg font-medium text-natural/70 mt-2">Share your thoughts on recent purchases.</p>
                     </div>
                   )}
                 </div>

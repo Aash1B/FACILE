@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function AuthLayout({
   children,
@@ -18,11 +18,11 @@ export default function AuthLayout({
       style={{ backgroundColor: '#F4F4F0', color: '#4a5568' }}
     >
       {/* Split Pane: Left Side (Banner, Desktop only) */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-end p-16 overflow-hidden" style={{ backgroundColor: '#ced2ee' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative items-end p-16 overflow-hidden" style={{ backgroundColor: '#5271FF' }}>
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-10000 ease-out hover:scale-105"
-          style={{ backgroundImage: 'none', backgroundColor: '#ced2ee' }}
+          style={{ backgroundImage: 'none', backgroundColor: '#5271FF' }}
         />
         
         {/* Decorative soft shapes for visual interest */}
@@ -32,33 +32,27 @@ export default function AuthLayout({
 
         {/* Gradient overlay */}
         <div
-          className="absolute inset-0 bg-gradient-to-t from-[#ced2ee]/80 via-[#ced2ee]/30 to-[#ced2ee]/5 pointer-events-none"
+          className="absolute inset-0 bg-gradient-to-t from-[#5271FF]/90 via-[#5271FF]/50 to-[#5271FF]/20 pointer-events-none"
         />
 
-        {/* Floating Accent Sparkles */}
-        <div className="absolute top-12 left-12 flex items-center gap-2.5 z-10 select-none" style={{ color: '#4A5568' }}>
-          <span className="font-serif text-3xl font-bold tracking-[0.08em] text-[#4a556a]">
+        {/* Brand wordmark */}
+        <div className="absolute top-12 left-12 z-10 select-none text-white">
+          <span className="font-serif text-5xl font-bold tracking-[0.08em] text-white">
             facile
           </span>
-          <div className="h-4 w-px" style={{ backgroundColor: 'rgba(165,142,116,0.4)' }} />
-          <div className="flex items-center gap-1 text-[10px] tracking-[0.15em] uppercase font-bold" style={{ color: '#A58E74' }}>
-            <Sparkles size={11} style={{ color: '#E09132' }} />
-            <span>Slow Living</span>
-          </div>
         </div>
 
         {/* Branding Info */}
-        <div className="relative z-10 space-y-4 max-w-md" style={{ color: '#4a5568' }}>
-          <p className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: '#4a5568' }}>
-            Curated Lifestyles
+        <div className="relative z-10 space-y-4 max-w-md text-white">
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/90">
           </p>
           <h2 className="font-serif text-4xl font-semibold leading-[1.2] tracking-tight">
-            Designed to feel like home. Crafted to last.
+            Your one-stop online marketplace.
           </h2>
-          <p className="text-xs font-medium leading-relaxed" style={{ color: 'rgba(74,85,104,0.7)' }}>
-            Explore our collections of minimal apparel, conscious ceramics, and thoughtfully designed workspace essentials.
+          <p className="text-lg font-medium leading-relaxed text-white/80">
+            Browse the best in fashion, beauty, electronic, health and welness and more.
           </p>
-          <div className="pt-2 flex items-center gap-2 text-[10px] font-bold tracking-wider" style={{ color: 'rgba(74,85,104,0.45)' }}>
+          <div className="pt-2 flex items-center gap-2 text-[10px] font-bold tracking-wider text-white/60">
             <span>© {new Date().getFullYear()} FACILE INC.</span>
             <span>•</span>
             <span>ALL RIGHTS RESERVED</span>
@@ -68,18 +62,18 @@ export default function AuthLayout({
 
       {/* Split Pane: Right Side (Form Container) */}
       <div
-        className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 md:p-16 relative"
+        className="w-full lg:w-1/2 flex flex-col justify-between p-6 pt-4 sm:p-12 sm:pt-6 md:p-16 md:pt-8 relative"
         style={{ backgroundColor: '#F4F4F0' }}
       >
         {/* Top bar with back-to-store link */}
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors duration-200 group"
+            className="inline-flex items-center gap-2.5 text-sm font-bold uppercase tracking-wider transition-colors duration-200 group"
             style={{ color: '#4a5568' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#4a5568')}
           >
-            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Back to store
           </Link>
           
@@ -94,7 +88,7 @@ export default function AuthLayout({
         </div>
 
         {/* Center Form Content */}
-        <div className="my-auto py-10 sm:max-w-md sm:w-full sm:mx-auto">
+        <div className="my-auto py-10 sm:max-w-lg sm:w-full sm:mx-auto lg:relative lg:top-6">
           {children}
         </div>
 

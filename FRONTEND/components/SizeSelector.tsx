@@ -50,8 +50,8 @@ export const SizeSelector: React.FC<SizeSelectorProps> = ({
                 flex items-center justify-center border focus:outline-none cursor-pointer
                 ${
                   isSelected
-                    ? "bg-[#4A5568] text-white border-[#4A5568] shadow-md transform scale-[1.03]"
-                    : "bg-white text-[#4A5568] border-natural/25 hover:border-[#4A5568] hover:-translate-y-0.5 hover:shadow-sm hover:bg-natural/5"
+                    ? "bg-[#5271FF] text-white border-[#5271FF] shadow-md transform scale-[1.03]"
+                    : "bg-white text-[#5271FF] border-natural/25 hover:border-[#5271FF] hover:-translate-y-0.5 hover:shadow-sm hover:bg-natural/5"
                 }
                 ${showValidation && !isSelected && !selectedSize ? "border-[#5271FF]/50 bg-[#5271FF]/5" : ""}
               `}

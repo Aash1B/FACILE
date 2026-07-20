@@ -205,7 +205,7 @@ export default function WishlistPage() {
         ) : wishlistItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4 bg-white border border-natural/15 rounded-3xl text-center max-w-md mx-auto shadow-sm">
             <Heart size={44} className="text-[#5271FF] mb-4 animate-pulse fill-[#5271FF]/10" />
-            <h2 className="text-md font-extrabold text-[#4a556a] mb-2 font-serif">Your Wishlist is Empty</h2>
+            <h2 className="text-md font-extrabold text-[#5271FF] mb-2 font-serif">Your Wishlist is Empty</h2>
             <p className="text-xs text-[#4a556a]/70 mb-6 leading-relaxed max-w-xs">
               Save items you love here to find them easily later. Add some products and they will appear here!
             </p>
@@ -252,7 +252,7 @@ export default function WishlistPage() {
                   {/* Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
+                      <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
                       </h3>
                     </div>
@@ -260,7 +260,7 @@ export default function WishlistPage() {
                     {/* Price and Rating */}
                     <div className="flex items-center justify-between pt-3 border-t border-natural/10 mt-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-warm-ivory transition-colors">₹{product.price.toLocaleString("en-IN")}</span>
                         <span className="text-[10px] text-natural group-hover:text-warm-ivory/60 line-through font-medium transition-colors">₹{product.originalPrice.toLocaleString("en-IN")}</span>
                       </div>
                       
@@ -278,7 +278,7 @@ export default function WishlistPage() {
                 <div className="px-4 pb-4">
                   <button
                     onClick={(e) => handleAddToCart(product, e)}
-                    className="w-full h-8.5 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
+                    className="w-full h-8.5 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"
                   >
                     <ShoppingCart size={12} className="stroke-[2.5px]" />
                     Add to Cart

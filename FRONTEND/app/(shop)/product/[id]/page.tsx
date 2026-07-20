@@ -430,7 +430,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       <div className="min-h-screen bg-[#FAF3E3] flex items-center justify-center text-fern">
         <div className="text-center space-y-4">
           <h2 className="text-2xl font-bold font-serif">Product Not Found</h2>
-          <Link href="/" className="inline-flex items-center gap-2 text-[#FA99C6] hover:underline font-semibold text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-[#5271FF] hover:underline font-semibold text-sm">
             <ArrowLeft size={16} /> Back to Shop
           </Link>
         </div>
@@ -451,7 +451,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-fern text-warm-ivory py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2 border border-natural/30 animate-slide-in text-xs font-semibold">
-          <span className="text-[#FA99C6]">✓</span>
+          <span className="text-[#5271FF]">✓</span>
           {toastMessage}
         </div>
       )}
@@ -485,7 +485,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   key={idx}
                   onClick={() => setActiveImage(imgUrl)}
                   className={`w-14 h-14 bg-neutral-100 border-2 rounded-xl overflow-hidden p-1 transition-all cursor-pointer flex-shrink-0 flex items-center justify-center ${
-                    activeImage === imgUrl ? "border-[#FA99C6] shadow-sm" : "border-natural/20 hover:border-natural/40"
+                    activeImage === imgUrl ? "border-[#5271FF] shadow-sm" : "border-natural/20 hover:border-natural/40"
                   }`}
                 >
                   <img src={imgUrl || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={`Thumbnail ${idx + 1}`} className="max-w-full max-h-full object-contain mix-blend-multiply" />
@@ -496,12 +496,12 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Main Showcase Image (Right of the thumbnail list) */}
             <div className="flex-1 aspect-square bg-neutral-100/50 rounded-2xl border border-natural/10 flex items-center justify-center p-8 relative overflow-hidden order-1 md:order-2">
               {discountPercent > 0 && (
-                <span className="absolute top-3 left-3 z-10 bg-[#FA99C6] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
+                <span className="absolute top-3 left-3 z-10 bg-[#5271FF] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
                   {discountPercent}% OFF
                 </span>
               )}
               {isFacileChoice && (
-                <span className={`absolute left-3 z-10 rounded-full bg-[#4a556a] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-11" : "top-3"}`}>
+                <span className={`absolute left-3 z-10 rounded-full bg-[#5271FF] px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-md ${discountPercent > 0 ? "top-11" : "top-3"}`}>
                   Facile Choice
                 </span>
               )}
@@ -536,7 +536,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </div>
                 <span className="text-fern font-bold ml-1">{Number(product.rating).toFixed(1)}</span>
                 <span>•</span>
-                <span className="hover:text-[#FA99C6] cursor-pointer transition-colors">{product.reviews} reviews</span>
+                <span className="hover:text-[#5271FF] cursor-pointer transition-colors">{product.reviews} reviews</span>
               </div>
             </div>
 
@@ -546,7 +546,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             <div className="space-y-1">
               <div className="flex items-baseline gap-2 flex-wrap">
                 {discountPercent > 0 && (
-                  <span className="text-3xl font-light text-[#FA99C6]">
+                  <span className="text-3xl font-light text-[#5271FF]">
                     -{discountPercent}%
                   </span>
                 )}
@@ -580,24 +580,24 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Special Offers Scrollable Deck */}
             <div className="space-y-3">
               <div className="flex items-center gap-1.5 text-xs font-bold text-natural uppercase tracking-wider">
-                <Sparkles size={14} className="text-[#FA99C6]" />
+                <Sparkles size={14} className="text-[#5271FF]" />
                 <span>Special Offers</span>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
                   <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">WELCOME10</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 10% Off First Order</span>
+                  <span className="text-[9px] font-bold text-[#5271FF] block pt-1">Get 10% Off First Order</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
                   <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">FACILE50</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Flat ₹50 Off</span>
+                  <span className="text-[9px] font-bold text-[#5271FF] block pt-1">Flat ₹50 Off</span>
                 </div>
                 <div className="min-w-[150px] bg-[#F4F4F0] border border-natural/15 rounded-xl p-3.5 space-y-1 flex-shrink-0">
                   <p className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider">Coupon Code</p>
                   <p className="text-[11px] text-natural font-extrabold leading-relaxed font-sans">SAVE20</p>
-                  <span className="text-[9px] font-bold text-[#FA99C6] block pt-1">Get 20% Off Orders &gt; ₹5000</span>
+                  <span className="text-[9px] font-bold text-[#5271FF] block pt-1">Get 20% Off Orders &gt; ₹5000</span>
                 </div>
               </div>
             </div>
@@ -644,7 +644,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               
               {/* Delivery and Prime branding */}
               <div className="space-y-2">
-                <span className="text-xs font-serif font-black italic tracking-widest text-[#4A5568]">facile<span className="text-[#FA99C6]">plus</span></span>
+                <span className="text-xs font-serif font-black italic tracking-widest text-[#4A5568]">facile<span className="text-[#5271FF]">plus</span></span>
                 <p className="text-[11px] text-natural font-medium leading-relaxed font-sans">
                   Enjoy unlimited <span className="font-bold text-[#4A5568]">FREE Same-Day Delivery</span> on this item.
                 </p>
@@ -657,7 +657,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                       FREE delivery <span className="font-bold text-[#4A5568]">{deliveryInfo.freeDeliveryDate}</span>.
                     </p>
                     <p className="text-[10px] text-natural/80 font-medium leading-relaxed font-sans">
-                      Or fastest delivery <span className="font-bold text-[#FA99C6]">{deliveryInfo.fastestDeliveryDate}</span>. Order within <span className="font-bold text-[#4A5568]">{deliveryInfo.hours} hrs {deliveryInfo.minutes} mins</span>.
+                      Or fastest delivery <span className="font-bold text-[#5271FF]">{deliveryInfo.fastestDeliveryDate}</span>. Order within <span className="font-bold text-[#4A5568]">{deliveryInfo.hours} hrs {deliveryInfo.minutes} mins</span>.
                     </p>
                   </>
                 ) : (
@@ -666,7 +666,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                       FREE delivery <span className="font-bold text-[#4A5568]">...</span>
                     </p>
                     <p className="text-[10px] text-natural/80 font-medium leading-relaxed font-sans">
-                      Or fastest delivery <span className="font-bold text-[#FA99C6]">...</span>
+                      Or fastest delivery <span className="font-bold text-[#5271FF]">...</span>
                     </p>
                   </>
                 )}
@@ -708,7 +708,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <div className="space-y-2.5">
                     <button
                       onClick={handleAddToCart}
-                      className="w-full h-11 bg-[#4A5568] hover:bg-[#3B4455] active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none"
+                      className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none"
                     >
                       <ShoppingCart size={14} />
                       Add to Cart
@@ -716,7 +716,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                     
                     <button
                       onClick={handleBuyNow}
-                      className="w-full h-11 bg-[#4A5568] hover:bg-[#4A5568]/95 active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none"
+                      className="w-full h-11 bg-[#5271FF] hover:bg-[#5271FF]/95 active:scale-98 text-warm-ivory text-xs font-bold tracking-wider rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none"
                     >
                       Buy Now
                     </button>
@@ -738,8 +738,8 @@ export default function ProductDetailPage({ params }: PageProps) {
 
               <div className="border-t border-natural/10 pt-3.5">
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={handleToggleFavorite} className="h-12 border border-natural/25 hover:border-[#FA99C6] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
-                    <Heart size={14} className={isFav ? "text-[#FA99C6] fill-[#FA99C6]" : "text-[#4A5568]"} />
+                  <button onClick={handleToggleFavorite} className="h-12 border border-natural/25 hover:border-[#5271FF] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
+                    <Heart size={14} className={isFav ? "text-[#5271FF] fill-[#5271FF]" : "text-[#4A5568]"} />
                     {isFav ? "Wishlisted" : "Wishlist"}
                   </button>
                   <button onClick={handleSaveForLater} className="h-12 border border-natural/25 hover:border-[#5271FF] rounded-xl text-[9px] sm:text-[10px] font-bold text-[#4A5568] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer hover:bg-white/30 uppercase tracking-wider">
@@ -756,22 +756,22 @@ export default function ProductDetailPage({ params }: PageProps) {
         {recommendedProducts.length > 0 && (
           <section className="rounded-[28px] border border-natural/15 bg-white/35 p-6 sm:p-8">
             <div className="mb-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FA99C6]">You may also like</p>
-              <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4a556a]">Recommended products</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5271FF]">You may also like</p>
+              <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4A5568]">Recommended products</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-3">
               {recommendedProducts.map((item) => (
                 <Link key={item.id} href={`/product/bs${item.id}`} className="group w-48 flex-none overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] transition-all hover:-translate-y-1 hover:shadow-md sm:w-56">
-                  <div className="aspect-square overflow-hidden bg-neutral-100">
-                    <ProductImage src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
+                    <ProductImage src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="transition-transform duration-500 ease-out group-hover:scale-[1.03]" />
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="truncate text-sm font-bold text-[#4a556a]">{item.title}</h3>
+                      <h3 className="truncate text-sm font-bold text-[#5271FF]">{item.title}</h3>
                     </div>
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-extrabold text-[#4a556a]">₹{Number(item.sellingPrice).toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-extrabold text-[#5271FF]">₹{Number(item.sellingPrice).toLocaleString("en-IN")}</span>
                         {Number(item.mrp) > Number(item.sellingPrice) && <span className="text-[10px] text-natural line-through">₹{Number(item.mrp).toLocaleString("en-IN")}</span>}
                       </div>
                       <div className="flex items-center gap-1 text-[10px] font-semibold text-natural shrink-0">
@@ -790,11 +790,11 @@ export default function ProductDetailPage({ params }: PageProps) {
           <div className="rounded-[28px] border border-natural/15 bg-white/40 p-6 sm:p-8">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FA99C6]">Customer feedback</p>
-                <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4a556a]">Ratings & reviews</h2>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5271FF]">Customer feedback</p>
+                <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4A5568]">Ratings & reviews</h2>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-extrabold text-[#4a556a]">{Number(product.rating).toFixed(1)} / 5</p>
+                <p className="text-2xl font-extrabold text-[#5271FF]">{Number(product.rating).toFixed(1)} / 5</p>
                 <p className="text-xs font-semibold text-natural">{customerReviews.length} verified {customerReviews.length === 1 ? "review" : "reviews"}</p>
               </div>
             </div>
@@ -820,7 +820,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                         {new Date(review.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       </time>
                     </div>
-                    {review.title && <h3 className="mt-3 text-sm font-bold text-[#4a556a]">{review.title}</h3>}
+                    {review.title && <h3 className="mt-3 text-sm font-bold text-[#5271FF]">{review.title}</h3>}
                     <p className="mt-2 whitespace-pre-wrap text-xs font-medium leading-relaxed text-natural">{review.comment}</p>
                   </article>
                 ))}
@@ -829,7 +829,7 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
 
           <form onSubmit={handleReviewSubmit} className="h-fit rounded-[28px] border border-natural/15 bg-[#F4F4F0] p-6 shadow-xs lg:sticky lg:top-[120px]">
-            <h2 className="font-serif text-xl font-extrabold text-[#4a556a]">Write a review</h2>
+            <h2 className="font-serif text-xl font-extrabold text-[#5271FF]">Write a review</h2>
             <p className="mt-1 text-xs font-medium text-natural">
               {isAuthenticated ? `Posting as ${user?.name}` : "Sign in to rate this product."}
             </p>
@@ -847,12 +847,12 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             <label className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-natural">
               Review title <span className="font-medium normal-case text-natural/60">(optional)</span>
-              <input value={reviewTitle} onChange={(event) => setReviewTitle(event.target.value)} maxLength={120} className="mt-2 h-11 w-full rounded-xl border border-natural/20 bg-white/70 px-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#FA99C6]" placeholder="What stood out?" />
+              <input value={reviewTitle} onChange={(event) => setReviewTitle(event.target.value)} maxLength={120} className="mt-2 h-11 w-full rounded-xl border border-natural/20 bg-white/70 px-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#5271FF]" placeholder="What stood out?" />
             </label>
 
             <label className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-natural">
               Your review
-              <textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required minLength={3} maxLength={2000} rows={5} className="mt-2 w-full resize-none rounded-xl border border-natural/20 bg-white/70 p-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#FA99C6]" placeholder="Share your experience with this product" />
+              <textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required minLength={3} maxLength={2000} rows={5} className="mt-2 w-full resize-none rounded-xl border border-natural/20 bg-white/70 p-3 text-sm font-medium normal-case tracking-normal outline-none focus:border-[#5271FF]" placeholder="Share your experience with this product" />
             </label>
 
             {reviewError && <p className="mt-3 text-xs font-semibold text-red-600">{reviewError}</p>}

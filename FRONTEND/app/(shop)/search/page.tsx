@@ -390,7 +390,7 @@ function FilterPanel({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-natural/10">
-        <h2 className="text-sm font-bold text-[#4a556a]">Filters</h2>
+        <h2 className="text-sm font-bold text-[#5271FF]">Filters</h2>
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
@@ -582,7 +582,7 @@ function ProductCard({
                   {product.brand}
                 </p>
               )}
-              <h3 className="text-sm font-bold text-[#4a556a] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
+              <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug line-clamp-2 transition-colors">
                 {product.name}
               </h3>
             </div>
@@ -598,7 +598,7 @@ function ProductCard({
                 </div>
               )}
               <div className="flex items-baseline gap-1.5">
-                <span className="text-sm font-extrabold text-[#4a556a] group-hover:text-warm-ivory transition-colors">
+                <span className="text-sm font-extrabold text-[#5271FF] group-hover:text-warm-ivory transition-colors">
                   ₹{product.price.toLocaleString("en-IN")}
                 </span>
                 <span className="text-[10px] text-natural/45 group-hover:text-warm-ivory/60 line-through font-medium transition-colors">
@@ -629,7 +629,7 @@ function ProductCard({
       <div className="px-3.5 pb-3.5">
         <button
           onClick={onAddToCart}
-          className="w-full h-8 bg-[#4a556a] group-hover:bg-[#DDE0F0] group-hover:text-[#4a556a] hover:scale-[1.02] active:scale-[0.98] text-warm-ivory text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+          className="w-full h-8 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-[0.98] text-warm-ivory text-[10px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
         >
           <ShoppingCart size={11} className="stroke-[2.5px]" />
           Add to Cart
