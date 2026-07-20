@@ -31,8 +31,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  export function CartProvider({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -147,30 +146,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     syncCart();
   }, [user]);
 
-    // Load favorites on mount
-    useEffect(() => {
-      if (typeof window !== "undefined") {
-        const savedFavs = localStorage.getItem("facile_favorites");
-        if (savedFavs) {
-          try {
-            setFavorites(JSON.parse(savedFavs));
-          } catch (e) {
-            console.error("Error parsing favorites data", e);
-          }
-        }
-      }
-    }, []);
-
-    const saveCartState = (newCart: CartItem[]) => {
-      setCart(newCart);
-      if (!user && typeof window !== "undefined") {
-        localStorage.setItem("facile_cart", JSON.stringify(newCart));
-      }
-    };
-
-    syncCart();
-  }, [user]);
-
   // Load favorites on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -192,6 +167,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+
   const saveFavorites = (newFavs: string[]) => {
     setFavorites(newFavs);
     if (typeof window !== "undefined") {
@@ -210,7 +186,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
     const maxQuantity = item.maxOrderQuantity || 10;
     const safeQuantityToAdd = Math.min(maxQuantity, Math.max(1, quantityToAdd));
-    
+
     if (user && user.email) {
       // Sync with database
       try {
@@ -314,7 +290,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }),
           });
         }
-        
+
         saveCartState(cart.map((item) =>
           item.id === id ? { ...item, quantity: qty } : item
         ));

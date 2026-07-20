@@ -290,7 +290,21 @@ const SUBCATEGORY_IMAGES: Record<string, string> = {
   "Smart Watches": "https://plain-apac-prod-public.komododecks.com/202607/18/EMgbgDjZFUWuTPIKBHvS/image.png",
   "Mobile Accessories": "/mobile_accessories_white_grey.png",
   "Mobile accessories": "/mobile_accessories_white_grey.png",
+
+  // Health and Wellness
+  "Vitamins & Supplements": "https://plain-apac-prod-public.komododecks.com/202607/19/oYZHEFLhWNVLu06hNIRG/image.png",
+  "Fitness & Equipment": "https://plain-apac-prod-public.komododecks.com/202607/19/jDf8QHVunkSgf4HY4cWm/image.png",
+  "Fitness Equipment": "https://plain-apac-prod-public.komododecks.com/202607/19/jDf8QHVunkSgf4HY4cWm/image.png",
+  "Personal Care": "https://plain-apac-prod-public.komododecks.com/202607/19/n1V1NbDpVNvdfF5YBMOR/image.png",
+  "Yoga Essentials": "https://plain-apac-prod-public.komododecks.com/202607/19/WFraEpdDbHlrkqrJCGeN/image.png",
+  "Healthy snacks": "https://plain-apac-prod-public.komododecks.com/202607/19/LFuf1lxAZyEigsPyJnRT/image.png",
+  "Massagers": "https://plain-apac-prod-public.komododecks.com/202607/19/TsAOeXU0VKeAujbCByHS/image.png",
+  "Health Monitors": "https://plain-apac-prod-public.komododecks.com/202607/19/I02qDtczOg4ke33jFyH5/image.png",
+  "Wellness Kits": "https://plain-apac-prod-public.komododecks.com/202607/19/duKItNe5Gyjra2NWCTss/image.png",
+
 };
+
+
 
 const CONTAIN_SUBCATEGORIES = new Set([
   "Power Banks",
@@ -363,7 +377,7 @@ export default function CategoryPage() {
             return;
           }
         }
-      } catch {}
+      } catch { }
 
       // 2. Try match by name
       try {
@@ -385,7 +399,7 @@ export default function CategoryPage() {
             }
           }
         }
-      } catch {}
+      } catch { }
     };
 
     fetchCategoryDetails();
@@ -582,20 +596,20 @@ export default function CategoryPage() {
     const sanitize = (list: SubCategory[]) => {
       let filtered = list;
       if (resolvedFallbackCategoryId === "2") {
-        filtered = list.filter(sub => 
+        filtered = list.filter(sub =>
           sub.name.toLowerCase() !== "apparel" &&
           sub.name.toLowerCase() !== "travel bags" &&
           sub.name.toLowerCase() !== "travel bag"
         );
       }
       if (resolvedFallbackCategoryId === "3") {
-        filtered = filtered.filter(sub => 
+        filtered = filtered.filter(sub =>
           sub.name.toLowerCase() !== "kitchenware" &&
           sub.name.toLowerCase() !== "kitchen ware"
         );
       }
       if (resolvedFallbackCategoryId === "5") {
-        filtered = filtered.filter(sub => 
+        filtered = filtered.filter(sub =>
           sub.name.toLowerCase() !== "running shoes" &&
           sub.name.toLowerCase() !== "running shoe"
         );
@@ -766,20 +780,20 @@ export default function CategoryPage() {
         </div>
       )}
 
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-5">
         {(!subcategoryId && !isShoesFilter) ? (
-          <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-6">
+          <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors">
             <ArrowLeft size={15} /> Back to categories
           </Link>
         ) : (
-          <Link href={`/category/${categoryId}`} className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors mb-6">
+          <Link href={`/category/${categoryId}`} className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors">
             <ArrowLeft size={15} /> Back to all {details.name} subcategories
           </Link>
         )}
 
       </section>
 
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-0">
         {(!subcategoryId && !isShoesFilter) ? (
           /* Render grid of subcategories */
           loading ? (
@@ -797,22 +811,20 @@ export default function CategoryPage() {
                   <Link
                     key={subcategory.id}
                     href={`/category/${categoryId}?subcategory=${subcategory.id}`}
-                    className={`group relative aspect-video overflow-hidden rounded-[28px] border border-white/70 ${
-                      hasImage ? 'bg-white' : `bg-gradient-to-br ${style.surface}`
-                    } p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
+                    className={`group relative aspect-video overflow-hidden rounded-[28px] border border-white/70 ${hasImage ? 'bg-white' : `bg-gradient-to-br ${style.surface}`
+                      } p-7 shadow-[0_8px_30px_rgba(74,85,106,0.08)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(74,85,106,0.16)] transition-all duration-300`}
                   >
                     {hasImage && imageSrc ? (
                       <>
-                        <img 
-                          src={imageSrc} 
-                          alt={subcategory.name} 
-                          className={`absolute inset-0 w-full h-full ${
-                            CONTAIN_SUBCATEGORIES.has(subcategory.name)
-                              ? "object-contain p-3 sm:p-4 object-center"
-                              : TOP_ALIGNED_SUBCATEGORIES.has(subcategory.name)
+                        <img
+                          src={imageSrc}
+                          alt={subcategory.name}
+                          className={`absolute inset-0 w-full h-full ${CONTAIN_SUBCATEGORIES.has(subcategory.name)
+                            ? "object-contain p-3 sm:p-4 object-center"
+                            : TOP_ALIGNED_SUBCATEGORIES.has(subcategory.name)
                               ? "object-cover object-top"
                               : "object-cover object-center"
-                          } transition-transform duration-700 group-hover:scale-105`} 
+                            } transition-transform duration-700 group-hover:scale-105`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                       </>
@@ -836,9 +848,8 @@ export default function CategoryPage() {
                         <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${hasImage ? "text-white drop-shadow-md" : "text-[#3f485a]"}`}>
                           {subcategory.name}
                         </h3>
-                        <span className={`mt-3 inline-flex items-center gap-2 text-xs font-bold transition-colors ${
-                          hasImage ? "text-white/90 group-hover:text-white drop-shadow-sm" : "text-[#4a556a]/70 group-hover:text-[#4a556a]"
-                        }`}>
+                        <span className={`mt-3 inline-flex items-center gap-2 text-xs font-bold transition-colors ${hasImage ? "text-white/90 group-hover:text-white drop-shadow-sm" : "text-[#4a556a]/70 group-hover:text-[#4a556a]"
+                          }`}>
                           Browse products
                           <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
                         </span>
@@ -862,7 +873,7 @@ export default function CategoryPage() {
               <p className="text-xs font-semibold text-[#4a556a]/60">Loading products...</p>
             </div>
           ) : products.length ? (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-3 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#4a556a]/10 pb-4">
                 <div className="flex items-center gap-3">
                   <p className="text-xs text-[#4a556a]/65 font-medium">
@@ -1181,11 +1192,10 @@ function FilterCheckbox({
       className="w-full flex items-center gap-2.5 py-1.5 text-left text-[11px] font-semibold text-[#4a556a]/80 hover:text-[#4a556a] transition-colors focus:outline-none cursor-pointer"
     >
       <span
-        className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
-          checked
-            ? "bg-apricot border-apricot text-white"
-            : "border-[#4a556a]/20 bg-white hover:border-[#4a556a]/40"
-        }`}
+        className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${checked
+          ? "bg-apricot border-apricot text-white"
+          : "border-[#4a556a]/20 bg-white hover:border-[#4a556a]/40"
+          }`}
       >
         {checked && <Check size={10} strokeWidth={3} />}
       </span>
@@ -1518,21 +1528,19 @@ function SortDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
-          open
-            ? "bg-[#4a556a] text-white border-[#4a556a] shadow-md"
-            : "bg-white text-[#4a556a] border-[#4a556a]/15 hover:border-[#4a556a]/40 hover:shadow-md"
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${open
+          ? "bg-[#4a556a] text-white border-[#4a556a] shadow-md"
+          : "bg-white text-[#4a556a] border-[#4a556a]/15 hover:border-[#4a556a]/40 hover:shadow-md"
+          }`}
       >
-        <span className={`text-[10px] font-semibold mr-0.5 ${ open ? "text-white/60" : "text-[#4a556a]/45" }`}>
+        <span className={`text-[10px] font-semibold mr-0.5 ${open ? "text-white/60" : "text-[#4a556a]/45"}`}>
           Sort
         </span>
         <span className="truncate max-w-[110px]">{selected.label}</span>
         <ChevronDown
           size={13}
-          className={`flex-shrink-0 transition-transform duration-200 ${
-            open ? "rotate-180 text-white/70" : "text-[#4a556a]/40"
-          }`}
+          className={`flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180 text-white/70" : "text-[#4a556a]/40"
+            }`}
         />
       </button>
 
@@ -1550,18 +1558,16 @@ function SortDropdown({
               key={opt.value}
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-[11px] font-semibold transition-all duration-150 cursor-pointer group ${
-                opt.value === value
-                  ? "bg-apricot/8 text-apricot"
-                  : "text-[#4a556a]/75 hover:bg-[#4a556a] hover:text-white"
-              } ${idx !== SORT_OPTIONS.length - 1 ? "border-b border-[#4a556a]/6" : ""}`}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-[11px] font-semibold transition-all duration-150 cursor-pointer group ${opt.value === value
+                ? "bg-apricot/8 text-apricot"
+                : "text-[#4a556a]/75 hover:bg-[#4a556a] hover:text-white"
+                } ${idx !== SORT_OPTIONS.length - 1 ? "border-b border-[#4a556a]/6" : ""}`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${
-                  opt.value === value
-                    ? "bg-apricot scale-110"
-                    : "bg-[#4a556a]/20 group-hover:bg-white/60"
-                }`}
+                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${opt.value === value
+                  ? "bg-apricot scale-110"
+                  : "bg-[#4a556a]/20 group-hover:bg-white/60"
+                  }`}
               />
               {opt.label}
               {opt.value === value && (
