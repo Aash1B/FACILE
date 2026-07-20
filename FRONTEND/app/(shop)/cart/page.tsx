@@ -292,7 +292,7 @@ export default function CartPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#faf3e3" }}>
+      <div className="min-h-screen flex items-center justify-center bg-sand">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-apricot border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-semibold text-fern">Loading your cart...</p>
@@ -302,10 +302,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 font-sans animate-fade-in" style={{ backgroundColor: "#faf3e3" }}>
+    <div className="min-h-screen py-8 font-sans animate-fade-in bg-sand">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
-        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-fern mb-8 tracking-wide">
+        <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight mt-8 mb-8">
           Your Shopping Bag {totalItems > 0 && `(${totalItems})`}
         </h1>
 
@@ -320,7 +320,7 @@ export default function CartPage() {
 
           <div className="lg:col-span-2 space-y-8">
 
-            <div className="bg-white border border-natural/20 rounded-[24px] p-6 shadow-sm">
+            <div className="bg-[#DDE0F0] border border-natural/20 rounded-[24px] p-6 shadow-sm">
               <h2 className="font-serif text-lg font-extrabold text-fern flex items-center gap-2 mb-5">
                 <ShoppingBag size={18} className="text-apricot" />
                 Cart Items
@@ -362,7 +362,7 @@ export default function CartPage() {
                         </div>
 
                         <div className="flex items-center justify-between sm:justify-end gap-4">
-                          <div className="flex items-center border border-natural/25 rounded-full bg-natural/10 p-0.5">
+                          <div className="flex items-center border border-natural/25 rounded-full bg-white p-0.5">
                             <button
                               onClick={() => item.quantity === 1 ? handleRemove(item.productId) : handleDecrease(item)}
                               disabled={isPending}
@@ -405,7 +405,7 @@ export default function CartPage() {
             </div>
 
             {savedItems.length > 0 && (
-              <div className="bg-white border border-natural/20 rounded-[24px] p-6 shadow-sm">
+              <div className="bg-[#DDE0F0] border border-natural/20 rounded-[24px] p-6 shadow-sm">
                 <h2 className="font-serif text-lg font-extrabold text-fern flex items-center gap-2 mb-1">
                   <Bookmark size={18} className="text-apricot" />
                   Saved for Later ({savedItems.length})

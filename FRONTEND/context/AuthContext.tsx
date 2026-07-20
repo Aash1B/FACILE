@@ -70,8 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const response = await api.get("/api/auth/me");
           setUser(response.data);
-        } catch (e) {
-          console.error("Session verification failed:", e);
+        } catch (e: any) {
+          console.error("Session verification failed:", e?.message || e);
           clearAuthSession();
           setUser(null);
         }
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Login error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      console.error("MFA Verify error:", error);
+      console.error("MFA Verify error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Invalid 2FA code.");
     } finally {
       setIsLoading(false);
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return { requiresVerification: false, email: data.email };
     } catch (error: any) {
-      console.error("Registration error:", error);
+      console.error("Registration error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Registration failed.");
     } finally {
       setIsLoading(false);
@@ -172,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      console.error("Verification error:", error);
+      console.error("Verification error:", error?.message || error);
       throw new Error(error.response?.data?.error || "OTP Verification failed.");
     } finally {
       setIsLoading(false);
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await api.post("/api/auth/resend-otp", { email });
       return true;
     } catch (error: any) {
-      console.error("Resend OTP error:", error);
+      console.error("Resend OTP error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Failed to resend OTP.");
     }
   };
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await api.post("/api/auth/forgot-password", { email });
       return true;
     } catch (error: any) {
-      console.error("Forgot password error:", error);
+      console.error("Forgot password error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Failed to request recovery code.");
     }
   };
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      console.error("Reset password error:", error);
+      console.error("Reset password error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Failed to reset password.");
     }
   };
@@ -228,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       return true;
     } catch (error: any) {
-      console.error("Delete account error:", error);
+      console.error("Delete account error:", error?.message || error);
       throw new Error(error.response?.data?.error || "Failed to delete account.");
     } finally {
       setIsLoading(false);

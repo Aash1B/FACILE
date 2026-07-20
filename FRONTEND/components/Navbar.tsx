@@ -803,11 +803,11 @@ export default function Navbar() {
                         return !open;
                       });
                     }}
-                    className="flex items-center gap-1 px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                    className="flex items-center gap-1 px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
                     <ChevronDown
-                      size={14}
+                      size={18}
                       className={`text-current transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
@@ -816,7 +816,7 @@ export default function Navbar() {
                 {/* New Arrivals */}
                 <a
                   href="#best-sellers"
-                  className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
                 >
                   New Arrivals
                 </a>
@@ -824,15 +824,15 @@ export default function Navbar() {
                 {/* Trending Pill */}
                 <a
                   href="#special-offer"
-                  className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1"
+                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-2"
                 >
-                  <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
+                  <span className="w-2 h-2 bg-apricot rounded-full animate-ping" />
                   Trending
                 </a>
               </div>
 
               {/* Center Search Pill */}
-              <div className="flex-1 max-w-xl min-w-[200px]">
+              <div className="flex-1 max-w-3xl min-w-[200px]">
                 <form ref={searchContainerRef} onSubmit={handleSearchSubmit} className="relative">
                   <input
                     type="text"
@@ -843,23 +843,23 @@ export default function Navbar() {
                       setShowSuggestions(true);
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    className="w-full h-8.5 pl-11 pr-11 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                    className="w-full h-12 pl-14 pr-14 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-base text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
+                    className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                     aria-label="Submit Search"
                   >
-                    <Search size={15} strokeWidth={2.2} />
+                    <Search size={22} strokeWidth={2.2} />
                   </button>
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                    className={`absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
                     aria-label={isListening ? "Stop voice search" : "Search by voice"}
                     title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
                   >
-                    {voiceSearchSupported ? <Mic size={15} strokeWidth={2} /> : <MicOff size={15} strokeWidth={2} />}
+                    {voiceSearchSupported ? <Mic size={22} strokeWidth={2} /> : <MicOff size={22} strokeWidth={2} />}
                   </button>
 
                   {/* Suggestions Dropdown */}
@@ -871,19 +871,19 @@ export default function Navbar() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <a
                   href="#best-sellers"
-                  className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
                 >
                   Best Sellers
                 </a>
                 <a
                   href="#special-offer"
-                  className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
                 >
                   Deals
                 </a>
                 <a
                   href="#best-sellers"
-                  className="px-4 py-1.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-xs font-semibold rounded-full shadow-sm transition-all duration-200"
+                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
                 >
                   Brands
                 </a>
@@ -904,23 +904,23 @@ export default function Navbar() {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
-                  className="w-full h-8.5 pl-11 pr-11 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-xs text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                  className="w-full h-12 pl-14 pr-14 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-base text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
+                  className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                   aria-label="Submit Search"
                 >
-                  <Search size={15} strokeWidth={2.2} />
+                  <Search size={22} strokeWidth={2.2} />
                 </button>
                 <button
                   type="button"
                   onClick={handleVoiceSearch}
-                  className={`absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                  className={`absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
                   aria-label={isListening ? "Stop voice search" : "Search by voice"}
                   title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
                 >
-                  {voiceSearchSupported ? <Mic size={15} strokeWidth={2} /> : <MicOff size={15} strokeWidth={2} />}
+                  {voiceSearchSupported ? <Mic size={22} strokeWidth={2} /> : <MicOff size={22} strokeWidth={2} />}
                 </button>
 
                 {/* Suggestions Dropdown */}
@@ -941,11 +941,11 @@ export default function Navbar() {
                         return !open;
                       });
                     }}
-                    className="flex items-center gap-1 px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                    className="flex items-center gap-1 px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
                     <ChevronDown
-                      size={12}
+                      size={16}
                       className={`text-current transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
@@ -953,14 +953,14 @@ export default function Navbar() {
 
                 <a
                   href="#best-sellers"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
                 >
                   New Arrivals
                 </a>
 
                 <a
                   href="#special-offer"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-1.5 flex-shrink-0"
                 >
                   <span className="w-1.5 h-1.5 bg-apricot rounded-full animate-ping" />
                   Trending
@@ -968,25 +968,25 @@ export default function Navbar() {
 
                 <a
                   href="#best-sellers"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
                 >
                   Men
                 </a>
                 <a
                   href="#best-sellers"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
                 >
                   Women
                 </a>
                 <a
                   href="#best-sellers"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
                 >
                   Children
                 </a>
                 <a
                   href="#best-sellers"
-                  className="px-3.5 py-1 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-[11px] font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
+                  className="px-5 py-2 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-sm font-semibold rounded-full shadow-sm transition-all duration-200 flex-shrink-0"
                 >
                   Brands
                 </a>

@@ -737,7 +737,7 @@ export default function CategoryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF3E3] pb-20 text-[#4a556a] relative">
+    <main className="min-h-screen bg-[#F4F4F0] pb-20 text-[#4a556a] relative">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#4a556a] text-[#FAF3E3] py-3 px-5 rounded-2xl shadow-xl transition-all duration-300 font-semibold text-xs border border-white/10">
@@ -780,20 +780,20 @@ export default function CategoryPage() {
         </div>
       )}
 
-      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {(!subcategoryId && !isShoesFilter) ? (
-          <Link href="/#categories" className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors">
-            <ArrowLeft size={15} /> Back to categories
+          <Link href="/#categories" className="inline-flex items-center gap-2 text-[#4A5568] hover:text-[#5271FF] text-sm sm:text-base font-extrabold transition-colors mb-2">
+            <ArrowLeft size={18} /> Back to categories
           </Link>
         ) : (
-          <Link href={`/category/${categoryId}`} className="inline-flex items-center gap-2 text-xs font-bold hover:text-apricot transition-colors">
-            <ArrowLeft size={15} /> Back to all {details.name} subcategories
+          <Link href={`/category/${categoryId}`} className="inline-flex items-center gap-2 text-[#4A5568] hover:text-[#5271FF] text-sm sm:text-base font-extrabold transition-colors mb-2">
+            <ArrowLeft size={18} /> Back to all {details.name} subcategories
           </Link>
         )}
 
       </section>
 
-      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-0">
+      <section className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-2">
         {(!subcategoryId && !isShoesFilter) ? (
           /* Render grid of subcategories */
           loading ? (
@@ -876,7 +876,7 @@ export default function CategoryPage() {
             <div className="space-y-3 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#4a556a]/10 pb-4">
                 <div className="flex items-center gap-3">
-                  <p className="text-xs text-[#4a556a]/65 font-medium">
+                  <p className="text-sm sm:text-base text-[#4a556a]/80 font-medium">
                     {sortedProducts.length === 0 ? (
                       "No results matching filters"
                     ) : (
@@ -999,7 +999,7 @@ export default function CategoryPage() {
               )}
 
               {/* Two-column layout for sidebar + grid */}
-              <div className="flex gap-6 items-start">
+              <div className="flex gap-6 items-start mt-10">
                 {/* Desktop Sticky Sidebar */}
                 <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-24">
                   <FilterSidebar {...filterPanelProps} />
@@ -1339,7 +1339,7 @@ function FilterPanel({
         <button
           type="button"
           onClick={() => toggleSection(id)}
-          className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-bold text-[#4a556a] hover:bg-[#FAF3E3]/60 transition-colors cursor-pointer group"
+          className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-[#4a556a] hover:bg-[#F4F4F0] transition-colors cursor-pointer group"
         >
           <span className="flex items-center gap-2">
             <span className={`transition-colors ${open ? "text-apricot" : "text-[#4a556a]/40 group-hover:text-[#4a556a]/60"}`}>
@@ -1372,12 +1372,12 @@ function FilterPanel({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#4a556a]/10">
-        <h2 className="text-sm font-bold text-[#5271FF]">Filters</h2>
+        <h2 className="text-base font-extrabold text-[#5271FF]">Filters</h2>
         {hasActiveFilters && (
           <button
             type="button"
             onClick={clearAllFilters}
-            className="text-[10px] font-bold text-apricot hover:underline cursor-pointer uppercase tracking-wide"
+            className="text-xs font-bold text-apricot hover:underline cursor-pointer uppercase tracking-wide"
           >
             Clear All
           </button>

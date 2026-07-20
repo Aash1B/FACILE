@@ -545,10 +545,10 @@ export default function FacileChatbot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full bg-[#5271FF] px-4 py-3 text-xs font-bold text-white shadow-[0_12px_35px_rgba(74,85,106,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3b4455] md:flex"
+          className="fixed bottom-5 right-5 z-40 hidden items-center gap-3 rounded-full bg-[#5271FF] px-6 py-4 text-sm font-bold text-white shadow-[0_12px_35px_rgba(74,85,106,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3b4455] md:flex"
           aria-label="Open FACILE shopping assistant"
         >
-          <MessageCircle size={18} />
+          <MessageCircle size={24} />
           Ask Fia
         </button>
       )}
