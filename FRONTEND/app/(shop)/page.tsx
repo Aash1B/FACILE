@@ -249,7 +249,6 @@ function HomeContent() {
   const [productPage, setProductPage] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
-  const [heroPaused, setHeroPaused] = useState(false);
   const [isFirstHeroRotation, setIsFirstHeroRotation] = useState(true);
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
@@ -276,9 +275,7 @@ function HomeContent() {
   }, []);
 
   useEffect(() => {
-    if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const timeoutDuration = isFirstHeroRotation ? 500 : 2500;
+    const timeoutDuration = isFirstHeroRotation ? 1500 : 2500;
 
     const timer = window.setTimeout(() => {
       setHeroIndex((current) => (current + 1) % HERO_SLIDES.length);
@@ -286,7 +283,7 @@ function HomeContent() {
     }, timeoutDuration);
 
     return () => window.clearTimeout(timer);
-  }, [heroPaused, heroIndex, isFirstHeroRotation]);
+  }, [heroIndex, isFirstHeroRotation]);
 
   useEffect(() => {
     const loadRecentProducts = () => setRecentProducts(getRecentlyViewed());
@@ -461,10 +458,6 @@ function HomeContent() {
       {/* 1. Hero Section */}
       <section
         className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6"
-        onMouseEnter={() => setHeroPaused(true)}
-        onMouseLeave={() => setHeroPaused(false)}
-        onFocusCapture={() => setHeroPaused(true)}
-        onBlurCapture={() => setHeroPaused(false)}
         aria-roledescription="carousel"
         aria-label="Featured FACILE collections"
       >
@@ -568,7 +561,7 @@ function HomeContent() {
       <section id="categories" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">Shop by Categories</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight">Shop by Categories</h2>
           </div>
         </div>
 
@@ -668,7 +661,7 @@ function HomeContent() {
     {/* 4. Best Selling Products */ }
     < section id = "best-sellers" className = "max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-6" >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight">
           Best Selling Products
         </h2>
         <div className="flex items-center gap-4 self-end sm:self-auto">
@@ -795,7 +788,7 @@ function HomeContent() {
     recentProducts.length > 0 && (
       <section id="recently-viewed" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#5271FF] tracking-tight">Recently Viewed Products</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#4A5568] tracking-tight">Recently Viewed Products</h2>
         </div>
         <div className="flex gap-5 overflow-x-auto no-scrollbar pb-3">
           {recentProducts.map((product) => (
@@ -839,7 +832,7 @@ function HomeContent() {
   {/* 6. Customer Testimonials */ }
   <section id="testimonials" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div className="flex items-center justify-between mb-10">
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5271FF] tracking-tight">What Our Customers Say</h2>
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight">What Our Customers Say</h2>
 
       {/* Navigation Arrows */}
       <div className="flex gap-2">

@@ -687,9 +687,9 @@ export default function Navbar() {
             <div className="absolute left-1/2 -translate-x-1/2 flex justify-center ml-8 mt-2">
               <Link
                 href="/"
-                className="font-antic font-normal text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
+                className="font-serif font-bold text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
               >
-                FACILE
+                facile
               </Link>
             </div>
 

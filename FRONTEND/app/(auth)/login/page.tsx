@@ -124,7 +124,7 @@ export default function LoginPage() {
         });
         (window as any).google.accounts.id.renderButton(
           document.getElementById("google-signin-btn"),
-          { theme: "outline", size: "large", type: "standard", shape: "rectangular", text: "signin_with", logo_alignment: "left" }
+          { theme: "outline", size: "large", width: 280, type: "standard", shape: "rectangular", text: "signin_with", logo_alignment: "left" }
         );
       }
     };
@@ -203,7 +203,7 @@ export default function LoginPage() {
 
   /* ── Standard Login Screen ───────────────────────────────────────── */
   return (
-    <div className="w-full space-y-6 animate-fade-in relative">
+    <div className="w-full space-y-8 animate-fade-in relative">
       {/* Toast Notification */}
       {showSuccessToast && (
         <div
@@ -221,17 +221,17 @@ export default function LoginPage() {
       )}
 
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-fern">
+      <div className="space-y-2">
+        <h1 className="font-serif text-[34px] font-bold tracking-tight text-fern">
           Welcome Back
         </h1>
-        <p className="text-xs text-natural font-medium">
+        <p className="text-sm text-natural font-medium">
           Sign in to your account to continue shopping.
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5 [&_label]:text-sm [&_input:not([type=checkbox])]:h-12 [&_input:not([type=checkbox])]:text-sm [&_svg]:h-5 [&_svg]:w-5">
         <InputField
           label="Email Address"
           type="email"
@@ -264,16 +264,16 @@ export default function LoginPage() {
           />
 
           <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-xs font-bold text-natural hover:text-fern select-none cursor-pointer">
+            <label className="flex items-center gap-2.5 text-sm font-bold text-natural hover:text-fern select-none cursor-pointer">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-natural/30 text-fern focus:ring-fern focus:ring-offset-warm-ivory accent-fern cursor-pointer"
+                className="w-5 h-5 rounded border-natural/30 text-[#5271FF] focus:ring-[#5271FF] focus:ring-offset-warm-ivory accent-[#5271FF] cursor-pointer"
               />
               Remember me
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-bold transition-colors text-apricot hover:text-apricot/85"
+              className="text-sm font-bold transition-colors text-apricot hover:text-apricot/85"
             >
               Forgot Password?
             </Link>
@@ -284,7 +284,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting || showSuccessToast}
-          className="w-full h-11 active:scale-98 font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-12 active:scale-98 font-bold text-sm uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: '#c9d7f0', color: '#4a5568' }}
           onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#a1b5d8'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9d7f0'; }}
@@ -296,7 +296,7 @@ export default function LoginPage() {
             />
           ) : (
             <>
-              <LogIn size={15} />
+              <LogIn size={20} />
               Sign In
             </>
           )}
@@ -309,7 +309,7 @@ export default function LoginPage() {
           <div className="w-full border-t" style={{ borderColor: "rgba(74,85,104,0.2)" }}></div>
         </div>
         <span
-          className="relative px-3 text-[10px] font-bold tracking-widest uppercase"
+          className="relative px-4 text-xs font-bold tracking-widest uppercase"
           style={{ color: "#4a5568", backgroundColor: "#faf3e3" }}
         >
           Or continue with
@@ -317,11 +317,11 @@ export default function LoginPage() {
       </div>
 
       {/* Google Login Button */}
-      <div id="google-signin-btn" className="w-full flex justify-center min-h-[44px]"></div>
+      <div id="google-signin-btn" className="w-full flex justify-center min-h-[48px]"></div>
 
       {/* Footer Link */}
-      <div className="text-center pt-2">
-        <p className="text-xs text-natural font-medium">
+      <div className="text-center pt-2 lg:fixed lg:right-0 lg:w-1/2" style={{ bottom: "112px" }}>
+        <p className="text-sm text-natural font-medium">
           New to Facile?{" "}
           <Link
             href="/register"
@@ -331,6 +331,7 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+
     </div>
   );
 }

@@ -134,9 +134,9 @@ export default function Footer() {
           {/* Column 1 - Brand */}
           <div className="md:col-span-4 lg:col-span-3 flex flex-col justify-end h-full space-y-4">
             <span 
-              className="font-antic font-normal text-3xl text-[#5271FF] tracking-[0.02em]"
+              className="font-serif font-bold text-3xl text-[#5271FF] tracking-[0.02em]"
             >
-              FACILE
+              facile
             </span>
             <p className="text-[13px] text-warm-ivory/75 leading-loose font-medium max-w-[280px]">
               We design timeless essentials crafted with simplicity, quality and sustainability.

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ShoppingBag, Leaf, Award, Truck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 // ─── Category Data ────────────────────────────────────────────────────────────
 // Matches the actual products seeded in the backend (DataInitializer.java)
@@ -86,30 +86,6 @@ const CATEGORIES = [
   },
 ];
 
-// ─── Trust badges ─────────────────────────────────────────────────────────────
-const BADGES = [
-  {
-    icon: <ShoppingBag size={22} className="text-apricot" />,
-    title: "Curated with Love",
-    desc: "Handpicked products from the best brands",
-  },
-  {
-    icon: <Leaf size={22} className="text-apricot" />,
-    title: "Support Small",
-    desc: "Empowering homegrown businesses",
-  },
-  {
-    icon: <Award size={22} className="text-apricot" />,
-    title: "Quality You Can Trust",
-    desc: "Premium quality at fair prices",
-  },
-  {
-    icon: <Truck size={22} className="text-apricot" />,
-    title: "Fast & Safe Delivery",
-    desc: "Quick shipping pan India",
-  },
-];
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
@@ -136,11 +112,11 @@ export default function CategoriesPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#FAF3E3] text-[#4a556a] pb-20">
+    <main className="min-h-screen bg-[#F4F4F0] text-[#4a556a] pb-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-[11px] text-[#4a556a]/50 font-medium mb-6">
+        <nav className="flex items-center gap-2 text-base text-[#4a556a]/50 font-medium mb-6">
           <Link href="/" className="hover:text-apricot transition-colors">Home</Link>
           <span className="text-[#4a556a]/30">›</span>
           <span className="text-[#4a556a] font-semibold">Categories</span>
@@ -193,22 +169,6 @@ export default function CategoriesPage() {
                 </div>
               </div>
             </Link>
-          ))}
-        </div>
-
-        {/* Trust badges strip */}
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {BADGES.map((b) => (
-            <div
-              key={b.title}
-              className="flex items-start gap-3 bg-white rounded-2xl px-4 py-4 border border-natural/10 shadow-sm"
-            >
-              <div className="flex-shrink-0 mt-0.5">{b.icon}</div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-[#4a556a] leading-tight">{b.title}</p>
-                <p className="text-[10px] text-[#4a556a]/50 mt-0.5 leading-snug">{b.desc}</p>
-              </div>
-            </div>
           ))}
         </div>
 

@@ -757,13 +757,13 @@ export default function ProductDetailPage({ params }: PageProps) {
           <section className="rounded-[28px] border border-natural/15 bg-white/35 p-6 sm:p-8">
             <div className="mb-5">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5271FF]">You may also like</p>
-              <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#5271FF]">Recommended products</h2>
+              <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4A5568]">Recommended products</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-3">
               {recommendedProducts.map((item) => (
                 <Link key={item.id} href={`/product/bs${item.id}`} className="group w-48 flex-none overflow-hidden rounded-2xl border border-natural/15 bg-[#F4F4F0] transition-all hover:-translate-y-1 hover:shadow-md sm:w-56">
-                  <div className="aspect-square overflow-hidden bg-neutral-100">
-                    <ProductImage src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
+                    <ProductImage src={item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300"} alt={item.title} className="transition-transform duration-500 ease-out group-hover:scale-[1.03]" />
                   </div>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
@@ -791,7 +791,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5271FF]">Customer feedback</p>
-                <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#5271FF]">Ratings & reviews</h2>
+                <h2 className="mt-1 font-serif text-2xl font-extrabold text-[#4A5568]">Ratings & reviews</h2>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-extrabold text-[#5271FF]">{Number(product.rating).toFixed(1)} / 5</p>
