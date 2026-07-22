@@ -44,9 +44,9 @@ api.interceptors.response.use(
 
     const hasAuthHeader = originalRequest.headers?.Authorization || originalRequest.headers?.authorization;
 
-    // Only attempt refresh if error is 401, not a retry, is a secured path, and was sent with credentials
+    // Only attempt refresh if error is 401 or 403, not a retry, is a secured path, and was sent with credentials
     if (
-      error.response?.status === 401 && 
+      (error.response?.status === 401 || error.response?.status === 403) && 
       !originalRequest._retry && 
       !isPublicPath &&
       hasAuthHeader

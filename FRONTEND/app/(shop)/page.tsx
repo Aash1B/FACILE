@@ -589,14 +589,14 @@ function HomeContent() {
               effect="coverflow"
               grabCursor={true}
               centeredSlides={true}
-              slidesPerView="auto"
-              spaceBetween={30}
+              slidesPerView={"auto"}
+              spaceBetween={40}
               loop={true}
               speed={450}
               autoplay={{ delay: 3500, disableOnInteraction: false }}
               coverflowEffect={{
                 rotate: 4,
-                stretch: 0,
+                stretch: 10,
                 depth: 80,
                 modifier: 1.2,
                 slideShadows: false,
@@ -605,6 +605,9 @@ function HomeContent() {
                 nextEl: '.swiper-button-next-custom',
                 prevEl: '.swiper-button-prev-custom',
               }}
+              preventClicks={false}
+              preventClicksPropagation={false}
+              touchStartPreventDefault={false}
               className="!px-4 sm:!px-12 !pb-8 !pt-6"
             >
               {categoriesList.map((category) => (
