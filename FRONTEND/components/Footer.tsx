@@ -184,8 +184,10 @@ export default function Footer() {
                     Support
                   </button>
                 </li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Shipping</a></li>
+                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Contact</a></li>
                 <li><a href="/profile?tab=tracking" className="hover:text-apricot transition-colors duration-200">Track Order</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Size Guide</a></li>
+                <li><a href="/size-guide" className="hover:text-apricot transition-colors duration-200">Size Guide</a></li>
               </ul>
             </div>
 
