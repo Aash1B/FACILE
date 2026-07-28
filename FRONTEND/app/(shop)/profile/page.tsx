@@ -512,7 +512,7 @@ function ProfileContent() {
   };
 
   return (
-    <div className="min-h-screen py-10 font-sans bg-[#F4F4F0]">
+    <div className="min-h-screen pt-20 pb-10 font-sans bg-[#F4F4F0]">
       <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Modern Hero Section */}
@@ -569,7 +569,7 @@ function ProfileContent() {
                 </div>
               <h3 className="text-2xl font-bold text-fern truncate w-full text-center">{user.name}</h3>
               <p className="text-base text-natural/80 font-medium truncate w-full text-center mt-1 mb-1">{user?.email}</p>
-              <p className="text-sm font-bold text-fern/70 uppercase tracking-widest mb-6">
+              <p className="text-sm font-bold text-fern/70 uppercase tracking-widest mb-6 text-center">
                 {user ? "Member Since 2026" : "Guest Account"}
               </p>
               

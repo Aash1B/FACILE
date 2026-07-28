@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCart, CartItem } from "@/context/CartContext";
 import { ShoppingBag, X, Plus, Minus, ArrowRight, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
 
-const HIDDEN_ROUTES = ["/checkout", "/login", "/register", "/admin", "/cart", "/success", "/profile"];
+const HIDDEN_ROUTES = ["/checkout", "/login", "/register", "/admin", "/cart", "/success", "/profile", "/about"];
 
 export default function FloatingCartSummary() {
   const { cart, updateQuantity, removeFromCart, setIsCartOpen } = useCart();
@@ -93,7 +93,7 @@ export default function FloatingCartSummary() {
         style={{ bottom: `${bottomOffset}px` }}
       >
         <div className="bg-[#F4F4F0] w-full shadow-[-4px_0_15px_rgba(0,0,0,0.05)] border-l border-gray-200 flex flex-col h-full relative">
-              <div className="px-4 pb-4 pt-7 border-b border-natural/10 flex flex-col items-center text-center">
+              <div className="px-4 pb-4 pt-14 border-b border-natural/10 flex flex-col items-center text-center">
                 <h3 className="text-xs font-semibold text-[#5271FF] mb-0.5">Subtotal</h3>
                 <span className="text-lg font-extrabold text-[#5271FF] mb-3">₹{subtotal.toLocaleString("en-IN")}</span>
                 <button 

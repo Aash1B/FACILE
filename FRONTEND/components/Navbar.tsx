@@ -116,14 +116,14 @@ export default function Navbar() {
       filtered = list.filter(sub => sub.name.toLowerCase() !== "apparel");
     }
     if (categoryName.toLowerCase().includes("home")) {
-      filtered = list.filter(sub => 
-        sub.name.toLowerCase() !== "kitchenware" && 
+      filtered = list.filter(sub =>
+        sub.name.toLowerCase() !== "kitchenware" &&
         sub.name.toLowerCase() !== "kitchen ware"
       );
     }
     if (categoryName.toLowerCase() === "sports") {
-      filtered = list.filter(sub => 
-        sub.name.toLowerCase() !== "running shoes" && 
+      filtered = list.filter(sub =>
+        sub.name.toLowerCase() !== "running shoes" &&
         sub.name.toLowerCase() !== "running shoe"
       );
     }
@@ -670,7 +670,7 @@ export default function Navbar() {
           <div className="relative flex items-center justify-between h-16">
 
             {/* FACILE shopping assistant (Left) */}
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => {
                   window.dispatchEvent(new Event("facile:open-chat"));
@@ -678,9 +678,12 @@ export default function Navbar() {
                 className="group relative p-2 -ml-2 mt-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
                 aria-label="Open FACILE shopping assistant"
               >
-                <BotMessageSquare size={44} className="stroke-[2px] transition-transform group-hover:scale-105" />
+                <BotMessageSquare size={46} className="stroke-[2px] transition-transform group-hover:scale-105" />
                 <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
               </button>
+              <Link href="/" className="mt-2 ml-1 flex items-center">
+                <img src="/logo.svg" alt="Facile Logo" className="w-[46px] h-[46px] opacity-90 transition-transform hover:scale-105" />
+              </Link>
             </div>
 
             {/* Logo "facile" (Center) */}
@@ -703,7 +706,7 @@ export default function Navbar() {
                 aria-label="Favorites"
               >
                 <Heart
-                  size={36}
+                  size={30}
                   className={`stroke-[2px] transition-transform group-hover:scale-110`}
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
@@ -715,7 +718,7 @@ export default function Navbar() {
                 className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Shopping Cart"
               >
-                <ShoppingCart size={36} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                <ShoppingCart size={30} className="stroke-[2px] transition-transform group-hover:scale-110" />
                 {isMounted && totalCartItems > 0 && (
                   <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#5271FF] text-[10px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
@@ -732,7 +735,7 @@ export default function Navbar() {
                       className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                       aria-label="Profile Menu"
                     >
-                      <User size={36} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
+                      <User size={30} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
                       <span className="hidden lg:inline text-sm font-bold truncate max-w-[100px]">
                         {user.name}
                       </span>
@@ -773,7 +776,7 @@ export default function Navbar() {
                     className="p-2.5 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                     aria-label="Profile"
                   >
-                    <User size={30} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                    <User size={30} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
                     <span className="hidden lg:inline text-sm font-bold text-black">
                       Guest
                     </span>
@@ -792,7 +795,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-between gap-4 py-2">
 
               {/* Left Pills */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 {/* All Categories Dropdown Trigger */}
                 <div className="relative">
                   <button
@@ -803,11 +806,11 @@ export default function Navbar() {
                         return !open;
                       });
                     }}
-                    className="flex items-center gap-1 px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                    className="flex items-center gap-2 px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
                     <ChevronDown
-                      size={18}
+                      size={20}
                       className={`text-current transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
@@ -815,8 +818,8 @@ export default function Navbar() {
 
                 {/* New Arrivals */}
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   New Arrivals
                 </a>
@@ -824,9 +827,9 @@ export default function Navbar() {
                 {/* Trending Pill */}
                 <a
                   href="#special-offer"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-2"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200 flex items-center gap-2"
                 >
-                  <span className="w-2 h-2 bg-apricot rounded-full animate-ping" />
+                  <span className="w-2.5 h-2.5 bg-apricot rounded-full animate-ping" />
                   Trending
                 </a>
               </div>
@@ -843,23 +846,23 @@ export default function Navbar() {
                       setShowSuggestions(true);
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    className="w-full h-12 pl-14 pr-14 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-base text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                    className="w-full h-14 pl-16 pr-16 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-lg text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
+                    className="absolute left-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                     aria-label="Submit Search"
                   >
-                    <Search size={22} strokeWidth={2.2} />
+                    <Search size={24} strokeWidth={2.2} />
                   </button>
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                    className={`absolute right-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
                     aria-label={isListening ? "Stop voice search" : "Search by voice"}
                     title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
                   >
-                    {voiceSearchSupported ? <Mic size={22} strokeWidth={2} /> : <MicOff size={22} strokeWidth={2} />}
+                    {voiceSearchSupported ? <Mic size={24} strokeWidth={2} /> : <MicOff size={24} strokeWidth={2} />}
                   </button>
 
                   {/* Suggestions Dropdown */}
@@ -868,22 +871,22 @@ export default function Navbar() {
               </div>
 
               {/* Right Pills */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#best-sellers"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Best Sellers
                 </a>
                 <a
-                  href="#special-offer"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#special-offer"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Deals
                 </a>
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#brands"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Brands
                 </a>
@@ -1092,7 +1095,7 @@ export default function Navbar() {
           <div className="relative w-full max-w-xs bg-[#F4F4F0] text-black flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
             {/* Header */}
             <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
-              <span 
+              <span
                 className="font-antic font-normal text-3xl text-[#4a556a] tracking-[0.02em] select-none"
               >
                 FACILE

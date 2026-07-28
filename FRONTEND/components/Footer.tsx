@@ -101,8 +101,8 @@ export default function Footer() {
     <footer className="bg-fern text-warm-ivory border-t border-natural/30 relative z-50 select-none">
       
       {/* SECTION 1 - Newsletter (Hero Section) */}
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-14 border-b border-natural/10 flex flex-col items-center text-center">
-        <Sparkles size={24} className="text-apricot mb-4 animate-pulse" />
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10 border-b border-natural/10 flex flex-col items-center text-center">
+        <img src="/logo.svg" alt="Logo" className="w-20 h-20 mb-8 opacity-80" />
         <h3 className="text-3xl sm:text-4xl font-serif font-bold tracking-wide mb-4">
           Register to shop
         </h3>
@@ -139,7 +139,7 @@ export default function Footer() {
               facile
             </span>
             <p className="text-[13px] text-warm-ivory/75 leading-loose font-medium max-w-[280px]">
-              We design timeless essentials crafted with simplicity, quality and sustainability.
+              Where quality meets convenience, bringing together trusted brands, great value, and a hassle-free shopping experience.
             </p>
             <div className="flex items-center gap-5 pt-2 text-warm-ivory/70">
               <a href="#" className="hover:text-apricot hover:-translate-y-1 transition-all duration-300" aria-label="Instagram">
@@ -164,10 +164,10 @@ export default function Footer() {
             <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
               <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Shop</h4>
               <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
-                <li><a href="#best-sellers" className="hover:text-apricot transition-colors duration-200">New Arrivals</a></li>
-                <li><a href="#best-sellers" className="hover:text-apricot transition-colors duration-200">Best Sellers</a></li>
-                <li><a href="#categories" className="hover:text-apricot transition-colors duration-200">Categories</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Gift Cards</a></li>
+                <li><a href="/" className="hover:text-apricot transition-colors duration-200">New Arrivals</a></li>
+                <li><a href="/#best-sellers" className="hover:text-apricot transition-colors duration-200">Best Sellers</a></li>
+                <li><a href="/categories" className="hover:text-apricot transition-colors duration-200">Categories</a></li>
+                <li><a href="/profile?tab=gift_cards" className="hover:text-apricot transition-colors duration-200">Gift Cards</a></li>
               </ul>
             </div>
 
@@ -175,9 +175,16 @@ export default function Footer() {
             <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
               <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Support</h4>
               <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Shipping</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Contact</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Track Order</a></li>
+                <li><a href="/profile?tab=addresses" className="hover:text-apricot transition-colors duration-200">Address</a></li>
+                <li>
+                  <button 
+                    onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('facile:open-chat')); }} 
+                    className="hover:text-apricot transition-colors duration-200 cursor-pointer text-left"
+                  >
+                    Support
+                  </button>
+                </li>
+                <li><a href="/profile?tab=tracking" className="hover:text-apricot transition-colors duration-200">Track Order</a></li>
                 <li><a href="#" className="hover:text-apricot transition-colors duration-200">Size Guide</a></li>
               </ul>
             </div>
@@ -186,9 +193,8 @@ export default function Footer() {
             <div className="flex flex-col justify-end h-full space-y-3 min-w-max">
               <h4 className="text-[11px] font-bold uppercase tracking-widest text-warm-ivory/40">Company</h4>
               <ul className="space-y-1 text-[13px] text-warm-ivory/90 font-medium">
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">About Us</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Sustainability</a></li>
-                <li><a href="#" className="hover:text-apricot transition-colors duration-200">Privacy Policy</a></li>
+                <li><a href="/about" className="hover:text-apricot transition-colors duration-200">About Us</a></li>
+                <li><a href="/privacy" className="hover:text-apricot transition-colors duration-200">Privacy Policy</a></li>
               </ul>
             </div>
           </div>
