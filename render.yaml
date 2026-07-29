@@ -4,9 +4,10 @@ services:
     runtime: docker
     plan: free
     rootDir: auth-user-service
-    dockerfilePath: ./auth-user-service/Dockerfile
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /actuator/health
-    autoDeploy: true
+    autoDeployTrigger: commit
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -30,9 +31,10 @@ services:
     runtime: docker
     plan: free
     rootDir: payment-notification-service
-    dockerfilePath: ./payment-notification-service/Dockerfile
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /actuator/health
-    autoDeploy: true
+    autoDeployTrigger: commit
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -58,9 +60,10 @@ services:
     runtime: docker
     plan: free
     rootDir: order-cart-service
-    dockerfilePath: ./order-cart-service/Dockerfile
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /actuator/health
-    autoDeploy: true
+    autoDeployTrigger: commit
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -80,9 +83,10 @@ services:
     runtime: docker
     plan: free
     rootDir: product-inventory-service/product-inventory-service
-    dockerfilePath: ./product-inventory-service/product-inventory-service/Dockerfile
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /actuator/health
-    autoDeploy: true
+    autoDeployTrigger: commit
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod

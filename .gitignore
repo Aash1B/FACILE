@@ -24,14 +24,17 @@ node_modules/
 # misc
 .DS_Store
 *.pem
+*.key
+credentials
+credentials.*
+**/credentials
+**/credentials.*
 
 # Local environment and secret files
 .env
 .env.*
 **/.env
 **/.env.*
-!.env.example
-!**/.env.example
 
 next-env.d.ts
 

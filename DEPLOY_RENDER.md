@@ -6,12 +6,12 @@ The frontend remains on Vercel. This Blueprint deploys four independent Java 21 
 
 | Service | Framework | Render name | Root Directory | Dockerfile Path (repo-relative) | Local port | Health | Data/infrastructure |
 |---|---|---|---|---|---:|---|---|
-| Auth/User | Spring Boot 3.5.16, Maven, Java 21 | `facile-auth-user` | `auth-user-service` | `auth-user-service/Dockerfile` | 8082 | `/actuator/health` | PostgreSQL, SMTP, Google token verification |
-| Payment/Notification | Spring Boot 3.5.16, Maven, Java 21 | `facile-payment-notification` | `payment-notification-service` | `payment-notification-service/Dockerfile` | 8084 | `/actuator/health` | PostgreSQL, Razorpay, SMTP |
-| Order/Cart | Spring Boot 3.5.16, Maven, Java 21 | `facile-order-cart` | `order-cart-service` | `order-cart-service/Dockerfile` | 8081 | `/actuator/health` | MongoDB 7, Redis 7, payment and inventory APIs |
-| Product/Inventory | Spring Boot 3.5.16, Maven, Java 21 | `facile-product-inventory` | `product-inventory-service/product-inventory-service` | `product-inventory-service/product-inventory-service/Dockerfile` | 8083 | `/actuator/health` | PostgreSQL, auth and order APIs |
+| Auth/User | Spring Boot 3.5.16, Maven, Java 21 | `facile-auth-user` | `auth-user-service` | `./Dockerfile` | 8082 | `/actuator/health` | PostgreSQL, SMTP, Google token verification |
+| Payment/Notification | Spring Boot 3.5.16, Maven, Java 21 | `facile-payment-notification` | `payment-notification-service` | `./Dockerfile` | 8084 | `/actuator/health` | PostgreSQL, Razorpay, SMTP |
+| Order/Cart | Spring Boot 3.5.16, Maven, Java 21 | `facile-order-cart` | `order-cart-service` | `./Dockerfile` | 8081 | `/actuator/health` | MongoDB 7, Redis 7, payment and inventory APIs |
+| Product/Inventory | Spring Boot 3.5.16, Maven, Java 21 | `facile-product-inventory` | `product-inventory-service/product-inventory-service` | `./Dockerfile` | 8083 | `/actuator/health` | PostgreSQL, auth and order APIs |
 
-All use `runtime: docker`, Maven Wrapper, Java 21 Temurin multi-stage images, a non-root runtime user, and `PORT` (Render supplies it). The Dockerfiles document port 10000.
+All use `runtime: docker`, Maven Wrapper, Java 21 Temurin multi-stage images, a non-root runtime user, and `PORT` (Render supplies it). Each Blueprint entry sets `dockerfilePath: ./Dockerfile` and `dockerContext: .`; both are relative to that service's `rootDir`. The Dockerfiles document port 10000.
 
 ## Environment variables
 
@@ -68,7 +68,7 @@ In Render, choose **New > Blueprint**, connect this repository, and select the r
 If creating services manually, repeat for each row in the inventory table:
 
 1. Choose **New > Web Service**, connect this repository, and select **Docker**.
-2. Enter the Render name, Root Directory, and repo-relative Dockerfile Path exactly as shown.
+2. Enter the Render name and Root Directory exactly as shown. Set Dockerfile Path to `./Dockerfile` and Docker Build Context Directory to `.`; these fields are resolved from Root Directory.
 3. Enable Auto-Deploy and set Health Check Path to `/actuator/health`.
 4. Add the service's environment variables. Do not set a start command; the image supplies `java -jar app.jar`.
 5. Deploy, copy the generated `https://...onrender.com` URL, and apply the URL mapping above.
