@@ -14,10 +14,7 @@ public class RazorpayConfig {
         String keyId = env.getProperty("razorpay.key.id");
         String keySecret = env.getProperty("razorpay.key.secret");
 
-        System.out.println("KEY ID = " + keyId);
-        System.out.println("KEY SECRET = " + keySecret);
-
-        if (keyId == null || keySecret == null) {
+        if (keyId == null || keyId.isBlank() || keySecret == null || keySecret.isBlank()) {
             throw new RuntimeException("Razorpay properties not found!");
         }
 

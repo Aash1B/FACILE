@@ -25,6 +25,14 @@ node_modules/
 .DS_Store
 *.pem
 
+# Local environment and secret files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
 next-env.d.ts
 
 # agents custom rules

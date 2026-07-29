@@ -25,17 +25,10 @@ public class EmailService {
 
     @jakarta.annotation.PostConstruct
     public void init() {
-        log.info("[SMTP CONFIG CHECK] Username resolved to: '{}', Password length: {}", 
-            mailUsername, 
-            mailPassword != null ? mailPassword.length() : 0
-        );
     }
 
     public void sendOtpEmail(String toEmail, String name, String otpCode) {
         // ALWAYS log the OTP to terminal/console for developer access
-        System.out.println("\n==================================================");
-        System.out.println("[DEVELOPER OTP] OTP for " + toEmail + " (" + name + ") is: " + otpCode);
-        System.out.println("==================================================\n");
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -149,9 +142,6 @@ public class EmailService {
     public void sendPasswordResetEmail(String toEmail, String name, String resetToken) {
         String resetUrl = frontendUrl + "/forgot-password?token=" +
                 java.net.URLEncoder.encode(resetToken, java.nio.charset.StandardCharsets.UTF_8);
-        System.out.println("\n==================================================");
-        System.out.println("[DEVELOPER PASSWORD RESET LINK] " + resetUrl);
-        System.out.println("==================================================\n");
 
         try {
             MimeMessage message = mailSender.createMimeMessage();

@@ -119,7 +119,7 @@ export default function LoginPage() {
     const initializeGoogle = () => {
       if (typeof window !== "undefined" && (window as any).google) {
         (window as any).google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "121404179374-e8b82qes4l6n15r2j0973m08o6qjtf7s.apps.googleusercontent.com",
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
           callback: handleGoogleCredentialResponse,
         });
         (window as any).google.accounts.id.renderButton(

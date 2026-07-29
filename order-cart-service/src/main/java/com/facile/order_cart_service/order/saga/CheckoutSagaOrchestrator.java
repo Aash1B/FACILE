@@ -9,6 +9,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,8 +29,11 @@ public class CheckoutSagaOrchestrator {
     private final OrderService orderService;
     private final RestTemplate restTemplate;
 
-    private final String PAYMENT_SERVICE_URL = "http://localhost:8084";
-    private final String PRODUCT_SERVICE_URL = "http://localhost:8083";
+    @Value("${services.payment-url}")
+    private String paymentServiceUrl;
+
+    @Value("${services.inventory-url}")
+    private String inventoryServiceUrl;
 
     public CheckoutSaga startCheckoutSaga(
             String userId,
@@ -146,7 +150,7 @@ public class CheckoutSagaOrchestrator {
         req.put("amount", amount);
         req.put("currency", "INR");
         try {
-            restTemplate.postForEntity(PAYMENT_SERVICE_URL + "/payments/verify", req, Map.class);
+            restTemplate.postForEntity(serviceUrl(paymentServiceUrl, "/payments/verify"), req, Map.class);
         } catch (Exception e) {
             throw new PaymentVerificationException("Payment verification failed: " + e.getMessage(), e);
         }
@@ -171,7 +175,7 @@ public class CheckoutSagaOrchestrator {
         Map<String, Object> req = new HashMap<>();
         req.put("items", items);
         try {
-            restTemplate.postForEntity(PRODUCT_SERVICE_URL + "/api/products/inventory/reduce", req, String.class);
+            restTemplate.postForEntity(serviceUrl(inventoryServiceUrl, "/api/products/inventory/reduce"), req, String.class);
         } catch (Exception e) {
             throw new InventoryException("Inventory reduction failed: " + e.getMessage(), e);
         }
@@ -186,7 +190,7 @@ public class CheckoutSagaOrchestrator {
         req.put("paymentId", paymentId);
         req.put("amount", amount);
         try {
-            restTemplate.postForEntity(PAYMENT_SERVICE_URL + "/notifications/send", req, Map.class);
+            restTemplate.postForEntity(serviceUrl(paymentServiceUrl, "/notifications/send"), req, Map.class);
             log.info("Notification Sent for userId: {}", userId);
         } catch (Exception e) {
             log.error("Notification Failed for userId: {}. Saga continues.", userId);
@@ -202,7 +206,7 @@ public class CheckoutSagaOrchestrator {
             try {
                 Map<String, Object> req = new HashMap<>();
                 req.put("items", saga.getReducedInventoryItems());
-                restTemplate.postForEntity(PRODUCT_SERVICE_URL + "/api/products/inventory/restore", req, String.class);
+                restTemplate.postForEntity(serviceUrl(inventoryServiceUrl, "/api/products/inventory/restore"), req, String.class);
                 log.info("Inventory Restored for Saga: {}", saga.getId());
             } catch (Exception e) {
                 log.error("Failed to restore inventory for Saga: {}", saga.getId(), e);
@@ -224,7 +228,7 @@ public class CheckoutSagaOrchestrator {
             try {
                 Map<String, String> req = new HashMap<>();
                 req.put("paymentId", saga.getRazorpayPaymentId());
-                restTemplate.postForEntity(PAYMENT_SERVICE_URL + "/payments/refund", req, Map.class);
+                restTemplate.postForEntity(serviceUrl(paymentServiceUrl, "/payments/refund"), req, Map.class);
                 log.info("Refunding Payment {} for Saga: {}", saga.getRazorpayPaymentId(), saga.getId());
             } catch (Exception e) {
                 log.error("Failed to refund payment {} for Saga: {}", saga.getRazorpayPaymentId(), saga.getId(), e);
@@ -236,6 +240,10 @@ public class CheckoutSagaOrchestrator {
         saga.setUpdatedAt(LocalDateTime.now());
         sagaRepository.save(saga);
         log.info("Compensation Completed. Final Status: COMPENSATED for Saga: {}", saga.getId());
+    }
+
+    private String serviceUrl(String baseUrl, String path) {
+        return baseUrl.replaceAll("/+$", "") + path;
     }
 
     public CheckoutSaga getSagaByCorrelationId(String correlationId) {

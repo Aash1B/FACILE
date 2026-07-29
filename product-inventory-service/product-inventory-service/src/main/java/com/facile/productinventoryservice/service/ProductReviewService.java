@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
@@ -24,6 +25,12 @@ import java.util.List;
 public class ProductReviewService {
     private final ProductReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+
+    @Value("${services.auth-url}")
+    private String authServiceUrl;
+
+    @Value("${services.order-url}")
+    private String orderServiceUrl;
 
     public List<ProductReview> getReviews(Long productId) {
         if (!productRepository.existsById(productId)) {
@@ -82,7 +89,7 @@ public class ProductReviewService {
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, authorization);
             ResponseEntity<AuthenticatedUser> response = new RestTemplate().exchange(
-                    "http://localhost:8082/api/auth/me",
+                    serviceUrl(authServiceUrl, "/api/auth/me"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     AuthenticatedUser.class);
@@ -100,7 +107,7 @@ public class ProductReviewService {
 
     private void verifyPurchase(String email, Long productId) {
         String url = UriComponentsBuilder
-                .fromHttpUrl("http://localhost:8081/api/orders/review-eligibility")
+                .fromHttpUrl(serviceUrl(orderServiceUrl, "/api/orders/review-eligibility"))
                 .queryParam("userId", email)
                 .queryParam("productId", productId)
                 .toUriString();
@@ -118,4 +125,8 @@ public class ProductReviewService {
 
     private record AuthenticatedUser(Long id, String name, String email) {}
     private record PurchaseEligibility(boolean eligible) {}
+
+    private String serviceUrl(String baseUrl, String path) {
+        return baseUrl.replaceAll("/+$", "") + path;
+    }
 }

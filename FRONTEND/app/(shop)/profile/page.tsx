@@ -141,7 +141,7 @@ function ProfileContent() {
       if (!orderResponse.ok) throw new Error("Could not start payment.");
       const order = await orderResponse.json();
       new (window as any).Razorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TDPsCfDkwT5N6j", amount: order.amount, currency: "INR", order_id: order.id,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "", amount: order.amount, currency: "INR", order_id: order.id,
         name: "Facile", description: `₹${amount.toLocaleString("en-IN")} Gift Card for ${receiverName}`, prefill: { email: user.email },
         handler: async (payment: any) => {
           const verification = await fetch(`${PAYMENT_SERVICE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
@@ -239,7 +239,7 @@ function ProfileContent() {
       if (!orderResponse.ok) throw new Error("Could not start payment.");
       const order = await orderResponse.json();
       new (window as any).Razorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TDPsCfDkwT5N6j", amount: order.amount, currency: "INR", order_id: order.id,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "", amount: order.amount, currency: "INR", order_id: order.id,
         name: "Facile", description: `₹${amount.toLocaleString("en-IN")} Gift Card`, prefill: { email: user.email },
         handler: async (payment: any) => {
           const verification = await fetch(`${PAYMENT_SERVICE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
