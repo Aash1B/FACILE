@@ -8,7 +8,7 @@ The frontend remains on Vercel. This Blueprint deploys four independent Java 21 
 |---|---|---|---|---|---:|---|---|
 | Auth/User | Spring Boot 3.5.16, Maven, Java 21 | `facile-auth-user` | `auth-user-service` | `./Dockerfile` | 8082 | `/actuator/health` | PostgreSQL, SMTP, Google token verification |
 | Payment/Notification | Spring Boot 3.5.16, Maven, Java 21 | `facile-payment-notification` | `payment-notification-service` | `./Dockerfile` | 8084 | `/actuator/health` | PostgreSQL, Razorpay, SMTP |
-| Order/Cart | Spring Boot 3.5.16, Maven, Java 21 | `facile-order-cart` | `order-cart-service` | `./Dockerfile` | 8081 | `/actuator/health` | MongoDB 7, Redis 7, payment and inventory APIs |
+| Order/Cart | Spring Boot 3.5.16, Maven, Java 21 | `facile-order-cart` | `order-cart-service` | `./Dockerfile` | 8081 | `/actuator/health` | MongoDB 7, payment and inventory APIs |
 | Product/Inventory | Spring Boot 3.5.16, Maven, Java 21 | `facile-product-inventory` | `product-inventory-service/product-inventory-service` | `./Dockerfile` | 8083 | `/actuator/health` | PostgreSQL, auth and order APIs |
 
 All use `runtime: docker`, Maven Wrapper, Java 21 Temurin multi-stage images, a non-root runtime user, and `PORT` (Render supplies it). Each Blueprint entry sets `dockerfilePath: ./Dockerfile` and `dockerContext: .`; both are relative to that service's `rootDir`. The Dockerfiles document port 10000.
@@ -21,7 +21,7 @@ Values marked “generated URL” must be filled after the referenced Render ser
 |---|---|---|
 | Auth/User | `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL` (JDBC URL), `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET` (at least 32 random bytes represented as an even-length hex string), `FRONTEND_URL` | `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `PORT` |
 | Payment/Notification | `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL` (JDBC URL), `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `FRONTEND_URL` | `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `PORT` |
-| Order/Cart | `SPRING_PROFILES_ACTIVE=prod`, `MONGODB_URI`, `REDIS_URL`, `FRONTEND_URL`, `INVENTORY_SERVICE_URL`, `PAYMENT_SERVICE_URL` | `PORT` |
+| Order/Cart | `SPRING_PROFILES_ACTIVE=prod`, `MONGODB_URI`, `FRONTEND_URL`, `INVENTORY_SERVICE_URL`, `PAYMENT_SERVICE_URL` | `PORT` |
 | Product/Inventory | `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL` (JDBC URL), `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `FRONTEND_URL`, `AUTH_SERVICE_URL`, `ORDER_SERVICE_URL` | `PORT` |
 
 `FRONTEND_URL` is the exact deployed Vercel origin, for example `https://your-project.vercel.app` (no path). Do not use a wildcard. Authentication uses bearer tokens rather than cookies, so credentialed CORS is intentionally disabled.
@@ -37,14 +37,13 @@ The root `docker-compose.yml` is development-only:
 | Compose service | Local connection | Production replacement |
 |---|---|---|
 | `postgres` | `jdbc:postgresql://localhost:5432/postgres`, user `postgres` | Managed PostgreSQL -> `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD` |
-| `mongo-order` | `mongodb://localhost:27017/orderdb` | Managed MongoDB (for example Atlas) -> `MONGODB_URI` |
-| `redis-cart` | `redis://localhost:6379` | Render Key Value or managed Redis -> `REDIS_URL` |
+| `mongo-order` | `mongodb://localhost:27018/orderdb` | Managed MongoDB (for example Atlas) -> `MONGODB_URI` |
 
 Never use `localhost` or a Compose hostname between separately deployed Render services. `localhost` means the current container. Free Render web services also cannot receive private-network traffic, so the four free web services must use their public HTTPS URLs.
 
 ## Deployment order
 
-1. Provision PostgreSQL, MongoDB, and Redis/Render Key Value. Create the databases/users and collect connection settings.
+1. Provision PostgreSQL and MongoDB. Create the databases/users and collect connection settings.
 2. Deploy `facile-auth-user` and `facile-payment-notification`.
 3. Deploy `facile-order-cart`, setting `PAYMENT_SERVICE_URL` to the payment service URL. `INVENTORY_SERVICE_URL` can initially be a placeholder and must be corrected after step 4.
 4. Deploy `facile-product-inventory`, setting `AUTH_SERVICE_URL` to auth and `ORDER_SERVICE_URL` to order.
@@ -114,11 +113,11 @@ The codebase has no Flyway or Liquibase migrations and currently uses Hibernate 
 
 ## Troubleshooting
 
-- **Failed health check:** Confirm `/actuator/health` is public, the service starts, and every required database/third-party variable is present. Spring's health endpoint includes database/Redis status, so an unreachable dependency can report DOWN.
+- **Failed health check:** Confirm `/actuator/health` is public, the service starts, and every required database/third-party variable is present. Spring's health endpoint includes database status, so an unreachable dependency can report DOWN.
 - **Port binding:** Do not hard-code a Render port. Logs should show `0.0.0.0` and the `PORT` Render assigned. The production fallback is 10000.
 - **Database SSL:** Use a JDBC URL and the SSL parameters required by the provider. Do not disable certificate verification.
 - **CORS:** `FRONTEND_URL` must exactly match the browser origin (scheme, host, and optional non-default port), with no path. Redeploy after changing it.
-- **Inter-service connectivity:** Use public HTTPS service origins on the Free plan; never use localhost, `mongo-order`, `redis-cart`, or guessed Render domains.
+- **Inter-service connectivity:** Use public HTTPS service origins on the Free plan; never use localhost, `mongo-order`, or guessed Render domains.
 - **Missing variables:** Render `sync: false` prompts require manual values. A blank Razorpay key prevents payment startup; a missing JWT secret prevents auth startup.
-- **Cold starts:** Render Free web services spin down after 15 minutes without inbound traffic and can take about a minute to wake. They share 750 monthly free instance hours, use ephemeral filesystems, and are explicitly not recommended by Render for production. Free PostgreSQL expires after 30 days, and Free Key Value is in-memory and loses data on restart.
+- **Cold starts:** Render Free web services spin down after inactivity and can take time to wake. Free plans and provider terms change, so verify current limits before deployment.
 - **Email:** Free services block outbound SMTP ports including 587. Use a paid instance or migrate email delivery to an HTTPS provider API.

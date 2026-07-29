@@ -29,12 +29,22 @@ credentials
 credentials.*
 **/credentials
 **/credentials.*
+credentials.json
+service-account*.json
+**/service-account*.json
 
 # Local environment and secret files
 .env
 .env.*
 **/.env
 **/.env.*
+migration.env
+database-backups/
+migration-logs/
+mongorestore-error.log
+*.dump
+*.archive
+*.archive.gz
 
 next-env.d.ts
 

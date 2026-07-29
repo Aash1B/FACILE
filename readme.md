@@ -129,8 +129,7 @@ FACILE is an AI-powered, voice-first shopping platform built on a microservices 
 - **product-inventory-service** — Node.js — product catalog & inventory
 
 **🗄️ Data Layer**
-- [MongoDB](https://www.mongodb.com/) — order data
-- [Redis](https://redis.io/) — cart / session storage
+- [MongoDB](https://www.mongodb.com/) — cart, order, and checkout-saga data
 - [PostgreSQL](https://www.postgresql.org/) — relational data
 - [Supabase](https://supabase.com/) — managed Postgres & backend services
 
