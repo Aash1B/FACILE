@@ -96,7 +96,7 @@ function ProfileContent() {
     if (!user?.email) return;
     setIsLoadingReviews(true);
     try {
-      const PRODUCT_SERVICE_URL = process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL || "http://localhost:8083/api";
+      const PRODUCT_SERVICE_URL = process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL;
       const res = await fetch(`${PRODUCT_SERVICE_URL}/user/reviews?email=${encodeURIComponent(user.email)}`);
       if (res.ok) {
         setUserReviews(await res.json());

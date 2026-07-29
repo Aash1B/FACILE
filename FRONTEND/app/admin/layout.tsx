@@ -50,7 +50,7 @@ export default function AdminLayout({
           <Link href="/admin/login" className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm" style={{ backgroundColor: '#4A5568', color: '#F4E6C7' }}>
             Go to Admin Login
           </Link>
-          <Link href="/" className="h-10 px-6 font-bold text-xs uppercase tracking-wider rounded-xl border transition-all flex items-center justify-center cursor-pointer" style={{ borderColor: 'rgba(74,85,104,0.3)', color: '#4A5568' }}>
+          <Link href="/" className="h-10 px-6 font-bold text-lg  uppercase tracking-wider rounded-xl border transition-all flex items-center justify-center cursor-pointer" style={{ borderColor: 'rgba(74,85,104,0.3)', color: '#4A5568' }}>
             Back to Shop
           </Link>
         </div>

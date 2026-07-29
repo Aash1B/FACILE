@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 260 78" role="img" aria-labelledby="title description">
+  <title id="title">facile</title>
+  <desc id="description">Animated facile brand banner in the website colours</desc>
+  <defs>
+    <radialGradient id="softGlow">
+      <stop offset="0" stop-color="#F4F4F0" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#F4F4F0" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .glow-one { animation: drift-one 9s ease-in-out infinite; }
+      .glow-two { animation: drift-two 12s ease-in-out infinite; }
+      @keyframes drift-one {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(22px, 7px) scale(1.12); }
+      }
+      @keyframes drift-two {
+        0%, 100% { transform: translate(0, 0) scale(1.08); }
+        50% { transform: translate(-18px, -6px) scale(.94); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .glow-one, .glow-two { animation: none; }
+      }
+    </style>
+  </defs>
+  <rect width="260" height="78" fill="#5271FF"/>
+  <circle class="glow-one" cx="18" cy="11" r="54" fill="url(#softGlow)"/>
+  <circle class="glow-two" cx="244" cy="72" r="61" fill="url(#softGlow)"/>
+  <text
+    x="130"
+    y="60"
+    fill="#F4F4F0"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-size="34"
+    font-weight="900"
+    letter-spacing="0"
+    text-anchor="middle"
+  >facile</text>
+</svg>

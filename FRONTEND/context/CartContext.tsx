@@ -28,6 +28,7 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const ORDER_SERVICE_URL = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -44,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Logged-in user: merge local guest cart into backend database
         try {
           // Fetch existing db cart
-          const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+          const dbRes = await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}`);
           const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
 
           const localCartStr = localStorage.getItem("facile_cart");
@@ -56,7 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 const dbItem = dbCart.items.find((i: any) => i.productId === localItem.id);
                 if (!dbItem) {
                   // Add item to backend
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+                  await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/add`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -72,7 +73,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 } else if (localItem.quantity > dbItem.quantity) {
                   // Add the difference
                   const diff = localItem.quantity - dbItem.quantity;
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+                  await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/add`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -93,7 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
 
           // Fetch final synchronized cart
-          const finalRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
+          const finalRes = await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}`);
           if (finalRes.ok) {
             const finalCart = await finalRes.json();
             // Map backend cart structure back to frontend CartItem
@@ -190,7 +191,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (user && user.email) {
       // Sync with database
       try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+        await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -233,7 +234,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const removeFromCart = async (id: string) => {
     if (user && user.email) {
       try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+        await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/remove/${id}`, {
           method: "DELETE",
         });
         saveCartState(cart.filter((item) => item.id !== id));
@@ -260,7 +261,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const oldQty = currentItem.quantity;
         if (qty > oldQty) {
           // Add the difference
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+          await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -274,10 +275,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           });
         } else if (qty < oldQty) {
           // Remove from DB first and add back the smaller quantity
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+          await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/remove/${id}`, {
             method: "DELETE",
           });
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+          await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -309,7 +310,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       try {
         // Clear each item in database
         for (const item of cart) {
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
+          await fetch(`${ORDER_SERVICE_URL}/api/cart/${user.email}/remove/${item.id}`, {
             method: "DELETE",
           });
         }
