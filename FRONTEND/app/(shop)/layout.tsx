@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import CartDrawer from "@/components/CartDrawer";
 import FloatingCartSummary from "@/components/FloatingCartSummary";
 import Footer from "@/components/Footer";
-import FacileChatbot from "@/components/FacileChatbot";
 
 export default function ShopLayout({
   children,
@@ -17,7 +16,6 @@ export default function ShopLayout({
       </Suspense>
       <FloatingCartSummary />
       <CartDrawer />
-      <FacileChatbot />
       {/* Push content below the two-tier fixed navbar (~164px on mobile, ~136px on desktop) */}
       <main className="flex-1 pt-[164px] md:pt-[136px] animate-fade-in">
         {children}

@@ -14,7 +14,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL;
+const API_BASE = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || "";
 const SAVED_KEY = "facile_saved_for_later";
 
 interface CartItem {

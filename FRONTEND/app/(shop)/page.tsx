@@ -253,6 +253,15 @@ function HomeContent() {
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [categoriesList, setCategoriesList] = useState<any[]>(CATEGORIES);
 
+  const displayCategories = React.useMemo(() => {
+    if (!categoriesList || categoriesList.length === 0) return [];
+    let list = [...categoriesList];
+    while (list.length < 30) {
+      list = [...list, ...categoriesList];
+    }
+    return list;
+  }, [categoriesList]);
+
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -558,21 +567,21 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
+      <section id="categories" className="w-full max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight">Shop by Categories</h2>
           </div>
         </div>
 
-        <div className="relative group/carousel py-8">
+        <div className="relative group/carousel py-8 -mx-4 sm:-mx-6 lg:-mx-8 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)]">
           {/* Custom Navigation Buttons */}
-          <button className="swiper-button-prev-custom absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
-            <ChevronLeft size={20} />
+          <button className="swiper-button-prev-custom absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-md hover:shadow-lg active:scale-95 transition-all duration-300 cursor-pointer z-20 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
+            <ChevronLeft size={22} />
           </button>
 
-          <button className="swiper-button-next-custom absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-sm hover:shadow active:scale-95 transition-all duration-[450ms] cursor-pointer z-10 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
-            <ChevronRight size={20} />
+          <button className="swiper-button-next-custom absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-[#5271FF]/25 bg-white/90 hover:bg-white flex items-center justify-center text-[#5271FF] shadow-md hover:shadow-lg active:scale-95 transition-all duration-300 cursor-pointer z-20 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 disabled:cursor-auto">
+            <ChevronRight size={22} />
           </button>
 
           <motion.div
@@ -590,15 +599,15 @@ function HomeContent() {
               grabCursor={true}
               centeredSlides={true}
               slidesPerView={"auto"}
-              spaceBetween={40}
+              spaceBetween={30}
               loop={true}
               speed={450}
               autoplay={{ delay: 3500, disableOnInteraction: false }}
               coverflowEffect={{
-                rotate: 4,
-                stretch: 10,
-                depth: 80,
-                modifier: 1.2,
+                rotate: 0,
+                stretch: 0,
+                depth: 100,
+                modifier: 1.3,
                 slideShadows: false,
               }}
               navigation={{
@@ -608,10 +617,10 @@ function HomeContent() {
               preventClicks={false}
               preventClicksPropagation={false}
               touchStartPreventDefault={false}
-              className="!px-4 sm:!px-12 !pb-8 !pt-6"
+              className="!px-4 sm:!px-12 !pb-8 !pt-6 w-full"
             >
-              {categoriesList.map((category) => (
-                <SwiperSlide key={category.id} className="!w-[200px] sm:!w-[220px]">
+              {displayCategories.map((category, idx) => (
+                <SwiperSlide key={`${category.id}-${idx}`} className="!w-[180px] sm:!w-[220px]">
                   {({ isActive }) => (
                     <motion.div variants={{
                       hidden: { opacity: 0, y: 20 },
@@ -620,24 +629,24 @@ function HomeContent() {
                       <Link
                         href={`/category/${category.id.replace("c", "")}`}
                         className={`flex flex-col items-center justify-start gap-4 focus:outline-none transition-all duration-[450ms] ease-in-out group ${isActive
-                          ? "scale-[1.15] -translate-y-[4px]"
-                          : "scale-[0.88] opacity-80 grayscale-[8%] hover:scale-[0.93] hover:-translate-y-1"
+                          ? "scale-[1.18] -translate-y-[6px]"
+                          : "scale-[0.85] opacity-75 hover:scale-[0.92] hover:opacity-100 hover:-translate-y-1"
                           }`}
                       >
                         <div className={`relative aspect-square w-full rounded-full overflow-hidden flex items-center justify-center transition-all duration-[450ms] ease-in-out ${isActive
-                          ? `shadow-[0_12px_30px_rgba(82,113,255,0.25)] bg-white ${category.bgColor}`
-                          : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white ${category.bgColor}`
+                          ? `shadow-[0_16px_36px_rgba(82,113,255,0.3)] bg-white ring-4 ring-[#5271FF]/30 ${category.bgColor}`
+                          : `shadow-md ring-1 ring-white/70 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.1)] bg-white ${category.bgColor}`
                           }`}>
                           <img
                             src={category.image}
                             alt={category.label}
-                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-100" : "scale-[1.02] opacity-95 group-hover:scale-105"
+                            className={`w-full h-full ${category.imageClassName ?? "object-cover"} transition-transform duration-[450ms] ease-in-out ${isActive ? "scale-105" : "scale-[1.02] opacity-95 group-hover:scale-105"
                               }`}
                           />
                         </div>
                         <span className={`text-sm sm:text-base font-extrabold text-center transition-all duration-[450ms] ease-in-out ${isActive
-                          ? "text-[#5271FF] drop-shadow-sm"
-                          : "text-[#5271FF] group-hover:text-[#1A202C]"
+                          ? "text-[#5271FF] drop-shadow-sm scale-105"
+                          : "text-[#4A5568] group-hover:text-[#5271FF]"
                           }`}>
                           {category.label}
                         </span>

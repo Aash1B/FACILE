@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
                 source: "/api/categories/:path*",
                 destination: `${productServiceUrl}/api/categories/:path*`,
             },
+            {
+                source: "/api/user/:path*",
+                destination: `${productServiceUrl}/api/user/:path*`,
+            },
         ];
     },
 };
