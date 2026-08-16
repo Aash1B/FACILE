@@ -17,6 +17,8 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String STOREFRONT_ORIGIN = "https://facile-shop.vercel.app";
+
     @Value("${FRONTEND_URL:http://localhost:3000}")
     private String frontendUrl;
 
@@ -47,7 +49,7 @@ public class SecurityConfig {
 
     private List<String> allowedOrigins() {
         return java.util.stream.Stream.of(
-                "http://localhost:3000", "http://127.0.0.1:3000", frontendUrl)
+                "http://localhost:3000", "http://127.0.0.1:3000", STOREFRONT_ORIGIN, frontendUrl)
             .filter(origin -> origin != null && !origin.isBlank())
             .distinct()
             .toList();
