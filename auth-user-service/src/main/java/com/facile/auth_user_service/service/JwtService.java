@@ -13,8 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import com.facile.auth_user_service.model.User;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${application.security.jwt.secret-key}")
@@ -105,7 +107,20 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = java.util.HexFormat.of().parseHex(secretKey);
+        String configuredKey = secretKey == null ? "" : secretKey.trim();
+        boolean hexOnly = !configuredKey.isEmpty() && configuredKey.matches("[0-9a-fA-F]+");
+
+        // TEMPORARY JWT DIAGNOSTIC: remove after the Render JWT_SECRET format is confirmed.
+        log.warn(
+                "JWT config diagnostic: variable=JWT_SECRET, present={}, blank={}, length={}, evenLength={}, expectedEncoding=hex, detectedHex={}",
+                secretKey != null,
+                configuredKey.isEmpty(),
+                configuredKey.length(),
+                configuredKey.length() % 2 == 0,
+                hexOnly
+        );
+
+        byte[] keyBytes = java.util.HexFormat.of().parseHex(configuredKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

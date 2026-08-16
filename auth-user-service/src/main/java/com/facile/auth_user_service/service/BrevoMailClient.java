@@ -69,6 +69,17 @@ public class BrevoMailClient {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         try {
+            // TEMPORARY BREVO DIAGNOSTIC: remove after diagnosing provider authentication.
+            log.warn(
+                    "Brevo config: keyPresent={}, keyLength={}, keyPreview={}, senderEmail={}, senderName={}, endpoint={}",
+                    apiKey != null,
+                    apiKey == null ? 0 : apiKey.length(),
+                    redactedKeyPreview(apiKey),
+                    senderEmail,
+                    senderName,
+                    BREVO_EMAIL_ENDPOINT
+            );
+
             ResponseEntity<Void> response = restTemplate.exchange(
                     BREVO_EMAIL_ENDPOINT,
                     HttpMethod.POST,
@@ -92,6 +103,16 @@ public class BrevoMailClient {
             log.warn("Brevo email request failed with {}", exception.getClass().getSimpleName());
             throw new EmailDeliveryException("Brevo email request failed", exception);
         }
+    }
+
+    private static String redactedKeyPreview(String value) {
+        if (value == null) {
+            return "<null>";
+        }
+        if (value.length() < 12) {
+            return "<too-short>";
+        }
+        return value.substring(0, 4) + "***" + value.substring(value.length() - 4);
     }
 
     private static String requireConfiguration(String value, String variableName) {

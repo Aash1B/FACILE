@@ -11,10 +11,7 @@ export const AUTH_USER_BASE_URL = requireServiceUrl(
   process.env.NEXT_PUBLIC_AUTH_SERVICE_URL,
   "NEXT_PUBLIC_AUTH_SERVICE_URL"
 );
-export const PRODUCT_BASE_URL = requireServiceUrl(
-  process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL,
-  "NEXT_PUBLIC_PRODUCT_SERVICE_URL"
-);
+export const PRODUCT_BASE_URL = "https://facile-product-inventory.onrender.com";
 export const ORDER_BASE_URL = requireServiceUrl(
   process.env.NEXT_PUBLIC_ORDER_SERVICE_URL,
   "NEXT_PUBLIC_ORDER_SERVICE_URL"
