@@ -19,6 +19,7 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
+import { productApiUrl } from "@/lib/serviceUrls";
 
 type Product = {
   id: number | string;
@@ -99,7 +100,7 @@ export default function FacileChatbot() {
   useEffect(() => {
     if (!open || catalogLoaded || loadingProducts) return;
     setLoadingProducts(true);
-    fetch("/api/products")
+    fetch(productApiUrl("/api/products"))
       .then((response) => (response.ok ? response.json() : []))
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]))

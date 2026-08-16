@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Package, Trash2, Image as ImageIcon, Sparkles, Check, IndianRupee, TrendingUp, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { productApiUrl } from "@/lib/serviceUrls";
 
 interface Product {
   id: string;
@@ -236,8 +237,8 @@ export default function SellerDashboardPage() {
   const fetchProductsFromDb = async () => {
     try {
       const [res, inventoryRes] = await Promise.all([
-        fetch(`/api/products?sellerEmail=${encodeURIComponent(user?.email || "")}`, { cache: "no-store" }),
-        fetch("/api/products/inventory", { cache: "no-store" }),
+        fetch(productApiUrl(`/api/products?sellerEmail=${encodeURIComponent(user?.email || "")}`), { cache: "no-store" }),
+        fetch(productApiUrl("/api/products/inventory"), { cache: "no-store" }),
       ]);
       if (res.ok) {
         const data = await res.json();
@@ -276,7 +277,7 @@ export default function SellerDashboardPage() {
 
   const fetchCategoriesFromDb = async () => {
     try {
-      const res = await fetch("/api/categories");
+      const res = await fetch(productApiUrl("/api/categories"));
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
@@ -304,7 +305,7 @@ export default function SellerDashboardPage() {
     const fetchSubcategories = async () => {
       if (!selectedCategoryId) return;
       try {
-        const res = await fetch(`/api/categories/${selectedCategoryId}/subcategories`);
+        const res = await fetch(productApiUrl(`/api/categories/${selectedCategoryId}/subcategories`));
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
@@ -316,7 +317,7 @@ export default function SellerDashboardPage() {
             const catIdNum = Number(selectedCategoryId);
             const fallbackName = MOCK_SUBCATEGORIES[catIdNum]?.[0]?.name || "General";
             
-            const createRes = await fetch(`/api/categories/${selectedCategoryId}/subcategories`, {
+            const createRes = await fetch(productApiUrl(`/api/categories/${selectedCategoryId}/subcategories`), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -414,7 +415,7 @@ export default function SellerDashboardPage() {
     };
 
     try {
-      const res = await fetch(`/api/products?initialStock=${stockNum}`, {
+      const res = await fetch(productApiUrl(`/api/products?initialStock=${stockNum}`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -449,7 +450,7 @@ export default function SellerDashboardPage() {
 
   const handleDeleteProduct = async (id: string) => {
     try {
-      const res = await fetch(`/api/products/${id}?sellerEmail=${encodeURIComponent(user?.email || "")}`, {
+      const res = await fetch(productApiUrl(`/api/products/${id}?sellerEmail=${encodeURIComponent(user?.email || "")}`), {
         method: "DELETE"
       });
       if (res.ok) {
@@ -479,7 +480,7 @@ export default function SellerDashboardPage() {
     setSavingProductImages(true);
     setImageEditorError("");
     try {
-      const response = await fetch(`/api/products/${imageEditorProduct.id}/images?sellerEmail=${encodeURIComponent(user?.email || "")}`, {
+      const response = await fetch(productApiUrl(`/api/products/${imageEditorProduct.id}/images?sellerEmail=${encodeURIComponent(user?.email || "")}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ primaryImage: urls[0], images: urls })

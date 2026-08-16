@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import CartDrawer from "@/components/CartDrawer";
 import FloatingCartSummary from "@/components/FloatingCartSummary";
 import Footer from "@/components/Footer";
+import FacileChatbot from "@/components/FacileChatbot";
 
 export default function ShopLayout({
   children,
@@ -21,6 +22,7 @@ export default function ShopLayout({
         {children}
       </main>
       <Footer />
+      <FacileChatbot />
     </>
   );
 }

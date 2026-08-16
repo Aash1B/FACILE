@@ -44,6 +44,8 @@ type ProductCard = {
   facileChoice?: boolean;
 };
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 // Mock Database of Best Selling Products
 const BEST_SELLERS: ProductCard[] = [
   {
@@ -265,7 +267,7 @@ function HomeContent() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetch("/api/categories");
+        const res = await fetch(productApiUrl("/api/categories"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -309,7 +311,7 @@ function HomeContent() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {

@@ -13,8 +13,8 @@ import {
   RotateCcw,
   AlertTriangle
 } from "lucide-react";
+import { ORDER_BASE_URL } from "@/lib/serviceUrls";
 
-const API_BASE = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || "";
 const SAVED_KEY = "facile_saved_for_later";
 
 interface CartItem {
@@ -79,7 +79,7 @@ export default function CartPage() {
   const fetchCart = async () => {
     try {
       if (user?.email) {
-        const res = await fetch(`${API_BASE}/api/cart/${user.email}`);
+        const res = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}`);
         if (!res.ok) throw new Error(`Server responded with ${res.status}`);
         const data = await res.json();
         setCart(data);
@@ -122,7 +122,7 @@ export default function CartPage() {
     setPendingProductId(item.productId);
     try {
       if (user?.email) {
-        const res = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+        const res = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -158,13 +158,13 @@ export default function CartPage() {
     try {
       if (user?.email) {
         const removeRes = await fetch(
-          `${API_BASE}/api/cart/${user.email}/remove/${item.productId}`,
+          `${ORDER_BASE_URL}/api/cart/${user.email}/remove/${item.productId}`,
           { method: "DELETE" }
         );
         if (!removeRes.ok) throw new Error(`Server responded with ${removeRes.status}`);
 
         if (item.quantity > 1) {
-          const addRes = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+          const addRes = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -204,7 +204,7 @@ export default function CartPage() {
     setPendingProductId(productId);
     try {
       if (user?.email) {
-        const res = await fetch(`${API_BASE}/api/cart/${user.email}/remove/${productId}`, {
+        const res = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/remove/${productId}`, {
           method: "DELETE"
         });
         if (!res.ok) throw new Error(`Server responded with ${res.status}`);
@@ -226,7 +226,7 @@ export default function CartPage() {
     setPendingProductId(item.productId);
     try {
       if (user?.email) {
-        const res = await fetch(`${API_BASE}/api/cart/${user.email}/remove/${item.productId}`, {
+        const res = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/remove/${item.productId}`, {
           method: "DELETE"
         });
         if (!res.ok) throw new Error(`Server responded with ${res.status}`);
@@ -249,7 +249,7 @@ export default function CartPage() {
     setPendingProductId(item.productId);
     try {
       if (user?.email) {
-        const res = await fetch(`${API_BASE}/api/cart/${user.email}/add`, {
+        const res = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

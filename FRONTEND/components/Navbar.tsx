@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
+import { productApiUrl } from "@/lib/serviceUrls";
 import {
   Heart,
   ShoppingCart,
@@ -201,7 +202,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -219,7 +220,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchCategoriesAndSubcategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(productApiUrl("/api/categories"));
         if (!response.ok) {
           loadFallbackSubcategories();
           return;
@@ -232,7 +233,7 @@ export default function Navbar() {
           await Promise.all(
             data.map(async (cat: StoreCategory) => {
               try {
-                const subResponse = await fetch(`/api/categories/${cat.id}/subcategories`);
+                const subResponse = await fetch(productApiUrl(`/api/categories/${cat.id}/subcategories`));
                 const subData = subResponse.ok ? await subResponse.json() : [];
                 subMap[String(cat.id)] = sanitizeSubcategories(
                   Array.isArray(subData) ? subData : [],
@@ -637,7 +638,7 @@ export default function Navbar() {
 
     setIsLoadingSubcategories(true);
     try {
-      const response = await fetch(`/api/categories/${category.id}/subcategories`);
+      const response = await fetch(productApiUrl(`/api/categories/${category.id}/subcategories`));
       const data = response.ok ? await response.json() : [];
       setSubcategoriesByCategory((current) => ({
         ...current,

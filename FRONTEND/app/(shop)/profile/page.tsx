@@ -4,6 +4,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { getApiErrorMessage } from "@/lib/apiError";
+import { ORDER_BASE_URL, PAYMENT_BASE_URL, productApiUrl } from "@/lib/serviceUrls";
 import { 
   User, 
   Mail, 
@@ -96,7 +98,7 @@ function ProfileContent() {
     if (!user?.email) return;
     setIsLoadingReviews(true);
     try {
-      const res = await fetch(`/api/user/reviews?email=${encodeURIComponent(user.email)}`);
+      const res = await fetch(productApiUrl(`/api/user/reviews?email=${encodeURIComponent(user.email)}`));
       if (res.ok) {
         setUserReviews(await res.json());
       }
@@ -132,18 +134,17 @@ function ProfileContent() {
     
     setIsPurchasingGiftCard(true); 
     try {
-      const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
       if (!(window as any).Razorpay) {
         await new Promise<void>((resolve, reject) => { const script = document.createElement("script"); script.src = "https://checkout.razorpay.com/v1/checkout.js"; script.onload = () => resolve(); script.onerror = () => reject(new Error("Could not load Razorpay.")); document.body.appendChild(script); });
       }
-      const orderResponse = await fetch(`${PAYMENT_SERVICE_URL}/payments/create-order?amount=${amount}`, { method: "POST" });
+      const orderResponse = await fetch(`${PAYMENT_BASE_URL}/payments/create-order?amount=${amount}`, { method: "POST" });
       if (!orderResponse.ok) throw new Error("Could not start payment.");
       const order = await orderResponse.json();
       new (window as any).Razorpay({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "", amount: order.amount, currency: "INR", order_id: order.id,
         name: "Facile", description: `₹${amount.toLocaleString("en-IN")} Gift Card for ${receiverName}`, prefill: { email: user.email },
         handler: async (payment: any) => {
-          const verification = await fetch(`${PAYMENT_SERVICE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+          const verification = await fetch(`${PAYMENT_BASE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
             razorpay_order_id: payment.razorpay_order_id, razorpay_payment_id: payment.razorpay_payment_id,
             razorpay_signature: payment.razorpay_signature, userId: receiverEmail, amount, currency: "INR", purpose: "GIFT_CARD"
           }) });
@@ -192,7 +193,6 @@ function ProfileContent() {
     }
   }, [searchParams]);
 
-  const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
   const [walletBalance, setWalletBalance] = useState(0);
   const [giftAmount, setGiftAmount] = useState("1000");
   const [giftCode, setGiftCode] = useState("");
@@ -202,7 +202,7 @@ function ProfileContent() {
 
   const loadWallet = async () => {
     if (!user?.email) return;
-    const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
+    const response = await fetch(`${PAYMENT_BASE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
     if (response.ok) setWalletBalance(Number((await response.json()).balance || 0));
   };
 
@@ -212,12 +212,12 @@ function ProfileContent() {
     if (!user?.email) return;
     setGiftBusy(true); setGiftMessage("");
     try {
-      const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/gift-cards/redeem`, {
+      const response = await fetch(`${PAYMENT_BASE_URL}/payments/gift-cards/redeem`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email, code: giftCode, pin: giftPin })
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Could not add gift card.");
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Could not add gift card."));
       setWalletBalance(Number(data.balance)); setGiftCode(""); setGiftPin("");
       alert(`Gift card added. ₹${Number(data.credited).toLocaleString("en-IN")} credited.`);
       setShowAddGiftCard(false);
@@ -234,14 +234,14 @@ function ProfileContent() {
       if (!(window as any).Razorpay) {
         await new Promise<void>((resolve, reject) => { const script = document.createElement("script"); script.src = "https://checkout.razorpay.com/v1/checkout.js"; script.onload = () => resolve(); script.onerror = () => reject(new Error("Could not load Razorpay.")); document.body.appendChild(script); });
       }
-      const orderResponse = await fetch(`${PAYMENT_SERVICE_URL}/payments/create-order?amount=${amount}`, { method: "POST" });
+      const orderResponse = await fetch(`${PAYMENT_BASE_URL}/payments/create-order?amount=${amount}`, { method: "POST" });
       if (!orderResponse.ok) throw new Error("Could not start payment.");
       const order = await orderResponse.json();
       new (window as any).Razorpay({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "", amount: order.amount, currency: "INR", order_id: order.id,
         name: "Facile", description: `₹${amount.toLocaleString("en-IN")} Gift Card`, prefill: { email: user.email },
         handler: async (payment: any) => {
-          const verification = await fetch(`${PAYMENT_SERVICE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+          const verification = await fetch(`${PAYMENT_BASE_URL}/payments/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
             razorpay_order_id: payment.razorpay_order_id, razorpay_payment_id: payment.razorpay_payment_id,
             razorpay_signature: payment.razorpay_signature, userId: user.email, amount, currency: "INR", purpose: "GIFT_CARD"
           }) });
@@ -267,8 +267,7 @@ function ProfileContent() {
     if (!user?.email) return;
     setIsLoadingPayments(true);
     try {
-      const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
-      const res = await fetch(`${PAYMENT_SERVICE_URL}/payments/history?userId=${user.email}`);
+      const res = await fetch(`${PAYMENT_BASE_URL}/payments/history?userId=${user.email}`);
       if (res.ok) {
         const data = await res.json();
         setPaymentsHistory(data);
@@ -295,7 +294,7 @@ function ProfileContent() {
   const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const res = await fetch(`/api/orders/${encodeURIComponent(user?.email || "")}`);
+      const res = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user?.email || "")}`);
       if (res.ok) {
         const data = await res.json();
         setOrdersList(Array.isArray(data) ? data : []);
@@ -312,13 +311,13 @@ function ProfileContent() {
     setTrackingOrderId(orderId);
     setTrackingNotices((current) => ({ ...current, [orderId]: "Preparing the latest tracking history..." }));
     try {
-      const response = await fetch(`/api/orders/${orderId}/track`, {
+      const response = await fetch(`${ORDER_BASE_URL}/api/orders/${orderId}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.email }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Tracking could not be requested.");
+      if (!response.ok) throw new Error(getApiErrorMessage(result, "Tracking could not be requested."));
       setOrdersList((current) => current.map((order) => order.id === orderId
         ? { ...order, trackingHistory: result.history || result.order?.trackingHistory || [] }
         : order));

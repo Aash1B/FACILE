@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { getApiErrorMessage, getApiResponseErrorMessage } from "@/lib/apiError";
+import { ORDER_BASE_URL, PAYMENT_BASE_URL } from "@/lib/serviceUrls";
 import {
   MapPin,
   Calendar,
@@ -49,7 +51,6 @@ const formatPrice = (amount: number) => {
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
-const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
 const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
 
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -115,7 +116,7 @@ export default function CheckoutPage() {
   const [walletBalance, setWalletBalance] = useState(0);
   useEffect(() => {
     if (!user?.email) return;
-    fetch(`${PAYMENT_SERVICE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+    fetch(`${PAYMENT_BASE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((data) => { if (data) setWalletBalance(Number(data.balance || 0)); })
       .catch(() => setWalletBalance(0));
@@ -384,7 +385,7 @@ export default function CheckoutPage() {
     if (user?.email) {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
       if (isBuyNow) {
-        const directResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
+        const directResponse = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress, items: checkoutItems.map((item) => ({
@@ -394,21 +395,21 @@ export default function CheckoutPage() {
         });
         if (!directResponse.ok) throw new Error("Payment succeeded, but the direct order could not be registered.");
       } else if (selectedPaymentMethod === "cod" || selectedPaymentMethod === "giftcard") {
-        const response = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
+        const response = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress }),
         });
-        if (!response.ok) throw new Error(`Checkout failed: ${await response.text()}`);
+        if (!response.ok) throw new Error(await getApiResponseErrorMessage(response, "Checkout failed."));
       } else {
-        const sagaResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
+        const sagaResponse = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress, razorpay_order_id: paymentResponse?.razorpay_order_id,
             razorpay_payment_id: paymentResponse?.razorpay_payment_id,
             razorpay_signature: paymentResponse?.razorpay_signature, amount: totalAmount }),
         });
-        if (!sagaResponse.ok) throw new Error(`Checkout saga failed: ${await sagaResponse.text()}`);
+        if (!sagaResponse.ok) throw new Error(await getApiResponseErrorMessage(sagaResponse, "Checkout could not be completed."));
       }
     }
 
@@ -427,9 +428,9 @@ export default function CheckoutPage() {
       if (!user?.email) { setPaymentError("Sign in to use your gift-card wallet."); paymentRequestStarted.current = false; return; }
       setIsProcessing(true); setPaymentError(null);
       try {
-        const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
+        const response = await fetch(`${PAYMENT_BASE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Gift-card payment failed.");
+        if (!response.ok) throw new Error(getApiErrorMessage(data, "Gift-card payment failed."));
         setWalletBalance(Number(data.balance));
         await handleCheckoutCompletion();
         setPaymentStatus("SUCCESS");
@@ -464,7 +465,7 @@ export default function CheckoutPage() {
     try {
       // ── Step 1: Create Razorpay order on backend ─────────────────
       const response = await fetch(
-        `${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`,
+        `${PAYMENT_BASE_URL}/payments/create-order?amount=${totalAmount}`,
         { method: "POST", headers: { "Content-Type": "application/json" } }
       );
 

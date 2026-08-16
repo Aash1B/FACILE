@@ -6,6 +6,8 @@ import { useCart } from "@/context/CartContext";
 import ProductImage from "@/components/ProductImage";
 import { ArrowLeft, ShoppingCart, Heart, Trash2, Sparkles, Star } from "lucide-react";
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 // Mock Fallback Database in case the API is offline (same as page.tsx)
 const MOCK_PRODUCTS = [
   {
@@ -126,7 +128,7 @@ export default function WishlistPage() {
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
