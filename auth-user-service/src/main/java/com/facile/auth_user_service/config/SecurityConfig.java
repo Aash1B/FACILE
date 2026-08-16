@@ -28,12 +28,16 @@ public class SecurityConfig {
     @Value("${FRONTEND_URL:http://localhost:3000}")
     private String frontendUrl;
 
+    @Value("${CORS_ALLOWED_ORIGINS:}")
+    private String corsAllowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/register",
@@ -70,7 +74,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(List.of(
+            "Authorization", "Cache-Control", "Content-Type", "Accept", "X-Requested-With"
+        ));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -79,8 +85,20 @@ public class SecurityConfig {
     }
 
     private List<String> allowedOrigins() {
-        return java.util.stream.Stream.of(
-                "http://localhost:3000", "http://127.0.0.1:3000", frontendUrl)
+        List<String> configuredOrigins = corsAllowedOrigins == null
+            ? List.of()
+            : java.util.Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
+
+        return java.util.stream.Stream.concat(
+                java.util.stream.Stream.of(
+                    "http://localhost:3000", "http://127.0.0.1:3000",
+                    "https://facile-shop.vercel.app", frontendUrl
+                ),
+                configuredOrigins.stream()
+            )
             .filter(origin -> origin != null && !origin.isBlank())
             .distinct()
             .toList();
