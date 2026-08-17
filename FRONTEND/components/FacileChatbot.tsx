@@ -6,7 +6,6 @@ import {
   Bot,
   ChevronRight,
   ExternalLink,
-  MessageCircle,
   Mic,
   Send,
   ShoppingBag,
@@ -19,6 +18,7 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
+import { productApiUrl } from "@/lib/serviceUrls";
 
 type Product = {
   id: number | string;
@@ -82,7 +82,7 @@ export default function FacileChatbot() {
     {
       id: "welcome",
       role: "assistant",
-      text: "Hi! I’m Fia, your FACILE shopping assistant. I can find products by category, budget or rating, explain offers, and help with your cart and orders.",
+      text: "Hey there! I'm Fia, your AI FACILE shopping assistant. Ask me anything about products, offers, carts, or orders. I am here to help.",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -99,7 +99,7 @@ export default function FacileChatbot() {
   useEffect(() => {
     if (!open || catalogLoaded || loadingProducts) return;
     setLoadingProducts(true);
-    fetch("/api/products")
+    fetch(productApiUrl("/api/products"))
       .then((response) => (response.ok ? response.json() : []))
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]))
@@ -265,17 +265,17 @@ export default function FacileChatbot() {
     if (/\b(cart|basket)\b/.test(text)) {
       return cart.length
         ? {
-            id,
-            role: "assistant",
-            text: `You have ${cart.reduce((sum, item) => sum + item.quantity, 0)} item${cart.length === 1 ? "" : "s"} in your cart, worth ₹${cartTotal.toLocaleString("en-IN")}.`,
-            action: { label: "Open cart", href: "/cart" },
-          }
+          id,
+          role: "assistant",
+          text: `You have ${cart.reduce((sum, item) => sum + item.quantity, 0)} item${cart.length === 1 ? "" : "s"} in your cart, worth ₹${cartTotal.toLocaleString("en-IN")}.`,
+          action: { label: "Open cart", href: "/cart" },
+        }
         : {
-            id,
-            role: "assistant",
-            text: "Your cart is empty. Tell me a category or budget and I’ll help you find something useful.",
-            action: { label: "Explore products", href: "/categories" },
-          };
+          id,
+          role: "assistant",
+          text: "Your cart is empty. Tell me a category or budget and I’ll help you find something useful.",
+          action: { label: "Explore products", href: "/categories" },
+        };
     }
 
     if (/\b(order|delivery|track|shipment)\b/.test(text)) {
@@ -477,16 +477,17 @@ export default function FacileChatbot() {
     void send(input);
   };
 
-  const addProduct = (product: Product, quantity = 1) => {
+  const addProduct = async (product: Product, quantity = 1) => {
     const safeQuantity = Math.min(product.maxOrderQuantity || 10, Math.max(1, quantity));
-    addToCart({
-      id: String(product.id),
+    const added = await addToCart({
+      id: String(product.id).startsWith("bs") ? String(product.id) : `bs${product.id}`,
       name: product.title,
       price: Number(product.sellingPrice),
       brand: product.brand || "FACILE",
       image: product.image || FALLBACK_IMAGE,
       maxOrderQuantity: product.maxOrderQuantity || 10,
     }, safeQuantity);
+    if (!added) return;
     setMessages((current) => [
       ...current,
       { id: crypto.randomUUID(), role: "assistant", text: `${safeQuantity > 1 ? `${safeQuantity} x ` : ""}${product.title} ${safeQuantity > 1 ? "have" : "has"} been added to your cart.`, action: { label: "Open cart", href: "/cart" } },
@@ -548,8 +549,8 @@ export default function FacileChatbot() {
           className="fixed bottom-5 right-5 z-40 hidden items-center gap-3 rounded-full bg-[#5271FF] px-6 py-4 text-sm font-bold text-white shadow-[0_12px_35px_rgba(74,85,106,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3b4455] md:flex"
           aria-label="Open FACILE shopping assistant"
         >
-          <MessageCircle size={24} />
-          Ask Fia
+          <img src="/logo.svg" alt="Fia" className="h-8 w-8 rounded-full bg-[#DDE0F0] object-contain" />
+          <span>Ask Fia</span>
         </button>
       )}
 
@@ -568,7 +569,7 @@ export default function FacileChatbot() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h2 className="font-serif text-lg font-bold tracking-wide">Fia</h2>
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">FACILE assistant</span>
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">FACILE AI ASSISTANT</span>
             </div>
             <p className="text-[11px] text-white/70">Product discovery, cart and order help</p>
           </div>
@@ -578,7 +579,7 @@ export default function FacileChatbot() {
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
           {messages.map((message) => (
             <div key={message.id} className={`flex gap-2.5 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              {message.role === "assistant" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><Sparkles size={14} /></div>}
+              {message.role === "assistant" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><img src="/logo.svg" alt="Fia" className="w-6 h-6 opacity-90" /></div>}
               <div className={`max-w-[84%] ${message.role === "user" ? "rounded-[20px_20px_5px_20px] bg-[#5271FF] text-white" : "rounded-[5px_20px_20px_20px] border border-[#4a556a]/10 bg-white text-[#384152] shadow-sm"} px-4 py-3`}>
                 <p className="text-[12px] leading-relaxed">{message.text}</p>
                 {message.products?.map((product) => (
@@ -606,12 +607,12 @@ export default function FacileChatbot() {
               {message.role === "user" && <div className="mt-1 grid h-7 w-7 flex-none place-items-center rounded-xl bg-[#870339]/10 text-[#870339]"><UserRound size={14} /></div>}
             </div>
           ))}
-          {typing && <div className="flex items-center gap-2.5"><div className="grid h-7 w-7 place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><Bot size={14} /></div><div className="flex gap-1 rounded-2xl bg-white px-4 py-3 shadow-sm"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:240ms]" /></div></div>}
+          {typing && <div className="flex items-center gap-2.5"><div className="grid h-7 w-7 place-items-center rounded-xl bg-[#DDE0F0] text-[#4a556a]"><img src="/logo.svg" alt="Fia" className="w-6 h-6 opacity-90" /></div><div className="flex gap-1 rounded-2xl bg-white px-4 py-3 shadow-sm"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#5271FF]/50 [animation-delay:240ms]" /></div></div>}
         </div>
 
         {messages.length < 3 && (
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-3">
-            {STARTERS.map((starter) => <button key={starter} onClick={() => send(starter)} className="flex-none rounded-full border border-[#4a556a]/15 bg-white px-3 py-2 text-[10px] font-semibold text-[#4a556a] hover:border-[#4a556a]/35 hover:bg-[#DDE0F0]/40">{starter}</button>)}
+            {STARTERS.map((starter) => <button key={starter} onClick={() => send(starter)} className="flex-none rounded-full border border-[#5271FF] bg-[#5271FF] px-3 py-2 text-[10px] font-semibold text-white hover:bg-[#3b4455] hover:border-[#3b4455] transition-colors">{starter}</button>)}
           </div>
         )}
 

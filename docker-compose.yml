@@ -3,7 +3,7 @@ services:
     image: mongo:7
     container_name: mongo-order
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo-order-data:/data/db
 

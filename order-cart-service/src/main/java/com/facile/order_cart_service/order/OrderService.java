@@ -4,6 +4,7 @@ import com.facile.order_cart_service.cart.Cart;
 import com.facile.order_cart_service.cart.CartItem;
 import com.facile.order_cart_service.cart.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +21,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartService cartService;
+
+    @Value("${services.inventory-url}")
+    private String inventoryServiceUrl;
+
+    @Value("${services.payment-url}")
+    private String paymentServiceUrl;
 
     public synchronized Order checkout(String userId, String shippingAddress, String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
@@ -89,7 +96,7 @@ public class OrderService {
         RestTemplate restTemplate = new RestTemplate();
         try {
             restTemplate.postForEntity(
-                "http://localhost:8083/api/products/inventory/reduce", 
+                serviceUrl(inventoryServiceUrl, "/api/products/inventory/reduce"),
                 requestBody, 
                 String.class
             );
@@ -201,7 +208,7 @@ public class OrderService {
             notification.put("status", order.getStatus().name());
             notification.put("history", history);
             new RestTemplate().postForEntity(
-                    "http://localhost:8084/notifications/tracking",
+                    serviceUrl(paymentServiceUrl, "/notifications/tracking"),
                     notification,
                     Map.class
             );
@@ -218,6 +225,10 @@ public class OrderService {
                 ? "Tracking history was emailed successfully."
                 : "Tracking is available, but the email service is currently unavailable.");
         return response;
+    }
+
+    private String serviceUrl(String baseUrl, String path) {
+        return baseUrl.replaceAll("/+$", "") + path;
     }
 
     private List<TrackingEvent> buildTrackingHistory(Order order) {

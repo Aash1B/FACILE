@@ -26,6 +26,8 @@ import {
 
 
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 // ─── Filter Constants ─────────────────────────────────────────────────────────
 const PRICE_RANGES = [
   { label: "Under ₹500", min: 0, max: 500 },
@@ -697,7 +699,7 @@ function SearchContent() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {

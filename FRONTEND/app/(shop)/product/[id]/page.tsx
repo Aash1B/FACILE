@@ -7,6 +7,8 @@ import { useCart } from "@/context/CartContext";
 import ProductImage from "@/components/ProductImage";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
+import { productApiUrl } from "@/lib/serviceUrls";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import { ArrowLeft, ShoppingCart, Heart, Star, ShieldCheck, RefreshCw, Truck, Sparkles, Bookmark, Minus, Plus } from "lucide-react";
 import { isProductSaved, removeSavedProduct, saveProductForLater } from "@/lib/savedForLater";
@@ -225,13 +227,13 @@ export default function ProductDetailPage({ params }: PageProps) {
         const cleanId = productId.replace("bs", "");
         
         // 1. Fetch product basic details
-        const resProduct = await fetch(`/api/products/${cleanId}`);
+        const resProduct = await fetch(productApiUrl(`/api/products/${cleanId}`));
         if (!resProduct.ok) {
           throw new Error("Product not found on server");
         }
         const dataProduct = await resProduct.json();
 
-        const catalogueResponse = await fetch("/api/products");
+        const catalogueResponse = await fetch(productApiUrl("/api/products"));
         if (catalogueResponse.ok) {
           const catalogue = await catalogueResponse.json();
           const categoryChoice = (Array.isArray(catalogue) ? catalogue : [])
@@ -252,12 +254,12 @@ export default function ProductDetailPage({ params }: PageProps) {
           setRecommendedProducts(related);
         }
 
-        const resReviews = await fetch(`/api/products/${cleanId}/reviews`);
+        const resReviews = await fetch(productApiUrl(`/api/products/${cleanId}/reviews`));
         const dataReviews = resReviews.ok ? await resReviews.json() : [];
         setCustomerReviews(dataReviews);
 
         // 2. Fetch product inventory stock levels
-        const resInventory = await fetch(`/api/products/${cleanId}/inventory`);
+        const resInventory = await fetch(productApiUrl(`/api/products/${cleanId}/inventory`));
         const dataInventory = resInventory.ok ? await resInventory.json() : null;
 
         if (dataProduct) {
@@ -302,7 +304,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     return getSizesForCategory(product.category, product.subCategory, product.name);
   }, [product]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     if (availableSizes && !selectedSize) {
       setShowSizeValidation(true);
@@ -310,7 +312,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     }
     setShowSizeValidation(false);
     recordRecentlyViewed(product);
-    addToCart({
+    const added = await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -319,7 +321,9 @@ export default function ProductDetailPage({ params }: PageProps) {
       maxOrderQuantity: product.maxOrderQuantity || 10,
       selectedSize: selectedSize
     }, quantity);
-    triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
+    if (added) {
+      triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
+    }
   };
 
   const handleBuyNow = () => {
@@ -378,7 +382,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     setReviewError("");
     try {
       const cleanId = productId.replace("bs", "");
-      const response = await api.post(`/api/products/${cleanId}/reviews`, {
+      const response = await api.post(productApiUrl(`/api/products/${cleanId}/reviews`), {
         rating: reviewRating,
         title: reviewTitle,
         comment: reviewComment,
@@ -402,7 +406,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     } catch (error: any) {
       setReviewError(error.response?.status === 403
         ? "Only customers who purchased this product can review it."
-        : error.response?.data?.message || "Could not save your review. Please try again.");
+        : getApiErrorMessage(error, "Could not save your review. Please try again."));
     } finally {
       setReviewSubmitting(false);
     }

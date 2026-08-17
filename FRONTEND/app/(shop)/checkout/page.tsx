@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { getApiErrorMessage, getApiResponseErrorMessage } from "@/lib/apiError";
+import { ORDER_BASE_URL, PAYMENT_BASE_URL } from "@/lib/serviceUrls";
 import {
   MapPin,
   Calendar,
@@ -44,13 +46,43 @@ const EMPTY_ADDRESS = {
   phone: ""
 };
 
+type DeliveryDateOption = {
+  label: string;
+  date: string;
+  value: string;
+};
+
+const createDeliveryDateOptions = (today = new Date()): DeliveryDateOption[] => {
+  return [1, 2, 3].map((daysFromToday) => {
+    const date = new Date(today);
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + daysFromToday);
+
+    const dateLabel = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const label = daysFromToday === 1
+      ? "Tomorrow"
+      : date.toLocaleDateString("en-US", { weekday: "long" });
+
+    return {
+      label,
+      date: dateLabel,
+      value: `${label}, ${dateLabel}`,
+    };
+  });
+};
+
+const limitPhoneDigits = (value: string) => value.replace(/\D/g, "").slice(0, 10);
+const limitZipDigits = (value: string) => value.replace(/\D/g, "").slice(0, 6);
+
 // Helper to format currency
 const formatPrice = (amount: number) => {
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
-const PAYMENT_SERVICE_URL = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || "/api/payments";
-const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TDPsCfDkwT5N6j";
+const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
 
 const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -103,8 +135,17 @@ export default function CheckoutPage() {
   };
 
   // Delivery slot states
-  const [selectedDate, setSelectedDate] = useState("Tomorrow, Jul 14");
+  const [deliveryDateOptions, setDeliveryDateOptions] = useState<DeliveryDateOption[]>(() => createDeliveryDateOptions());
+  const [selectedDate, setSelectedDate] = useState(() => deliveryDateOptions[0].value);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("Evening (3 PM - 6 PM)");
+
+  useEffect(() => {
+    const nextOptions = createDeliveryDateOptions();
+    setDeliveryDateOptions(nextOptions);
+    setSelectedDate((current) => nextOptions.some((option) => option.value === current)
+      ? current
+      : nextOptions[0].value);
+  }, []);
 
   // Payment popup & loading states
   const [isProcessing, setIsProcessing] = useState(false);
@@ -115,7 +156,7 @@ export default function CheckoutPage() {
   const [walletBalance, setWalletBalance] = useState(0);
   useEffect(() => {
     if (!user?.email) return;
-    fetch(`${PAYMENT_SERVICE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+    fetch(`${PAYMENT_BASE_URL}/payments/wallet?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((data) => { if (data) setWalletBalance(Number(data.balance || 0)); })
       .catch(() => setWalletBalance(0));
@@ -384,7 +425,7 @@ export default function CheckoutPage() {
     if (user?.email) {
       const shippingAddress = `${activeAddress.name}, ${activeAddress.street}, ${activeAddress.city} - ${activeAddress.zip}, Phone: ${activeAddress.phone}`;
       if (isBuyNow) {
-        const directResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
+        const directResponse = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/checkout-direct`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress, items: checkoutItems.map((item) => ({
@@ -394,21 +435,21 @@ export default function CheckoutPage() {
         });
         if (!directResponse.ok) throw new Error("Payment succeeded, but the direct order could not be registered.");
       } else if (selectedPaymentMethod === "cod" || selectedPaymentMethod === "giftcard") {
-        const response = await fetch(`/api/orders/${encodeURIComponent(user.email)}/checkout`, {
+        const response = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress }),
         });
-        if (!response.ok) throw new Error(`Checkout failed: ${await response.text()}`);
+        if (!response.ok) throw new Error(await getApiResponseErrorMessage(response, "Checkout failed."));
       } else {
-        const sagaResponse = await fetch(`/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
+        const sagaResponse = await fetch(`${ORDER_BASE_URL}/api/orders/${encodeURIComponent(user.email)}/saga/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": checkoutIdempotencyKey.current },
           body: JSON.stringify({ shippingAddress, razorpay_order_id: paymentResponse?.razorpay_order_id,
             razorpay_payment_id: paymentResponse?.razorpay_payment_id,
             razorpay_signature: paymentResponse?.razorpay_signature, amount: totalAmount }),
         });
-        if (!sagaResponse.ok) throw new Error(`Checkout saga failed: ${await sagaResponse.text()}`);
+        if (!sagaResponse.ok) throw new Error(await getApiResponseErrorMessage(sagaResponse, "Checkout could not be completed."));
       }
     }
 
@@ -421,15 +462,28 @@ export default function CheckoutPage() {
 
   const handleConfirmPayment = async () => {
     if (paymentRequestStarted.current) return;
+    if (checkoutItems.length === 0) {
+      setPaymentError("Your cart is empty. Add an item before paying.");
+      return;
+    }
+    if (!activeAddress) {
+      setPaymentError("Please select a delivery address before paying.");
+      return;
+    }
+    if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+      setPaymentError("The payment amount is invalid. Please review your cart.");
+      return;
+    }
+
     paymentRequestStarted.current = true;
 
     if (selectedPaymentMethod === "giftcard") {
       if (!user?.email) { setPaymentError("Sign in to use your gift-card wallet."); paymentRequestStarted.current = false; return; }
       setIsProcessing(true); setPaymentError(null);
       try {
-        const response = await fetch(`${PAYMENT_SERVICE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
+        const response = await fetch(`${PAYMENT_BASE_URL}/payments/wallet/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, amount: totalAmount }) });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Gift-card payment failed.");
+        if (!response.ok) throw new Error(getApiErrorMessage(data, "Gift-card payment failed."));
         setWalletBalance(Number(data.balance));
         await handleCheckoutCompletion();
         setPaymentStatus("SUCCESS");
@@ -464,7 +518,7 @@ export default function CheckoutPage() {
     try {
       // ── Step 1: Create Razorpay order on backend ─────────────────
       const response = await fetch(
-        `${PAYMENT_SERVICE_URL}/payments/create-order?amount=${totalAmount}`,
+        `${PAYMENT_BASE_URL}/payments/create-order?amount=${totalAmount}`,
         { method: "POST", headers: { "Content-Type": "application/json" } }
       );
 
@@ -852,10 +906,12 @@ export default function CheckoutPage() {
                       <label className="text-xs font-bold uppercase tracking-wider text-natural">Phone Number</label>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        maxLength={10}
                         required
-                        placeholder="+91 XXXXX XXXXX"
+                        placeholder="10-digit phone number"
                         value={customAddress.phone}
-                        onChange={(e) => setCustomAddress({ ...customAddress, phone: e.target.value })}
+                        onChange={(e) => setCustomAddress({ ...customAddress, phone: limitPhoneDigits(e.target.value) })}
                         className="w-full h-10 px-3 bg-white border border-natural/25 focus:border-[#4A5568] text-sm font-medium text-[#4A5568] rounded-xl focus:outline-none shadow-sm"
                       />
                     </div>
@@ -889,10 +945,12 @@ export default function CheckoutPage() {
                       <label className="text-xs font-bold uppercase tracking-wider text-natural">ZIP Code</label>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        maxLength={6}
                         required
-                        placeholder="110001"
+                        placeholder="6-digit ZIP code"
                         value={customAddress.zip}
-                        onChange={(e) => setCustomAddress({ ...customAddress, zip: e.target.value })}
+                        onChange={(e) => setCustomAddress({ ...customAddress, zip: limitZipDigits(e.target.value) })}
                         className="w-full h-10 px-3 bg-white border border-natural/25 focus:border-[#4A5568] text-sm font-medium text-[#4A5568] rounded-xl focus:outline-none shadow-sm"
                       />
                     </div>
@@ -986,11 +1044,7 @@ export default function CheckoutPage() {
                 <div>
                   <h3 className="text-sm font-bold text-natural uppercase tracking-wider mb-3">Select Date</h3>
                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {[
-                      { label: "Tomorrow", date: "Jul 14", value: "Tomorrow, Jul 14" },
-                      { label: "Wednesday", date: "Jul 15", value: "Wed, Jul 15" },
-                      { label: "Thursday", date: "Jul 16", value: "Thu, Jul 16" }
-                    ].map((d) => {
+                    {deliveryDateOptions.map((d) => {
                       const isSelected = selectedDate === d.value;
                       return (
                         <div
@@ -1411,6 +1465,7 @@ export default function CheckoutPage() {
                 {/* Final Trigger Button */}
                 <div className="pt-2 border-t border-natural/15">
                   <button
+                    type="button"
                     onClick={handleConfirmPayment}
                     className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] text-white font-extrabold text-xs tracking-wider rounded-xl uppercase shadow active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
                   >

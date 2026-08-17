@@ -9,7 +9,7 @@
  *   5. Tests the invalid-signature case (should return HTTP 400)
  *
  * Usage:
- *   node test-payment-verify.js
+ *   RAZORPAY_KEY_SECRET=... node test-payment-verify.js
  *
  * Requires: node >= 18 (fetch built-in), or: npm install node-fetch
  */
@@ -17,8 +17,8 @@
 const crypto = require("crypto");
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const PAYMENT_BASE_URL   = "http://localhost:8084";   // direct to Spring Boot
-const RAZORPAY_KEY_SECRET = "RjhdLMfO2knpg2ZV88emKilx"; // must match application.properties
+const PAYMENT_BASE_URL   = process.env.PAYMENT_SERVICE_URL || "http://localhost:8084";
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 const TEST_AMOUNT         = 500;  // ₹500 test order
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -30,6 +30,9 @@ function computeSignature(orderId, paymentId, secret) {
 }
 
 async function run() {
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new Error("RAZORPAY_KEY_SECRET is required");
+  }
   console.log("\n════════════════════════════════════════════════════");
   console.log(" FACILE Payment Verification Test");
   console.log("════════════════════════════════════════════════════\n");

@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Core business logic for the Payment & Notification Service.
@@ -57,9 +58,28 @@ public class PaymentService {
      * @param amount Order total in INR (automatically converted to paise internally)
      * @return Razorpay Order object (JSON serialised in controller)
      */
-    public Order createOrder(double amount) throws Exception {
+    public Order createOrder(BigDecimal amount) throws Exception {
+        if (amount == null || amount.signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero.");
+        }
+
+        long amountInPaise;
+        try {
+            // Round the incoming rupee value to currency precision first. This accepts
+            // browser floating-point artifacts such as 193.98000000000002 safely.
+            amountInPaise = amount.setScale(2, RoundingMode.HALF_UP)
+                    .movePointRight(2)
+                    .longValueExact();
+        } catch (ArithmeticException ex) {
+            throw new IllegalArgumentException("Amount is too large.", ex);
+        }
+
+        if (amountInPaise <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero.");
+        }
+
         JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", Math.round(amount * 100)); // Convert ₹ to paise
+        orderRequest.put("amount", amountInPaise); // Convert ₹ to paise
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "receipt_" + System.currentTimeMillis());
         return razorpayClient.orders.create(orderRequest);

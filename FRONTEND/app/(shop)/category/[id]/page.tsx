@@ -28,6 +28,8 @@ import {
 import { useCart } from "@/context/CartContext";
 import ProductImage from "@/components/ProductImage";
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 import { CATEGORY_DETAILS, FALLBACK_PRODUCTS_MAP } from "@/lib/fallbackData";
 
 const FALLBACK_SUBCATEGORIES: Record<string, string[]> = {
@@ -364,7 +366,7 @@ export default function CategoryPage() {
     const fetchCategoryDetails = async () => {
       // 1. Try direct fetch
       try {
-        const res = await fetch(`/api/categories/${categoryId}`);
+        const res = await fetch(productApiUrl(`/api/categories/${categoryId}`));
         if (res.ok) {
           const data = await res.json();
           if (data && data.name) {
@@ -381,7 +383,7 @@ export default function CategoryPage() {
 
       // 2. Try match by name
       try {
-        const res = await fetch("/api/categories");
+        const res = await fetch(productApiUrl("/api/categories"));
         if (res.ok) {
           const categoriesList = await res.json();
           if (Array.isArray(categoriesList) && categoriesList.length > 0) {
@@ -623,7 +625,7 @@ export default function CategoryPage() {
       });
     };
 
-    fetch(`/api/categories/${dbCategoryId}/subcategories`)
+    fetch(productApiUrl(`/api/categories/${dbCategoryId}/subcategories`))
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data) => {
         const rawList = Array.isArray(data) && data.length ? data : fallback;
@@ -641,13 +643,13 @@ export default function CategoryPage() {
     }
     setProductsLoading(true);
 
-    let url = `/api/products`;
+    let url = productApiUrl("/api/products");
     if (isShoesFilter) {
-      url = `/api/products?categoryId=${dbCategoryId}`;
+      url = productApiUrl(`/api/products?categoryId=${dbCategoryId}`);
     } else if (String(subcategoryId).startsWith("fallback-")) {
-      url = `/api/products?categoryId=${dbCategoryId}`;
+      url = productApiUrl(`/api/products?categoryId=${dbCategoryId}`);
     } else {
-      url = `/api/products?subCategoryId=${subcategoryId}`;
+      url = productApiUrl(`/api/products?subCategoryId=${subcategoryId}`);
     }
 
     fetch(url)
@@ -678,7 +680,7 @@ export default function CategoryPage() {
   }, [subcategoryId, dbCategoryId, resolvedFallbackCategoryId, subcategories, searchParams]);
 
   useEffect(() => {
-    fetch(`/api/products?categoryId=${dbCategoryId}`)
+    fetch(productApiUrl(`/api/products?categoryId=${dbCategoryId}`))
       .then((response) => response.ok ? response.json() : [])
       .then((categoryProducts) => {
         const choice = (Array.isArray(categoryProducts) ? categoryProducts : [])

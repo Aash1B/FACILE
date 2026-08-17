@@ -8,6 +8,7 @@ import {
   Plus, Package, Image as ImageIcon, Link2
 } from "lucide-react";
 import api from "@/lib/api";
+import { authApiUrl, productApiUrl } from "@/lib/serviceUrls";
 
 interface Seller {
   id: string;
@@ -184,7 +185,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   React.useEffect(() => {
-    api.get("/api/products")
+    api.get(productApiUrl("/api/products"))
       .then((response) => setProducts(Array.isArray(response.data) ? response.data : []))
       .catch(() => setImageStatus("Could not load products. Make sure the inventory service is running."));
   }, []);
@@ -216,7 +217,7 @@ export default function AdminDashboardPage() {
     setSavingImages(true);
     setImageStatus("");
     try {
-      const response = await api.patch(`/api/products/${selectedProduct.id}/images`, {
+      const response = await api.patch(productApiUrl(`/api/products/${selectedProduct.id}/images`), {
         primaryImage: urls[0],
         images: urls
       });
@@ -232,7 +233,7 @@ export default function AdminDashboardPage() {
   React.useEffect(() => {
     const fetchDBSellers = async () => {
       try {
-        const response = await api.get("/api/auth/sellers");
+        const response = await api.get(authApiUrl("/api/auth/sellers"));
         if (response.data && Array.isArray(response.data)) {
           const dbSellersMapped: Seller[] = response.data.map((user: any) => {
             const valSeed = user.id ? user.id * 1000 : 5000;

@@ -1,0 +1,6 @@
+ Container redis-cart Starting 
+ Container postgres Starting 
+ Container mongo-order Starting 
+ Container mongo-order Started 
+ Container redis-cart Started 
+ Container postgres Started 

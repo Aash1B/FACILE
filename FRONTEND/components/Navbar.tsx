@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
+import { productApiUrl } from "@/lib/serviceUrls";
 import {
   BotMessageSquare,
   Heart,
@@ -92,6 +93,7 @@ export default function Navbar() {
   const [categories, setCategories] = useState<StoreCategory[]>(FALLBACK_CATEGORIES);
   const [activeCategory, setActiveCategory] = useState<StoreCategory | null>(null);
   const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, StoreSubcategory[]>>({});
+  const subcategoryRequestsRef = useRef<Record<string, Promise<StoreSubcategory[]>>>({});
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -117,14 +119,14 @@ export default function Navbar() {
       filtered = list.filter(sub => sub.name.toLowerCase() !== "apparel");
     }
     if (categoryName.toLowerCase().includes("home")) {
-      filtered = list.filter(sub => 
-        sub.name.toLowerCase() !== "kitchenware" && 
+      filtered = list.filter(sub =>
+        sub.name.toLowerCase() !== "kitchenware" &&
         sub.name.toLowerCase() !== "kitchen ware"
       );
     }
     if (categoryName.toLowerCase() === "sports") {
-      filtered = list.filter(sub => 
-        sub.name.toLowerCase() !== "running shoes" && 
+      filtered = list.filter(sub =>
+        sub.name.toLowerCase() !== "running shoes" &&
         sub.name.toLowerCase() !== "running shoe"
       );
     }
@@ -203,7 +205,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -219,9 +221,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const fetchCategoriesAndSubcategories = async () => {
+    const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(productApiUrl("/api/categories"));
         if (!response.ok) {
           loadFallbackSubcategories();
           return;
@@ -229,23 +231,6 @@ export default function Navbar() {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
           setCategories(data);
-          // Fetch all subcategories in parallel
-          const subMap: Record<string, StoreSubcategory[]> = {};
-          await Promise.all(
-            data.map(async (cat: StoreCategory) => {
-              try {
-                const subResponse = await fetch(`/api/categories/${cat.id}/subcategories`);
-                const subData = subResponse.ok ? await subResponse.json() : [];
-                subMap[String(cat.id)] = sanitizeSubcategories(
-                  Array.isArray(subData) ? subData : [],
-                  cat.name
-                );
-              } catch {
-                subMap[String(cat.id)] = [];
-              }
-            })
-          );
-          setSubcategoriesByCategory(subMap);
         } else {
           loadFallbackSubcategories();
         }
@@ -265,8 +250,29 @@ export default function Navbar() {
       setSubcategoriesByCategory(fallbackSubMap);
     };
 
-    fetchCategoriesAndSubcategories();
+    fetchCategories();
   }, []);
+
+  const fetchSubcategories = (category: StoreCategory): Promise<StoreSubcategory[]> => {
+    const categoryKey = String(category.id);
+    const pendingRequest = subcategoryRequestsRef.current[categoryKey];
+    if (pendingRequest) return pendingRequest;
+
+    const request = fetch(productApiUrl(`/api/categories/${category.id}/subcategories`))
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => sanitizeSubcategories(Array.isArray(data) ? data : [], category.name))
+      .catch(() => [] as StoreSubcategory[])
+      .then((result) => {
+        if (subcategoryRequestsRef.current[categoryKey] === request) {
+          delete subcategoryRequestsRef.current[categoryKey];
+        }
+        return result;
+      });
+
+    subcategoryRequestsRef.current[categoryKey] = request;
+    return request;
+  };
+
 
   useEffect(() => {
     function handleClickOutsideSearch(event: MouseEvent) {
@@ -447,6 +453,33 @@ export default function Navbar() {
   };
 
   const query = searchQuery.trim();
+
+  useEffect(() => {
+    if (!showSuggestions || !query || categories.length === 0) return;
+
+    const missingCategories = categories.filter(
+      (category) => !subcategoriesByCategory[String(category.id)]
+    );
+    if (missingCategories.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      missingCategories.map(async (category) => [
+        String(category.id),
+        await fetchSubcategories(category),
+      ] as const)
+    ).then((entries) => {
+      if (cancelled) return;
+      setSubcategoriesByCategory((current) => ({
+        ...current,
+        ...Object.fromEntries(entries),
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showSuggestions, query, categories, subcategoriesByCategory]);
 
   // Helper to match suggestions starting strictly with the query prefix
   const matchesQuery = (text: string, q: string) => {
@@ -639,17 +672,11 @@ export default function Navbar() {
 
     setIsLoadingSubcategories(true);
     try {
-      const response = await fetch(`/api/categories/${category.id}/subcategories`);
-      const data = response.ok ? await response.json() : [];
+      const data = await fetchSubcategories(category);
       setSubcategoriesByCategory((current) => ({
         ...current,
-        [categoryKey]: sanitizeSubcategories(
-          Array.isArray(data) ? data : [],
-          category.name
-        ),
+        [categoryKey]: data,
       }));
-    } catch {
-      setSubcategoriesByCategory((current) => ({ ...current, [categoryKey]: [] }));
     } finally {
       setIsLoadingSubcategories(false);
     }
@@ -692,6 +719,9 @@ export default function Navbar() {
                 <BotMessageSquare className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 stroke-[2px] transition-transform group-hover:scale-105" />
                 <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
               </button>
+              <Link href="/" className="mt-2 ml-1 flex items-center">
+                <img src="/logo.svg" alt="Facile Logo" className="w-[46px] h-[46px] opacity-90 transition-transform hover:scale-105" />
+              </Link>
             </div>
 
             {/* Logo "facile" (Center) */}
@@ -783,7 +813,7 @@ export default function Navbar() {
                     className="p-1.5 sm:p-2.5 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                     aria-label="Profile"
                   >
-                    <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[2px] transition-transform group-hover:scale-110" />
+                    <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
                     <span className="hidden lg:inline text-sm font-bold text-black">
                       Guest
                     </span>
@@ -802,7 +832,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-between gap-4 py-2">
 
               {/* Left Pills */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 {/* All Categories Dropdown Trigger */}
                 <div className="relative">
                   <button
@@ -813,11 +843,11 @@ export default function Navbar() {
                         return !open;
                       });
                     }}
-                    className="flex items-center gap-1 px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
+                    className="flex items-center gap-2 px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200 focus:outline-none cursor-pointer"
                   >
                     All Categories
                     <ChevronDown
-                      size={18}
+                      size={20}
                       className={`text-current transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
@@ -825,8 +855,8 @@ export default function Navbar() {
 
                 {/* New Arrivals */}
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   New Arrivals
                 </a>
@@ -834,9 +864,9 @@ export default function Navbar() {
                 {/* Trending Pill */}
                 <a
                   href="#special-offer"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200 flex items-center gap-2"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200 flex items-center gap-2"
                 >
-                  <span className="w-2 h-2 bg-apricot rounded-full animate-ping" />
+                  <span className="w-2.5 h-2.5 bg-apricot rounded-full animate-ping" />
                   Trending
                 </a>
               </div>
@@ -853,23 +883,23 @@ export default function Navbar() {
                       setShowSuggestions(true);
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    className="w-full h-12 pl-14 pr-14 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-base text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
+                    className="w-full h-14 pl-16 pr-16 bg-white border border-black/25 focus:border-black focus:ring-1 focus:ring-black text-lg text-black rounded-full shadow-inner transition-all duration-200 placeholder:text-black/50 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
+                    className="absolute left-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full text-black transition-colors hover:bg-[#DDE0F0] hover:text-apricot"
                     aria-label="Submit Search"
                   >
-                    <Search size={22} strokeWidth={2.2} />
+                    <Search size={24} strokeWidth={2.2} />
                   </button>
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
+                    className={`absolute right-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full transition-all ${isListening ? "bg-[#870339]/10 text-[#870339] animate-pulse" : "text-black hover:bg-[#DDE0F0]"}`}
                     aria-label={isListening ? "Stop voice search" : "Search by voice"}
                     title={voiceSearchSupported ? (isListening ? "Listening… click to stop" : "Search by voice") : "Voice search is not supported in this browser"}
                   >
-                    {voiceSearchSupported ? <Mic size={22} strokeWidth={2} /> : <MicOff size={22} strokeWidth={2} />}
+                    {voiceSearchSupported ? <Mic size={24} strokeWidth={2} /> : <MicOff size={24} strokeWidth={2} />}
                   </button>
 
                   {/* Suggestions Dropdown */}
@@ -878,22 +908,22 @@ export default function Navbar() {
               </div>
 
               {/* Right Pills */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#best-sellers"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Best Sellers
                 </a>
                 <a
-                  href="#special-offer"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#special-offer"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Deals
                 </a>
                 <a
-                  href="#best-sellers"
-                  className="px-6 py-2.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-base font-semibold rounded-full shadow-sm transition-all duration-200"
+                  href="/#brands"
+                  className="px-8 py-3.5 bg-[#dde0f0] border border-[#dde0f0] hover:border-[#4A5568] hover:bg-[#4A5568] hover:text-white text-black text-lg font-bold rounded-full shadow-sm transition-all duration-200"
                 >
                   Brands
                 </a>
@@ -1102,7 +1132,7 @@ export default function Navbar() {
           <div className="relative w-full max-w-xs bg-[#F4F4F0] text-black flex flex-col shadow-2xl h-full border-r border-natural/20 p-6">
             {/* Header */}
             <div className="flex items-center justify-between pb-5 border-b border-natural/20 mb-6">
-              <span 
+              <span
                 className="font-antic font-normal text-3xl text-[#4a556a] tracking-[0.02em] select-none"
               >
                 FACILE

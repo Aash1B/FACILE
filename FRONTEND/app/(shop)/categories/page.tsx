@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 // ─── Category Data ────────────────────────────────────────────────────────────
 // Matches the actual products seeded in the backend (DataInitializer.java)
 const CATEGORIES = [
@@ -93,7 +95,7 @@ export default function CategoriesPage() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetch("/api/categories");
+        const res = await fetch(productApiUrl("/api/categories"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {

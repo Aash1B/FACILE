@@ -44,8 +44,7 @@ export default function AuthLayout({
 
         {/* Branding Info */}
         <div className="relative z-10 space-y-4 max-w-md text-white">
-          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/90">
-          </p>
+          <img src="/logo.svg" alt="Facile Logo" className="w-20 h-20 opacity-90 mb-4 -ml-1" />
           <h2 className="font-serif text-4xl font-semibold leading-[1.2] tracking-tight">
             Your one-stop online marketplace.
           </h2>

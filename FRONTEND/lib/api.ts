@@ -1,9 +1,9 @@
 import axios from "axios";
+import { getApiErrorMessage } from "@/lib/apiError";
+import { AUTH_USER_BASE_URL, authApiUrl } from "@/lib/serviceUrls";
 
 const api = axios.create({
-  // Keep browser requests on the frontend origin. Next.js proxies /api/auth/*
-  // to the auth service, so login also works when the app is opened via LAN IP.
-  baseURL: "/",
+  baseURL: AUTH_USER_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -59,7 +59,7 @@ api.interceptors.response.use(
         }
 
         // Call the refresh endpoint to obtain a new token pair
-        const response = await axios.post("/api/auth/refresh", {
+        const response = await api.post(authApiUrl("/api/auth/refresh"), {
           refreshToken,
         });
 
@@ -81,6 +81,14 @@ api.interceptors.response.use(
         }
         return Promise.reject(refreshError);
       }
+    }
+    const normalizedMessage = getApiErrorMessage(error, "The request could not be completed.");
+    error.message = normalizedMessage;
+    const responseData = error.response?.data;
+    if (responseData && typeof responseData === "object" && !Array.isArray(responseData)) {
+      const payload = responseData as Record<string, unknown>;
+      if ("error" in payload) payload.error = normalizedMessage;
+      if ("message" in payload) payload.message = normalizedMessage;
     }
     return Promise.reject(error);
   }

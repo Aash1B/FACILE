@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/payments")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -25,7 +25,7 @@ public class PaymentController {
 
     // POST /payments/create-order  (existing — unchanged)
     @PostMapping("/create-order")
-    public ResponseEntity<String> createOrder(@RequestParam double amount) {
+    public ResponseEntity<String> createOrder(@RequestParam BigDecimal amount) {
         try {
             Order order = paymentService.createOrder(amount);
             return ResponseEntity.ok(order.toJson().toString());

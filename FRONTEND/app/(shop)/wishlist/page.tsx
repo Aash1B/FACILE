@@ -6,6 +6,8 @@ import { useCart } from "@/context/CartContext";
 import ProductImage from "@/components/ProductImage";
 import { ArrowLeft, ShoppingCart, Heart, Trash2, Sparkles, Star } from "lucide-react";
 
+import { productApiUrl } from "@/lib/serviceUrls";
+
 // Mock Fallback Database in case the API is offline (same as page.tsx)
 const MOCK_PRODUCTS = [
   {
@@ -126,7 +128,7 @@ export default function WishlistPage() {
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(productApiUrl("/api/products"));
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -185,15 +187,17 @@ export default function WishlistPage() {
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Navigation */}
-        <div className="mb-8 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-[#4a556a] hover:text-[#4a556a]/80 transition-colors">
+        <div className="mb-8 flex flex-col gap-4">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-[#4a556a] hover:text-[#4a556a]/80 transition-colors ml-1 w-fit">
             <ArrowLeft size={16} /> Back to Shop
           </Link>
-          <h1 className="text-xl font-extrabold font-serif text-[#4a556a]">My Wishlist</h1>
-          <div className="text-xs font-bold bg-[#5271FF]/10 text-[#5271FF] px-3 py-1 rounded-full border border-[#5271FF]/20 shadow-xs">
-            {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#4A5568] tracking-tight ml-1">My Wishlist</h1>
+            <div className="text-xs font-bold bg-[#5271FF]/10 text-[#5271FF] px-3 py-1 rounded-full border border-[#5271FF]/20 shadow-xs">
+              {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}
+            </div>
           </div>
         </div>
 
@@ -223,7 +227,7 @@ export default function WishlistPage() {
               return (
                 <div
                   key={product.id}
-                  className="group bg-white hover:bg-[#5271FF] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-natural/30 transition-all duration-300 flex flex-col relative"
+                  className="group bg-[#F4F4F0] border border-natural/15 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-[#5271FF] transition-all duration-300 flex flex-col relative"
                 >
                   {/* Remove Button */}
                   <button
@@ -236,7 +240,7 @@ export default function WishlistPage() {
 
                   <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
                     {/* Product Image */}
-                    <div className="aspect-square bg-neutral-100/30 relative overflow-hidden flex-shrink-0">
+                    <div className="aspect-square bg-neutral-100/50 relative overflow-hidden flex-shrink-0">
                       {discount > 0 && (
                         <div className="absolute top-3 left-3 z-10 px-2.5 py-1 bg-apricot text-white text-xs sm:text-sm font-bold rounded-full shadow-md">
                           -{discount}%
@@ -250,7 +254,7 @@ export default function WishlistPage() {
                     </div>
 
                   {/* Content */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-4 flex-1 flex flex-col justify-between group-hover:bg-[#5271FF] transition-colors duration-300">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-sm font-bold text-[#5271FF] group-hover:text-warm-ivory leading-snug truncate transition-colors duration-200">
                         {product.name}
@@ -275,7 +279,7 @@ export default function WishlistPage() {
                 </Link>
 
                 {/* Add to Cart Button */}
-                <div className="px-4 pb-4">
+                <div className="px-4 pb-4 group-hover:bg-[#5271FF] transition-colors duration-300">
                   <button
                     onClick={(e) => handleAddToCart(product, e)}
                     className="w-full h-8.5 bg-[#5271FF] group-hover:bg-[#DDE0F0] group-hover:text-[#5271FF] hover:scale-[1.02] active:scale-98 text-warm-ivory text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1 focus:outline-none cursor-pointer"

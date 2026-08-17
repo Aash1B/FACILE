@@ -25,10 +25,6 @@ public class EmailService {
 
     @jakarta.annotation.PostConstruct
     public void init() {
-        log.info("[SMTP CONFIG CHECK] Username resolved to: '{}', Password length: {}", 
-            mailUsername, 
-            mailPassword != null ? mailPassword.length() : 0
-        );
     }
 
     public void sendPaymentSuccessEmail(String toEmail, String orderId, String paymentId, double amount) {

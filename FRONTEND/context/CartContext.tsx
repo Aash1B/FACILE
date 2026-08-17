@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { getApiResponseErrorMessage } from "@/lib/apiError";
+import { ORDER_BASE_URL, productApiUrl } from "@/lib/serviceUrls";
 
 export interface CartItem {
   id: string;
@@ -14,10 +16,9 @@ export interface CartItem {
   selectedSize?: string | null;
 }
 
-
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => Promise<boolean>;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -44,89 +45,98 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Logged-in user: merge local guest cart into backend database
         try {
           // Fetch existing db cart
-          const dbRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
-          const dbCart = dbRes.ok ? await dbRes.json() : { items: [] };
-
-          const localCartStr = localStorage.getItem("facile_cart");
-          if (localCartStr) {
-            const localCart: CartItem[] = JSON.parse(localCartStr);
-            if (localCart.length > 0) {
-              // Perform client-side merge: check and add missing/larger quantities to DB
-              for (const localItem of localCart) {
-                const dbItem = dbCart.items.find((i: any) => i.productId === localItem.id);
-                if (!dbItem) {
-                  // Add item to backend
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      productId: localItem.id,
-                      productName: localItem.name,
-                      image: localItem.image,
-                      maxOrderQuantity: localItem.maxOrderQuantity || 10,
-                      price: localItem.price,
-                      quantity: localItem.quantity,
-                      selectedSize: localItem.selectedSize || null,
-                    }),
-                  });
-                } else if (localItem.quantity > dbItem.quantity) {
-                  // Add the difference
-                  const diff = localItem.quantity - dbItem.quantity;
-                  await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      productId: localItem.id,
-                      productName: localItem.name,
-                      image: localItem.image,
-                      maxOrderQuantity: localItem.maxOrderQuantity || 10,
-                      price: localItem.price,
-                      quantity: diff,
-                      selectedSize: localItem.selectedSize || null,
-                    }),
-                  });
-                }
-              }
-              // Clear local guest cart
-              localStorage.removeItem("facile_cart");
-            }
-          }
-
-          // Fetch final synchronized cart
-          const finalRes = await fetch(`http://localhost:8081/api/cart/${user.email}`);
-          if (finalRes.ok) {
-            const finalCart = await finalRes.json();
-            // Map backend cart structure back to frontend CartItem
-            const mappedCart: CartItem[] = await Promise.all(finalCart.items.map(async (i: any) => {
-              let image = i.image;
-              if (!image) {
-                const numericProductId = String(i.productId).replace(/\D+/g, "");
-                if (numericProductId) {
-                  try {
-                    const productRes = await fetch(`/api/products/${numericProductId}`);
-                    if (productRes.ok) image = (await productRes.json()).image;
-                  } catch {
-                    // Use the fallback below only when product lookup fails.
-                    // Use fallback when product lookup fails
+          const dbRes = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}`);
+          if (dbRes.ok) {
+            const dbCart = await dbRes.json();
+            const localCartStr = localStorage.getItem("facile_cart");
+            if (localCartStr) {
+              const localCart: CartItem[] = JSON.parse(localCartStr);
+              if (localCart.length > 0) {
+                // Perform client-side merge: check and add missing/larger quantities to DB
+                for (const localItem of localCart) {
+                  const dbItem = (dbCart.items || []).find((i: any) => i.productId === localItem.id);
+                  if (!dbItem) {
+                    // Add item to backend
+                    await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        productId: localItem.id,
+                        productName: localItem.name,
+                        image: localItem.image,
+                        maxOrderQuantity: localItem.maxOrderQuantity || 10,
+                        price: localItem.price,
+                        quantity: localItem.quantity,
+                        selectedSize: localItem.selectedSize || null,
+                      }),
+                    });
+                  } else if (localItem.quantity > dbItem.quantity) {
+                    // Add the difference
+                    const diff = localItem.quantity - dbItem.quantity;
+                    await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        productId: localItem.id,
+                        productName: localItem.name,
+                        image: localItem.image,
+                        maxOrderQuantity: localItem.maxOrderQuantity || 10,
+                        price: localItem.price,
+                        quantity: diff,
+                        selectedSize: localItem.selectedSize || null,
+                      }),
+                    });
                   }
                 }
               }
+            }
 
-              return {
-                id: i.productId,
-                name: i.productName,
-                price: i.price,
-                brand: "Facile",
-                image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
-                maxOrderQuantity: i.maxOrderQuantity || 10,
-                quantity: i.quantity,
-                selectedSize: i.selectedSize || null,
-              };
-            }));
-            setCart(mappedCart);
+            // Fetch final synchronized cart
+            const finalRes = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}`);
+            if (finalRes.ok) {
+              const finalCart = await finalRes.json();
+              // Map backend cart structure back to frontend CartItem
+              const mappedCart: CartItem[] = await Promise.all((finalCart.items || []).map(async (i: any) => {
+                let image = i.image;
+                if (!image) {
+                  const numericProductId = String(i.productId).replace(/\D+/g, "");
+                  if (numericProductId) {
+                    try {
+                      const productRes = await fetch(productApiUrl(`/api/products/${numericProductId}`));
+                      if (productRes.ok) image = (await productRes.json()).image;
+                    } catch {
+                      // Use fallback when product lookup fails
+                    }
+                  }
+                }
+
+                return {
+                  id: i.productId,
+                  name: i.productName,
+                  price: i.price,
+                  brand: "Facile",
+                  image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300",
+                  maxOrderQuantity: i.maxOrderQuantity || 10,
+                  quantity: i.quantity,
+                  selectedSize: i.selectedSize || null,
+                };
+              }));
+              saveCartState(mappedCart);
+              return;
+            }
           }
         } catch (e) {
           console.error("Failed to sync cart with backend:", e);
+        }
+
+        // Fallback to local storage if backend is unreachable or returns non-ok
+        const savedCart = localStorage.getItem("facile_cart");
+        if (savedCart) {
+          try {
+            setCart(JSON.parse(savedCart));
+          } catch (e) {
+            console.error("Error parsing cart data", e);
+          }
         }
       } else {
         // Guest user: load from local storage
@@ -140,7 +150,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } else {
           setCart([]);
         }
-      };
+      }
     };
 
     syncCart();
@@ -162,11 +172,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const saveCartState = (newCart: CartItem[]) => {
     setCart(newCart);
-    if (!user && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       localStorage.setItem("facile_cart", JSON.stringify(newCart));
     }
   };
-
 
   const saveFavorites = (newFavs: string[]) => {
     setFavorites(newFavs);
@@ -175,10 +184,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
+  const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1): Promise<boolean> => {
     const now = Date.now();
     const lastClick = recentAddClicks.current.get(item.id) ?? 0;
-    if (now - lastClick < 800) return;
+    if (now - lastClick < 300) return false;
     recentAddClicks.current.set(item.id, now);
 
     const existingIndex = cart.findIndex(
@@ -187,10 +196,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const maxQuantity = item.maxOrderQuantity || 10;
     const safeQuantityToAdd = Math.min(maxQuantity, Math.max(1, quantityToAdd));
 
+    // Optimistically update client state immediately
+    if (existingIndex > -1) {
+      const newCart = [...cart];
+      newCart[existingIndex] = {
+        ...newCart[existingIndex],
+        quantity: Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd),
+      };
+      saveCartState(newCart);
+    } else {
+      saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
+    }
+
     if (user && user.email) {
-      // Sync with database
+      // Sync with database in background
       try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+        const response = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -206,42 +227,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             selectedSize: item.selectedSize || null,
           }),
         });
-
-        // Update state
-        if (existingIndex > -1) {
-          const newCart = [...cart];
-          newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
-          saveCartState(newCart);
-        } else {
-          saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
+        if (!response.ok) {
+          const errMsg = await getApiResponseErrorMessage(response, "Unable to add item to remote cart.");
+          console.warn("Backend sync notice:", errMsg);
         }
       } catch (e) {
         console.error("Failed to add item to db cart:", e);
       }
-    } else {
-      // Guest: local storage
-      if (existingIndex > -1) {
-        const newCart = [...cart];
-        newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
-        saveCartState(newCart);
-      } else {
-        saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
-      }
     }
+
+    return true;
   };
 
   const removeFromCart = async (id: string) => {
+    saveCartState(cart.filter((item) => item.id !== id));
+
     if (user && user.email) {
       try {
-        await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+        await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/remove/${id}`, {
           method: "DELETE",
         });
-        saveCartState(cart.filter((item) => item.id !== id));
       } catch (e) {
         console.error("Failed to remove item from db cart:", e);
       }
-    } else {
-      saveCartState(cart.filter((item) => item.id !== id));
     }
   };
 
@@ -254,13 +262,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const currentItem = cart.find((item) => item.id === id);
     if (!currentItem) return;
     qty = Math.min(currentItem.maxOrderQuantity || 10, qty);
+    const oldQty = currentItem.quantity;
+
+    saveCartState(cart.map((item) =>
+      item.id === id ? { ...item, quantity: qty } : item
+    ));
 
     if (user && user.email) {
       try {
-        const oldQty = currentItem.quantity;
         if (qty > oldQty) {
-          // Add the difference
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+          await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -273,11 +284,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }),
           });
         } else if (qty < oldQty) {
-          // Remove from DB first and add back the smaller quantity
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${id}`, {
+          await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/remove/${id}`, {
             method: "DELETE",
           });
-          await fetch(`http://localhost:8081/api/cart/${user.email}/add`, {
+          await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -290,35 +300,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }),
           });
         }
-
-        saveCartState(cart.map((item) =>
-          item.id === id ? { ...item, quantity: qty } : item
-        ));
       } catch (e) {
         console.error("Failed to update item quantity in db cart:", e);
       }
-    } else {
-      saveCartState(cart.map((item) =>
-        item.id === id ? { ...item, quantity: qty } : item
-      ));
     }
   };
 
   const clearCart = async () => {
+    const prevCart = [...cart];
+    saveCartState([]);
+
     if (user && user.email) {
       try {
-        // Clear each item in database
-        for (const item of cart) {
-          await fetch(`http://localhost:8081/api/cart/${user.email}/remove/${item.id}`, {
+        for (const item of prevCart) {
+          await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/remove/${item.id}`, {
             method: "DELETE",
           });
         }
-        saveCartState([]);
       } catch (e) {
         console.error("Failed to clear db cart:", e);
       }
-    } else {
-      saveCartState([]);
     }
   };
 

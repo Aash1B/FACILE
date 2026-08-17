@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/apiError";
+import { authApiUrl } from "@/lib/serviceUrls";
 
 interface User {
   id?: number;
@@ -68,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem("facile_token");
       if (token) {
         try {
-          const response = await api.get("/api/auth/me");
+          const response = await api.get(authApiUrl("/api/auth/me"));
           setUser(response.data);
         } catch (e: any) {
           console.error("Session verification failed:", e?.message || e);
@@ -84,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<{ requiresMfa: boolean; mfaToken?: string } | boolean> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/login", { email, password });
+      const response = await api.post(authApiUrl("/api/auth/login"), { email, password });
       const data = response.data;
       
       if (data.requiresMfa) {
@@ -98,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error: any) {
       console.error("Login error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Login failed. Please check your credentials.");
+      throw new Error(getApiErrorMessage(error, "Login failed. Please check your credentials."));
     } finally {
       setIsLoading(false);
     }
@@ -107,17 +109,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async (idToken: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/google", { idToken });
+      const response = await api.post(authApiUrl("/api/auth/google"), { idToken });
       const data = response.data;
       const userProfile: User = { name: data.name, email: data.email, role: data.role };
       setAuthSession(data.accessToken, data.refreshToken, userProfile);
       setUser(userProfile);
       return true;
     } catch (error: any) {
-      const message = error.response?.data?.error
-        || error.response?.data?.message
-        || (error.code === "ERR_NETWORK" ? "Authentication service is unavailable." : null)
-        || "Google sign in failed.";
+      const message = error.code === "ERR_NETWORK"
+        ? "Authentication service is unavailable."
+        : getApiErrorMessage(error, "Google sign in failed.");
       throw new Error(message);
     } finally {
       setIsLoading(false);
@@ -127,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyMfa = async (mfaToken: string, code: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/mfa/verify", { mfaToken, code });
+      const response = await api.post(authApiUrl("/api/auth/mfa/verify"), { mfaToken, code });
       const data = response.data;
       const userProfile: User = { name: data.name, email: data.email, role: data.role };
       setAuthSession(data.accessToken, data.refreshToken, userProfile);
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error: any) {
       console.error("MFA Verify error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Invalid 2FA code.");
+      throw new Error(getApiErrorMessage(error, "Invalid 2FA code."));
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string, role?: string): Promise<{ requiresVerification: boolean; email: string }> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/register", { name, email, password, role });
+      const response = await api.post(authApiUrl("/api/auth/register"), { name, email, password, role });
       const data = response.data;
       if (data.requiresVerification) {
         return { requiresVerification: true, email: data.email };
@@ -156,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { requiresVerification: false, email: data.email };
     } catch (error: any) {
       console.error("Registration error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Registration failed.");
+      throw new Error(getApiErrorMessage(error, "Registration failed."));
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtp = async (email: string, otpCode: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/verify-otp", { email, otpCode });
+      const response = await api.post(authApiUrl("/api/auth/verify-otp"), { email, otpCode });
       const data = response.data;
       const userProfile: User = { name: data.name, email: data.email, role: data.role };
       setAuthSession(data.accessToken, data.refreshToken, userProfile);
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error: any) {
       console.error("Verification error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "OTP Verification failed.");
+      throw new Error(getApiErrorMessage(error, "OTP Verification failed."));
     } finally {
       setIsLoading(false);
     }
@@ -181,27 +182,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resendOtp = async (email: string): Promise<boolean> => {
     try {
-      await api.post("/api/auth/resend-otp", { email });
+      await api.post(authApiUrl("/api/auth/resend-otp"), { email });
       return true;
     } catch (error: any) {
       console.error("Resend OTP error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Failed to resend OTP.");
+      throw new Error(getApiErrorMessage(error, "Failed to resend OTP."));
     }
   };
 
   const forgotPassword = async (email: string): Promise<boolean> => {
     try {
-      await api.post("/api/auth/forgot-password", { email });
+      await api.post(authApiUrl("/api/auth/forgot-password"), { email });
       return true;
     } catch (error: any) {
       console.error("Forgot password error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Failed to request recovery code.");
+      throw new Error(getApiErrorMessage(error, "Failed to request recovery code."));
     }
   };
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     try {
-      const response = await api.post("/api/auth/reset-password", { token, newPassword });
+      const response = await api.post(authApiUrl("/api/auth/reset-password"), { token, newPassword });
       const data = response.data;
       const userProfile: User = { name: data.name, email: data.email, role: data.role };
       setAuthSession(data.accessToken, data.refreshToken, userProfile);
@@ -209,13 +210,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error: any) {
       console.error("Reset password error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Failed to reset password.");
+      throw new Error(getApiErrorMessage(error, "Failed to reset password."));
     }
   };
 
   const logout = () => {
     // Optionally call backend /logout if you want to invalidate refresh token
-    api.post("/api/auth/logout", { refreshToken: localStorage.getItem("facile_refresh_token") }).catch(() => {});
+    api.post(authApiUrl("/api/auth/logout"), { refreshToken: localStorage.getItem("facile_refresh_token") }).catch(() => {});
     clearAuthSession();
     setUser(null);
   };
@@ -223,13 +224,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const deleteAccount = async (): Promise<boolean> => {
     setIsLoading(true);
     try {
-      await api.delete("/api/auth/me");
+      await api.delete(authApiUrl("/api/auth/me"));
       clearAuthSession();
       setUser(null);
       return true;
     } catch (error: any) {
       console.error("Delete account error:", error?.message || error);
-      throw new Error(error.response?.data?.error || "Failed to delete account.");
+      throw new Error(getApiErrorMessage(error, "Failed to delete account."));
     } finally {
       setIsLoading(false);
     }
@@ -237,63 +238,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setupMfa = async (): Promise<{ secret: string; qrCodeUrl: string }> => {
     try {
-      const response = await api.post("/api/auth/mfa/setup");
+      const response = await api.post(authApiUrl("/api/auth/mfa/setup"));
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to setup 2FA.");
+      throw new Error(getApiErrorMessage(error, "Failed to setup 2FA."));
     }
   };
 
   const enableMfa = async (code: string): Promise<boolean> => {
     try {
-      await api.post("/api/auth/mfa/enable", { code });
+      await api.post(authApiUrl("/api/auth/mfa/enable"), { code });
       if (user) {
         setUser({ ...user, mfaEnabled: true });
         localStorage.setItem("facile_user", JSON.stringify({ ...user, mfaEnabled: true }));
       }
       return true;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to enable 2FA.");
+      throw new Error(getApiErrorMessage(error, "Failed to enable 2FA."));
     }
   };
 
   const disableMfa = async (): Promise<boolean> => {
     try {
-      await api.post("/api/auth/mfa/disable");
+      await api.post(authApiUrl("/api/auth/mfa/disable"));
       if (user) {
         setUser({ ...user, mfaEnabled: false });
         localStorage.setItem("facile_user", JSON.stringify({ ...user, mfaEnabled: false }));
       }
       return true;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to disable 2FA.");
+      throw new Error(getApiErrorMessage(error, "Failed to disable 2FA."));
     }
   };
 
   const getSessions = async (): Promise<any[]> => {
     try {
-      const response = await api.get("/api/auth/sessions");
+      const response = await api.get(authApiUrl("/api/auth/sessions"));
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to load active sessions.");
+      throw new Error(getApiErrorMessage(error, "Failed to load active sessions."));
     }
   };
 
   const revokeSession = async (id: number): Promise<boolean> => {
     try {
-      await api.delete(`/api/auth/sessions/${id}`);
+      await api.delete(authApiUrl(`/api/auth/sessions/${id}`));
       return true;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to revoke session.");
+      throw new Error(getApiErrorMessage(error, "Failed to revoke session."));
     }
   };
 
   const getAuditLogs = async (): Promise<any[]> => {
     try {
-      const response = await api.get("/api/auth/audit-logs");
+      const response = await api.get(authApiUrl("/api/auth/audit-logs"));
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to load audit logs.");
+      throw new Error(getApiErrorMessage(error, "Failed to load audit logs."));
     }
   };
 

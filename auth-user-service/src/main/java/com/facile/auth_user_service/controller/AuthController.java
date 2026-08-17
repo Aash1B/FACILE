@@ -3,6 +3,7 @@ package com.facile.auth_user_service.controller;
 import com.facile.auth_user_service.dto.*;
 import com.facile.auth_user_service.model.User;
 import com.facile.auth_user_service.service.AuthService;
+import com.facile.auth_user_service.service.EmailDeliveryException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -196,6 +197,13 @@ public class AuthController {
         }
         org.springframework.security.core.context.SecurityContextHolder.clearContext();
         return ResponseEntity.ok().build();
+    }
+
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<Map<String, String>> handleEmailDeliveryException(EmailDeliveryException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Email delivery is temporarily unavailable. Please try again.");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

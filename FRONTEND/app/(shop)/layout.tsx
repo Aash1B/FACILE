@@ -17,12 +17,12 @@ export default function ShopLayout({
       </Suspense>
       <FloatingCartSummary />
       <CartDrawer />
-      <FacileChatbot />
-      {/* Push content below the two-tier fixed navbar (~140px on mobile, ~104px on desktop) */}
-      <main className="flex-1 pt-[140px] md:pt-[104px] animate-fade-in">
+      {/* Push content below the two-tier fixed navbar (~164px on mobile, ~136px on desktop) */}
+      <main className="flex-1 pt-[164px] md:pt-[136px] animate-fade-in">
         {children}
       </main>
       <Footer />
+      <FacileChatbot />
     </>
   );
 }
