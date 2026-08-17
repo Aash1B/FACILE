@@ -29,7 +29,8 @@ import {
   Mail,
   HelpCircle,
   Mic,
-  MicOff
+  MicOff,
+  Menu
 } from "lucide-react";
 
 type StoreCategory = {
@@ -669,42 +670,51 @@ export default function Navbar() {
         <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
 
-            {/* FACILE shopping assistant (Left) */}
-            <div className="flex items-center">
+            {/* Left Controls: Hamburger Menu (Mobile) & FACILE shopping assistant */}
+            <div className="flex items-center gap-1 sm:gap-2 z-10">
+              {/* Mobile Hamburger Drawer Trigger */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 rounded-full text-black hover:bg-[#DDE0F0] focus:outline-none cursor-pointer transition-colors"
+                aria-label="Open mobile navigation menu"
+              >
+                <Menu size={26} className="stroke-[2px]" />
+              </button>
+
+              {/* FACILE shopping assistant */}
               <button
                 onClick={() => {
                   window.dispatchEvent(new Event("facile:open-chat"));
                 }}
-                className="group relative p-2 -ml-2 mt-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
+                className="group relative p-1.5 sm:p-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
                 aria-label="Open FACILE shopping assistant"
               >
-                <BotMessageSquare size={44} className="stroke-[2px] transition-transform group-hover:scale-105" />
-                <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
+                <BotMessageSquare className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 stroke-[2px] transition-transform group-hover:scale-105" />
+                <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
               </button>
             </div>
 
             {/* Logo "facile" (Center) */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex justify-center ml-8 mt-2">
+            <div className="absolute left-1/2 -translate-x-1/2 flex justify-center items-center">
               <Link
                 href="/"
-                className="font-serif font-bold text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
+                className="font-serif font-bold text-2xl sm:text-3xl md:text-[42px] text-[#5271FF] tracking-[0.02em] select-none"
               >
                 facile
               </Link>
             </div>
 
             {/* Right Links & Icons */}
-            <div className="flex items-center gap-2 sm:gap-4 font-sans text-sm font-medium z-10 ml-auto mt-2">
+            <div className="flex items-center gap-1 sm:gap-3 font-sans text-sm font-medium z-10 ml-auto">
 
               {/* Favorite Icon */}
               <Link
                 href="/wishlist"
-                className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
+                className="p-1.5 sm:p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Favorites"
               >
                 <Heart
-                  size={36}
-                  className={`stroke-[2px] transition-transform group-hover:scale-110`}
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[2px] transition-transform group-hover:scale-110"
                   style={{ fill: '#870339', color: '#870339', stroke: '#870339' }}
                 />
               </Link>
@@ -712,12 +722,12 @@ export default function Navbar() {
               {/* Shopping Cart Icon */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
+                className="p-1.5 sm:p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 relative group focus:outline-none cursor-pointer"
                 aria-label="Shopping Cart"
               >
-                <ShoppingCart size={36} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[2px] transition-transform group-hover:scale-110" />
                 {isMounted && totalCartItems > 0 && (
-                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#5271FF] text-[10px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
+                  <span className="absolute top-0 right-0 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#5271FF] text-[9px] sm:text-[10px] font-bold text-warm-ivory ring-2 ring-warm-ivory">
                     {totalCartItems}
                   </span>
                 )}
@@ -729,16 +739,16 @@ export default function Navbar() {
                   <>
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
-                      className="p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                      className="p-1.5 sm:p-2.5 rounded-full text-black hover:bg-[#DDE0F0] transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                       aria-label="Profile Menu"
                     >
-                      <User size={36} className="stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
+                      <User className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[2px] transition-transform group-hover:scale-110 text-[#5271FF]" />
                       <span className="hidden lg:inline text-sm font-bold truncate max-w-[100px]">
                         {user.name}
                       </span>
                     </button>
                     {isProfileOpen && (
-                      <div className="absolute right-0 mt-2.5 w-80 bg-[#DDE0F0] border border-natural/20 rounded-2xl shadow-xl px-6 py-4 z-50 animate-fade-in text-black">
+                      <div className="absolute right-0 mt-2.5 w-72 sm:w-80 bg-[#DDE0F0] border border-natural/20 rounded-2xl shadow-xl px-4 sm:px-6 py-4 z-50 animate-fade-in text-black">
                         <div className="border-b border-natural/20 pb-3 mb-3 space-y-0.5">
                           <p className="font-bold text-sm text-[#4a556a] truncate">{user.name}</p>
                           <p className="text-[#4a556a]/90 truncate text-xs font-medium">{user.email}</p>
@@ -770,10 +780,10 @@ export default function Navbar() {
                 ) : (
                   <Link
                     href="/login"
-                    className="p-2.5 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
+                    className="p-1.5 sm:p-2.5 rounded-full text-black hover:bg-natural/10 transition-all duration-200 group flex items-center gap-1 focus:outline-none cursor-pointer"
                     aria-label="Profile"
                   >
-                    <User size={30} className="stroke-[2px] transition-transform group-hover:scale-110" />
+                    <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[2px] transition-transform group-hover:scale-110" />
                     <span className="hidden lg:inline text-sm font-bold text-black">
                       Guest
                     </span>

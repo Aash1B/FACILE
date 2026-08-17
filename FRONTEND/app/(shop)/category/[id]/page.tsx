@@ -797,11 +797,11 @@ export default function CategoryPage() {
         {(!subcategoryId && !isShoesFilter) ? (
           /* Render grid of subcategories */
           loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
               {[0, 1, 2].map((item) => <div key={item} className="h-52 rounded-[28px] bg-white/60 animate-pulse" />)}
             </div>
           ) : subcategories.length ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {subcategories.map((subcategory, index) => {
                 const style = CARD_STYLES[index % CARD_STYLES.length];
                 const imageSrc = SUBCATEGORY_IMAGES[subcategory.name]

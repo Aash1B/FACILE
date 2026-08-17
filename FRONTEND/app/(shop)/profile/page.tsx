@@ -580,7 +580,7 @@ function ProfileContent() {
             </div>
 
             {/* Navigation Menu */}
-            <div className="flex flex-col gap-2 lg:pl-2">
+            <div className="flex flex-row lg:flex-col gap-2 lg:pl-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 flex-nowrap">
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`flex items-center gap-4 px-5 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 cursor-pointer text-left ${

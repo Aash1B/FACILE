@@ -473,18 +473,18 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Amazon-Style Redesigned Layout: 3 Columns on Large Screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-[#F4F4F0] border border-natural/15 rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start bg-[#F4F4F0] border border-natural/15 rounded-[24px] sm:rounded-[32px] p-4 sm:p-8 lg:p-10 shadow-xs">
           
           {/* COLUMN 1: Image Gallery & Main Image (Span 5 on Desktop) */}
-          <div className="lg:col-span-5 flex flex-col md:flex-row gap-4">
+          <div className="lg:col-span-5 flex flex-col md:flex-row gap-3 sm:gap-4">
             
             {/* Gallery Thumbnail List (Left of the main image on MD/LG screens) */}
-            <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-none flex-shrink-0">
+            <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar flex-shrink-0">
               {galleryImages.map((imgUrl, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(imgUrl)}
-                  className={`w-14 h-14 bg-neutral-100 border-2 rounded-xl overflow-hidden p-1 transition-all cursor-pointer flex-shrink-0 flex items-center justify-center ${
+                  className={`w-12 h-12 sm:w-14 sm:h-14 bg-neutral-100 border-2 rounded-xl overflow-hidden p-1 transition-all cursor-pointer flex-shrink-0 flex items-center justify-center ${
                     activeImage === imgUrl ? "border-[#5271FF] shadow-sm" : "border-natural/20 hover:border-natural/40"
                   }`}
                 >
@@ -494,7 +494,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             </div>
 
             {/* Main Showcase Image (Right of the thumbnail list) */}
-            <div className="flex-1 aspect-square bg-neutral-100/50 rounded-2xl border border-natural/10 flex items-center justify-center p-8 relative overflow-hidden order-1 md:order-2">
+            <div className="flex-1 aspect-square bg-neutral-100/50 rounded-2xl border border-natural/10 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden order-1 md:order-2">
               {discountPercent > 0 && (
                 <span className="absolute top-3 left-3 z-10 bg-[#5271FF] text-warm-ivory text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm tracking-wider">
                   {discountPercent}% OFF

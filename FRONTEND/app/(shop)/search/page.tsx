@@ -901,7 +901,7 @@ function SearchContent() {
             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setIsMobileFilterOpen(false)}
           />
-          <div className="relative ml-auto w-72 bg-white h-full shadow-2xl flex flex-col animate-slide-in">
+          <div className="relative ml-auto w-full max-w-xs sm:w-80 bg-white h-full shadow-2xl flex flex-col animate-slide-in">
             {/* Scrollable accordion body */}
             <div className="flex-1 overflow-y-auto">
               <FilterPanel {...filterPanelProps} />

@@ -985,7 +985,7 @@ export default function CheckoutPage() {
                 {/* Date Cards */}
                 <div>
                   <h3 className="text-sm font-bold text-natural uppercase tracking-wider mb-3">Select Date</h3>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {[
                       { label: "Tomorrow", date: "Jul 14", value: "Tomorrow, Jul 14" },
                       { label: "Wednesday", date: "Jul 15", value: "Wed, Jul 15" },
@@ -996,13 +996,13 @@ export default function CheckoutPage() {
                         <div
                           key={d.value}
                           onClick={() => setSelectedDate(d.value)}
-                          className={`p-3 border rounded-xl text-center cursor-pointer transition-all ${isSelected
+                          className={`p-2 sm:p-3 border rounded-xl text-center cursor-pointer transition-all ${isSelected
                             ? "border-[#4A5568] bg-[#F4F4F0] font-bold shadow-xs text-black"
                             : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] text-fern/80"
                             }`}
                         >
-                          <p className="text-xs font-bold uppercase tracking-wider opacity-85 leading-none">{d.label}</p>
-                          <p className="text-base font-extrabold mt-1">{d.date}</p>
+                          <p className="text-[9px] sm:text-xs font-bold uppercase tracking-wider opacity-85 leading-none truncate">{d.label}</p>
+                          <p className="text-sm sm:text-base font-extrabold mt-1">{d.date}</p>
                         </div>
                       );
                     })}
@@ -1015,7 +1015,7 @@ export default function CheckoutPage() {
                     <Clock size={16} />
                     Select Preferable Time Slot
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {[
                       "Morning (9 AM - 12 PM)",
                       "Afternoon (12 PM - 3 PM)",
@@ -1027,7 +1027,7 @@ export default function CheckoutPage() {
                         <div
                           key={slot}
                           onClick={() => setSelectedTimeSlot(slot)}
-                          className={`p-3.5 border rounded-xl text-center text-sm cursor-pointer transition-all font-semibold ${isSelected
+                          className={`p-3 sm:p-3.5 border rounded-xl text-center text-xs sm:text-sm cursor-pointer transition-all font-semibold ${isSelected
                             ? "border-[#4A5568] bg-[#F4F4F0] font-bold shadow-xs text-black"
                             : "border-natural/20 hover:border-natural/40 bg-[#F4F4F0]/80 hover:bg-[#F4F4F0] text-fern/80"
                             }`}

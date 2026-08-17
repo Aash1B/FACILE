@@ -335,3 +335,30 @@ body.cart-collapsed footer {
     padding-right: 0px !important;
   }
 }
+
+/* ─── Responsive & Touch Safeguards ────────────────────────────── */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Guarantee images and media elements fit inside containers */
+img, video, canvas, svg {
+  max-width: 100%;
+}
+
+/* Prevent auto-zoom layout shifts on mobile Safari when tapping inputs */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

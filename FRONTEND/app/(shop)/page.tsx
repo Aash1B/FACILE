@@ -157,22 +157,22 @@ const CATEGORIES = [
 const HERO_SLIDES = [
   {
     id: "hero-1", image: "/banner-shirts.png", alt: "Shirts - Up To 35% Off", link: "/category/tops-and-tshirts",
-    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#425435] text-white hover:bg-[#324028] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#425435] text-white hover:bg-[#324028] px-3 sm:px-8 lg:px-12 py-1.5 sm:py-3 lg:py-4 rounded-lg sm:rounded-xl text-xs sm:text-base lg:text-xl" },
     buttonStyle: { right: '14.5%', bottom: '18%', width: 'auto', height: 'auto' }
   },
   {
     id: "hero-3", image: "/banner-sportswear.png", alt: "Health & Wellness - Self Care Starts Here", link: "/category/health-wellness",
-    buttonConfig: { text: "+ Explore", icon: false, className: "text-[#1d2b44] hover:text-[#5271FF] font-semibold text-xl md:text-2xl px-6 py-2 shadow-none hover:shadow-none bg-[#EFEBE8]" },
+    buttonConfig: { text: "+ Explore", icon: false, className: "text-[#1d2b44] hover:text-[#5271FF] font-semibold text-xs sm:text-xl md:text-2xl px-2.5 sm:px-6 py-1 sm:py-2 shadow-none hover:shadow-none bg-[#EFEBE8]" },
     buttonStyle: { left: '4.5%', bottom: '23%', width: 'auto', height: 'auto' }
   },
   {
     id: "hero-2", image: "/banner-health.png", alt: "Sportswear - 40-70% Off", link: "/category/5",
-    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a31a22] text-white hover:bg-[#85131a] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a31a22] text-white hover:bg-[#85131a] px-3 sm:px-8 lg:px-12 py-1.5 sm:py-3 lg:py-4 rounded-lg sm:rounded-xl text-xs sm:text-base lg:text-xl" },
     buttonStyle: { right: '19.3%', bottom: '14%', width: 'auto', height: 'auto' }
   },
   {
     id: "hero-4", image: "/banner-fashion.png", alt: "Fashion Forward - New Arrivals", link: "/category/2",
-    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a38058] text-white hover:bg-[#8c6d4a] px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl" },
+    buttonConfig: { text: "Shop Now", icon: true, className: "bg-[#a38058] text-white hover:bg-[#8c6d4a] px-3 sm:px-8 lg:px-12 py-1.5 sm:py-3 lg:py-4 rounded-lg sm:rounded-xl text-xs sm:text-base lg:text-xl" },
     buttonStyle: { left: '3.9%', bottom: '16%', width: 'auto', height: 'auto' }
   },
 ];
@@ -696,8 +696,8 @@ function HomeContent() {
         </div>
       </div>
 
-  {/* 5-Column Grid */ }
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+  {/* 5-Column Grid */}
+  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
     {visibleProducts.map((product) => {
       const isFav = favorites.includes(product.id);
       const discount = product.originalPrice > product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
