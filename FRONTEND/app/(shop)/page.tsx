@@ -332,12 +332,17 @@ function HomeContent() {
             const cloudinaryCatalogue = catalogue.filter((product: any) =>
               String(product.image || "").includes("res.cloudinary.com")
             );
+            // Prefer the curated Cloudinary images when available, but never
+            // hide the live catalog when it uses another valid image host.
+            const featuredCatalogue = cloudinaryCatalogue.length > 0
+              ? cloudinaryCatalogue
+              : catalogue;
             const scoreProducts = (items: ApiProduct[]) => [...items].sort((a, b) =>
               Number(b.rating ?? 0) - Number(a.rating ?? 0)
               || Number(b.reviews ?? 0) - Number(a.reviews ?? 0)
             );
             const categoryGroups = new Map<string, ApiProduct[]>();
-            cloudinaryCatalogue.forEach((product: any) => {
+            featuredCatalogue.forEach((product: any) => {
               const key = String(product.category?.id ?? product.category?.name ?? "uncategorized");
               categoryGroups.set(key, [...(categoryGroups.get(key) || []), product]);
             });
@@ -353,17 +358,17 @@ function HomeContent() {
             };
             const groups = Array.from(categoryGroups.values());
 
-            // Lead with up to ten real Cloudinary product photos, distributed
+            // Lead with up to ten preferred product photos, distributed
             // across categories instead of allowing one department to dominate.
-            let cloudinaryAdded = true;
-            while (selected.length < 10 && cloudinaryAdded) {
-              cloudinaryAdded = false;
+            let preferredAdded = featuredCatalogue === cloudinaryCatalogue;
+            while (selected.length < 10 && preferredAdded) {
+              preferredAdded = false;
               for (const group of groups) {
                 const product = group.find((item: any) =>
                   String(item.image || "").includes("res.cloudinary.com")
                   && !selectedIds.has(String(item.id))
                 );
-                if (addSelection(product)) cloudinaryAdded = true;
+                if (addSelection(product)) preferredAdded = true;
                 if (selected.length >= 10) break;
               }
             }
@@ -374,7 +379,7 @@ function HomeContent() {
               addSelection(group.find((item) => !selectedIds.has(String(item.id))));
             }
 
-            while (selected.length < Math.min(30, cloudinaryCatalogue.length)) {
+            while (selected.length < Math.min(30, featuredCatalogue.length)) {
               let addedThisRound = false;
               for (const group of groups) {
                 const nextProduct = group.find((item) => !selectedIds.has(String(item.id)));
@@ -382,7 +387,7 @@ function HomeContent() {
                 if (selected.length >= 30) break;
               }
               if (!addedThisRound) {
-                const fallback = scoreProducts(cloudinaryCatalogue).find((item) => !selectedIds.has(String(item.id)));
+                const fallback = scoreProducts(featuredCatalogue).find((item) => !selectedIds.has(String(item.id)));
                 if (!addSelection(fallback)) break;
               }
             }

@@ -91,6 +91,7 @@ export default function Navbar() {
   const [categories, setCategories] = useState<StoreCategory[]>(FALLBACK_CATEGORIES);
   const [activeCategory, setActiveCategory] = useState<StoreCategory | null>(null);
   const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, StoreSubcategory[]>>({});
+  const subcategoryRequestsRef = useRef<Record<string, Promise<StoreSubcategory[]>>>({});
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -218,7 +219,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const fetchCategoriesAndSubcategories = async () => {
+    const fetchCategories = async () => {
       try {
         const response = await fetch(productApiUrl("/api/categories"));
         if (!response.ok) {
@@ -228,23 +229,6 @@ export default function Navbar() {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
           setCategories(data);
-          // Fetch all subcategories in parallel
-          const subMap: Record<string, StoreSubcategory[]> = {};
-          await Promise.all(
-            data.map(async (cat: StoreCategory) => {
-              try {
-                const subResponse = await fetch(productApiUrl(`/api/categories/${cat.id}/subcategories`));
-                const subData = subResponse.ok ? await subResponse.json() : [];
-                subMap[String(cat.id)] = sanitizeSubcategories(
-                  Array.isArray(subData) ? subData : [],
-                  cat.name
-                );
-              } catch {
-                subMap[String(cat.id)] = [];
-              }
-            })
-          );
-          setSubcategoriesByCategory(subMap);
         } else {
           loadFallbackSubcategories();
         }
@@ -264,8 +248,29 @@ export default function Navbar() {
       setSubcategoriesByCategory(fallbackSubMap);
     };
 
-    fetchCategoriesAndSubcategories();
+    fetchCategories();
   }, []);
+
+  const fetchSubcategories = (category: StoreCategory): Promise<StoreSubcategory[]> => {
+    const categoryKey = String(category.id);
+    const pendingRequest = subcategoryRequestsRef.current[categoryKey];
+    if (pendingRequest) return pendingRequest;
+
+    const request = fetch(productApiUrl(`/api/categories/${category.id}/subcategories`))
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => sanitizeSubcategories(Array.isArray(data) ? data : [], category.name))
+      .catch(() => [] as StoreSubcategory[])
+      .then((result) => {
+        if (subcategoryRequestsRef.current[categoryKey] === request) {
+          delete subcategoryRequestsRef.current[categoryKey];
+        }
+        return result;
+      });
+
+    subcategoryRequestsRef.current[categoryKey] = request;
+    return request;
+  };
+
 
   useEffect(() => {
     function handleClickOutsideSearch(event: MouseEvent) {
@@ -446,6 +451,33 @@ export default function Navbar() {
   };
 
   const query = searchQuery.trim();
+
+  useEffect(() => {
+    if (!showSuggestions || !query || categories.length === 0) return;
+
+    const missingCategories = categories.filter(
+      (category) => !subcategoriesByCategory[String(category.id)]
+    );
+    if (missingCategories.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      missingCategories.map(async (category) => [
+        String(category.id),
+        await fetchSubcategories(category),
+      ] as const)
+    ).then((entries) => {
+      if (cancelled) return;
+      setSubcategoriesByCategory((current) => ({
+        ...current,
+        ...Object.fromEntries(entries),
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showSuggestions, query, categories, subcategoriesByCategory]);
 
   // Helper to match suggestions starting strictly with the query prefix
   const matchesQuery = (text: string, q: string) => {
@@ -638,17 +670,11 @@ export default function Navbar() {
 
     setIsLoadingSubcategories(true);
     try {
-      const response = await fetch(productApiUrl(`/api/categories/${category.id}/subcategories`));
-      const data = response.ok ? await response.json() : [];
+      const data = await fetchSubcategories(category);
       setSubcategoriesByCategory((current) => ({
         ...current,
-        [categoryKey]: sanitizeSubcategories(
-          Array.isArray(data) ? data : [],
-          category.name
-        ),
+        [categoryKey]: data,
       }));
-    } catch {
-      setSubcategoriesByCategory((current) => ({ ...current, [categoryKey]: [] }));
     } finally {
       setIsLoadingSubcategories(false);
     }
