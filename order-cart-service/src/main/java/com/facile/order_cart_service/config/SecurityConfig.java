@@ -9,7 +9,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 public class SecurityConfig {
@@ -34,7 +36,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Content-Type", "Idempotency-Key", "Authorization"));
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -42,10 +45,13 @@ public class SecurityConfig {
     }
 
     private List<String> allowedOrigins() {
-        return java.util.stream.Stream.of(
-                "http://localhost:3000", "http://127.0.0.1:3000", frontendUrl)
-            .filter(origin -> origin != null && !origin.isBlank())
-            .distinct()
-            .toList();
+        return Stream.concat(
+                    Stream.of("http://localhost:3000", "http://127.0.0.1:3000"),
+                    Arrays.stream(frontendUrl.split(",")))
+                .map(String::trim)
+                .map(origin -> origin.replaceFirst("/+$", ""))
+                .filter(origin -> !origin.isBlank())
+                .distinct()
+                .toList();
     }
 }
