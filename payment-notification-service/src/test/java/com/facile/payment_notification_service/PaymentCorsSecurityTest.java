@@ -14,12 +14,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -70,7 +73,7 @@ class PaymentCorsSecurityTest {
 
     @Test
     void existingCreateOrderPostRouteRemainsUnchanged() throws Exception {
-        when(paymentService.createOrder(193.98))
+        when(paymentService.createOrder(new BigDecimal("193.98")))
                 .thenThrow(new IllegalStateException("mocked payment provider"));
 
         mockMvc.perform(post(CREATE_ORDER_PATH)
@@ -78,8 +81,9 @@ class PaymentCorsSecurityTest {
                         .header(HttpHeaders.ORIGIN, STOREFRONT_ORIGIN)
                         .contentType("application/json"))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().string("mocked payment provider"))
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, STOREFRONT_ORIGIN));
 
-        verify(paymentService).createOrder(193.98);
+        verify(paymentService).createOrder(new BigDecimal("193.98"));
     }
 }
