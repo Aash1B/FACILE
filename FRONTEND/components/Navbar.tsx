@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { LocalVoiceRecording, startLocalVoiceRecording } from "@/lib/localVoiceRecorder";
 import { productApiUrl } from "@/lib/serviceUrls";
 import {
+  BotMessageSquare,
   Heart,
   ShoppingCart,
   User,
@@ -695,8 +696,18 @@ export default function Navbar() {
         <div className="max-w-[2560px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
 
-            {/* Logo Icon (Left) */}
+            {/* FACILE shopping assistant & Logo Icon (Left) */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new Event("facile:open-chat"));
+                }}
+                className="group relative p-2 -ml-2 mt-2 rounded-full text-black select-none hover:bg-[#DDE0F0] focus:outline-none cursor-pointer"
+                aria-label="Open FACILE shopping assistant"
+              >
+                <BotMessageSquare size={46} className="stroke-[2px] transition-transform group-hover:scale-105" />
+                <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-[1.5px] border-[#F4F4F0] bg-emerald-500" />
+              </button>
               <Link href="/" className="mt-2 ml-1 flex items-center">
                 <img src="/logo.svg" alt="Facile Logo" className="w-[46px] h-[46px] opacity-90 transition-transform hover:scale-105" />
               </Link>
