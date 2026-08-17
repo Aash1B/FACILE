@@ -477,16 +477,17 @@ export default function FacileChatbot() {
     void send(input);
   };
 
-  const addProduct = (product: Product, quantity = 1) => {
+  const addProduct = async (product: Product, quantity = 1) => {
     const safeQuantity = Math.min(product.maxOrderQuantity || 10, Math.max(1, quantity));
-    addToCart({
-      id: String(product.id),
+    const added = await addToCart({
+      id: String(product.id).startsWith("bs") ? String(product.id) : `bs${product.id}`,
       name: product.title,
       price: Number(product.sellingPrice),
       brand: product.brand || "FACILE",
       image: product.image || FALLBACK_IMAGE,
       maxOrderQuantity: product.maxOrderQuantity || 10,
     }, safeQuantity);
+    if (!added) return;
     setMessages((current) => [
       ...current,
       { id: crypto.randomUUID(), role: "assistant", text: `${safeQuantity > 1 ? `${safeQuantity} x ` : ""}${product.title} ${safeQuantity > 1 ? "have" : "has"} been added to your cart.`, action: { label: "Open cart", href: "/cart" } },

@@ -304,7 +304,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     return getSizesForCategory(product.category, product.subCategory, product.name);
   }, [product]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     if (availableSizes && !selectedSize) {
       setShowSizeValidation(true);
@@ -312,7 +312,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     }
     setShowSizeValidation(false);
     recordRecentlyViewed(product);
-    addToCart({
+    const added = await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -321,7 +321,9 @@ export default function ProductDetailPage({ params }: PageProps) {
       maxOrderQuantity: product.maxOrderQuantity || 10,
       selectedSize: selectedSize
     }, quantity);
-    triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
+    if (added) {
+      triggerToast(`Added ${quantity} ${product.name} to your bag! 🛍️`);
+    }
   };
 
   const handleBuyNow = () => {

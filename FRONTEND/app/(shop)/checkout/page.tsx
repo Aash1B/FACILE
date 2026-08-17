@@ -46,6 +46,37 @@ const EMPTY_ADDRESS = {
   phone: ""
 };
 
+type DeliveryDateOption = {
+  label: string;
+  date: string;
+  value: string;
+};
+
+const createDeliveryDateOptions = (today = new Date()): DeliveryDateOption[] => {
+  return [1, 2, 3].map((daysFromToday) => {
+    const date = new Date(today);
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + daysFromToday);
+
+    const dateLabel = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const label = daysFromToday === 1
+      ? "Tomorrow"
+      : date.toLocaleDateString("en-US", { weekday: "long" });
+
+    return {
+      label,
+      date: dateLabel,
+      value: `${label}, ${dateLabel}`,
+    };
+  });
+};
+
+const limitPhoneDigits = (value: string) => value.replace(/\D/g, "").slice(0, 10);
+const limitZipDigits = (value: string) => value.replace(/\D/g, "").slice(0, 6);
+
 // Helper to format currency
 const formatPrice = (amount: number) => {
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -104,8 +135,17 @@ export default function CheckoutPage() {
   };
 
   // Delivery slot states
-  const [selectedDate, setSelectedDate] = useState("Tomorrow, Jul 14");
+  const [deliveryDateOptions, setDeliveryDateOptions] = useState<DeliveryDateOption[]>(() => createDeliveryDateOptions());
+  const [selectedDate, setSelectedDate] = useState(() => deliveryDateOptions[0].value);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("Evening (3 PM - 6 PM)");
+
+  useEffect(() => {
+    const nextOptions = createDeliveryDateOptions();
+    setDeliveryDateOptions(nextOptions);
+    setSelectedDate((current) => nextOptions.some((option) => option.value === current)
+      ? current
+      : nextOptions[0].value);
+  }, []);
 
   // Payment popup & loading states
   const [isProcessing, setIsProcessing] = useState(false);
@@ -422,6 +462,19 @@ export default function CheckoutPage() {
 
   const handleConfirmPayment = async () => {
     if (paymentRequestStarted.current) return;
+    if (checkoutItems.length === 0) {
+      setPaymentError("Your cart is empty. Add an item before paying.");
+      return;
+    }
+    if (!activeAddress) {
+      setPaymentError("Please select a delivery address before paying.");
+      return;
+    }
+    if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+      setPaymentError("The payment amount is invalid. Please review your cart.");
+      return;
+    }
+
     paymentRequestStarted.current = true;
 
     if (selectedPaymentMethod === "giftcard") {
@@ -853,10 +906,12 @@ export default function CheckoutPage() {
                       <label className="text-xs font-bold uppercase tracking-wider text-natural">Phone Number</label>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        maxLength={10}
                         required
-                        placeholder="+91 XXXXX XXXXX"
+                        placeholder="10-digit phone number"
                         value={customAddress.phone}
-                        onChange={(e) => setCustomAddress({ ...customAddress, phone: e.target.value })}
+                        onChange={(e) => setCustomAddress({ ...customAddress, phone: limitPhoneDigits(e.target.value) })}
                         className="w-full h-10 px-3 bg-white border border-natural/25 focus:border-[#4A5568] text-sm font-medium text-[#4A5568] rounded-xl focus:outline-none shadow-sm"
                       />
                     </div>
@@ -890,10 +945,12 @@ export default function CheckoutPage() {
                       <label className="text-xs font-bold uppercase tracking-wider text-natural">ZIP Code</label>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        maxLength={6}
                         required
-                        placeholder="110001"
+                        placeholder="6-digit ZIP code"
                         value={customAddress.zip}
-                        onChange={(e) => setCustomAddress({ ...customAddress, zip: e.target.value })}
+                        onChange={(e) => setCustomAddress({ ...customAddress, zip: limitZipDigits(e.target.value) })}
                         className="w-full h-10 px-3 bg-white border border-natural/25 focus:border-[#4A5568] text-sm font-medium text-[#4A5568] rounded-xl focus:outline-none shadow-sm"
                       />
                     </div>
@@ -987,11 +1044,7 @@ export default function CheckoutPage() {
                 <div>
                   <h3 className="text-sm font-bold text-natural uppercase tracking-wider mb-3">Select Date</h3>
                   <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: "Tomorrow", date: "Jul 14", value: "Tomorrow, Jul 14" },
-                      { label: "Wednesday", date: "Jul 15", value: "Wed, Jul 15" },
-                      { label: "Thursday", date: "Jul 16", value: "Thu, Jul 16" }
-                    ].map((d) => {
+                    {deliveryDateOptions.map((d) => {
                       const isSelected = selectedDate === d.value;
                       return (
                         <div
@@ -1412,6 +1465,7 @@ export default function CheckoutPage() {
                 {/* Final Trigger Button */}
                 <div className="pt-2 border-t border-natural/15">
                   <button
+                    type="button"
                     onClick={handleConfirmPayment}
                     className="w-full h-11 bg-[#5271FF] hover:bg-[#3A56D4] text-white font-extrabold text-xs tracking-wider rounded-xl uppercase shadow active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
                   >

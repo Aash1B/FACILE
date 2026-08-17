@@ -23,6 +23,7 @@ interface CartItem {
   image?: string;
   price: number;
   quantity: number;
+  maxOrderQuantity?: number;
   selectedSize?: string | null;
 }
 
@@ -54,6 +55,7 @@ export default function CartPage() {
         price: i.price,
         image: i.image,
         quantity: i.quantity,
+        maxOrderQuantity: i.maxOrderQuantity,
         selectedSize: i.selectedSize
       }));
     } catch {
@@ -68,6 +70,8 @@ export default function CartPage() {
       price: i.price,
       image: i.image,
       quantity: i.quantity,
+      maxOrderQuantity: i.maxOrderQuantity,
+      selectedSize: i.selectedSize,
       brand: "Facile"
     }));
     localStorage.setItem("facile_cart", JSON.stringify(toSave));

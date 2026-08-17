@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { getApiResponseErrorMessage } from "@/lib/apiError";
 import { ORDER_BASE_URL, productApiUrl } from "@/lib/serviceUrls";
 
 export interface CartItem {
@@ -18,7 +19,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, quantityToAdd?: number) => Promise<boolean>;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -179,7 +180,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = async (item: Omit<CartItem, "quantity">, quantityToAdd = 1) => {
     const now = Date.now();
     const lastClick = recentAddClicks.current.get(item.id) ?? 0;
-    if (now - lastClick < 800) return;
+    if (now - lastClick < 800) return false;
     recentAddClicks.current.set(item.id, now);
 
     const existingIndex = cart.findIndex(
@@ -191,7 +192,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (user && user.email) {
       // Sync with database
       try {
-        await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
+        const response = await fetch(`${ORDER_BASE_URL}/api/cart/${user.email}/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -207,8 +208,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             selectedSize: item.selectedSize || null,
           }),
         });
+        if (!response.ok) {
+          throw new Error(await getApiResponseErrorMessage(response, "Unable to add this item to your cart."));
+        }
 
-        // Update state
+        // Update state only after the backend confirms the cart write.
         if (existingIndex > -1) {
           const newCart = [...cart];
           newCart[existingIndex].quantity = Math.min(maxQuantity, newCart[existingIndex].quantity + safeQuantityToAdd);
@@ -218,7 +222,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e) {
         console.error("Failed to add item to db cart:", e);
+        return false;
       }
+      return true;
     } else {
       // Guest: local storage
       if (existingIndex > -1) {
@@ -228,6 +234,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } else {
         saveCartState([...cart, { ...item, maxOrderQuantity: maxQuantity, quantity: safeQuantityToAdd }]);
       }
+      return true;
     }
   };
 

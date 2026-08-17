@@ -1,24 +1,33 @@
 import type { NextConfig } from "next";
 
-const requireServiceUrl = (value: string | undefined, variableName: string): string => {
-    if (!value) {
-        throw new Error(`Missing required frontend service URL: ${variableName}`);
-    }
-    return value.replace(/\/+$/, "");
+const DEFAULT_SERVICE_URLS = {
+    auth: "https://facile-auth-user.onrender.com",
+    order: "https://facile-order-cart.onrender.com",
+    payment: "https://facile-payment-notification.onrender.com",
+    product: "https://facile-product-inventory.onrender.com",
+} as const;
+
+const resolveServiceUrl = (value: string | undefined, fallback: string): string => {
+    const configuredValue = value?.trim();
+    const isPlaceholder = configuredValue?.includes("your-") || configuredValue?.includes("example.com");
+    return (configuredValue && !isPlaceholder ? configuredValue : fallback).replace(/\/+$/, "");
 };
 
-const AUTH_USER_BASE_URL = requireServiceUrl(
+const AUTH_USER_BASE_URL = resolveServiceUrl(
     process.env.NEXT_PUBLIC_AUTH_SERVICE_URL,
-    "NEXT_PUBLIC_AUTH_SERVICE_URL"
+    DEFAULT_SERVICE_URLS.auth
 );
-const PRODUCT_BASE_URL = "https://facile-product-inventory.onrender.com";
-const ORDER_BASE_URL = requireServiceUrl(
+const PRODUCT_BASE_URL = resolveServiceUrl(
+    process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL,
+    DEFAULT_SERVICE_URLS.product
+);
+const ORDER_BASE_URL = resolveServiceUrl(
     process.env.NEXT_PUBLIC_ORDER_SERVICE_URL,
-    "NEXT_PUBLIC_ORDER_SERVICE_URL"
+    DEFAULT_SERVICE_URLS.order
 );
-const PAYMENT_BASE_URL = requireServiceUrl(
+const PAYMENT_BASE_URL = resolveServiceUrl(
     process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL,
-    "NEXT_PUBLIC_PAYMENT_SERVICE_URL"
+    DEFAULT_SERVICE_URLS.payment
 );
 
 const nextConfig: NextConfig = {
@@ -38,7 +47,7 @@ const nextConfig: NextConfig = {
             },
             {
                 source: "/api/payments/:path*",
-                destination: `${PAYMENT_BASE_URL}/:path*`,
+                destination: `${PAYMENT_BASE_URL}/payments/:path*`,
             },
             {
                 source: "/api/products/:path*",

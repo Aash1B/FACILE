@@ -429,10 +429,10 @@ function HomeContent() {
     }, 3000);
   };
 
-  const handleAddToCart = (product: ProductCard, e: React.MouseEvent) => {
+  const handleAddToCart = async (product: ProductCard, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
+    const added = await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -440,14 +440,16 @@ function HomeContent() {
       image: product.image,
       maxOrderQuantity: product.maxOrderQuantity || 10
     });
+    if (!added) return;
     recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag! 🛍️`);
   };
 
-  const handleAddRecentToCart = (product: RecentProduct, e: React.MouseEvent) => {
+  const handleAddRecentToCart = async (product: RecentProduct, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image, maxOrderQuantity: product.maxOrderQuantity || 10 });
+    const added = await addToCart({ id: product.id, name: product.name, price: product.price, brand: "facile Store", image: product.image, maxOrderQuantity: product.maxOrderQuantity || 10 });
+    if (!added) return;
     recordRecentlyViewed(product);
     triggerToast(`Added ${product.name} to your bag!`);
   };
